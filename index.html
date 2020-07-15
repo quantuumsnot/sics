@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sales and Inventory Control System</title>
+    <link href="style.css" rel="stylesheet">
+    <script>
+      'use strict';
+      var startTime = new Date().getTime();
+    </script>
+    <script src="sics.js" defer></script>
+  </head>
+  <body>
+    <header style="text-align: center">
+      <h1>Sales and Inventory Control System</h1>
+    </header>
+
+    <main>
+      <h2>Add a new product</h2>
+      <section class="new-product" style="text-align: center">
+        <form>
+          <ul>
+            <li><input type="text" id="productName" name="productName" required placeholder="Name"></li>
+            <li><input type="number" min="0" id="productNumber" name="productNumber" required placeholder="SKU"></li>
+            <li><input type="text" id="productCategory" name="productCategory" required placeholder="Category"></li>
+            <li><input type="number" min="0" id="productQuantity" name="productQuantity" required placeholder="Quantity"></li>
+            <li><input type="number" min="0" id="productAvailable" name="productAvailable" required placeholder="Available"></li>
+            <li><label class="fileuploadbutton">Choose product pictures<input id="productPictures" type="file" multiple required></label></li>
+            <li><button class="addproductbutton" id="addproduct">Add</button></li>
+          </ul>
+        </form>
+      </section>
+      
+      <section class="search-results" id="searchresults" style="text-align: center">
+        Search results
+      </section>
+    </main>
+    
+    <footer>
+      <h4 id='loadingTime'></h4>
+      
+			<div id='licensearea' style="text-align: center">
+				<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
+					<img alt="Creative Commons License" style="border-width:0" src="cc-by-nc-sa.png" />
+				</a>
+				<br />This work is licensed under a 
+				<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
+					Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License
+				</a>
+			</div>
+    </footer>
+  </body>
+  <script>
+    'use strict';
+
+    /*document.body.onload = function () {
+      document.addEventListener('click', function(event) {
+        if (event.target.tagName === 'A') {
+          event.preventDefault(); event.stopPropagation();
+          open(event.target.href).blur(); //disabling focus on the freshly opened tab is not working
+          //event.target.dispatchEvent(new MouseEvent('click', {ctrlKey: true, cancelable: true})); //simulation of CTRL+click is not working
+        }
+      }, false);
+    };*/
+      
+    var endTime = new Date().getTime();
+    var totalTime = (endTime - startTime)/1000;
+    if (document.getElementById("loadingTime"))
+    {
+      document.getElementById("loadingTime").innerHTML = `Page loaded in ${totalTime} seconds<br /><h2>v0.1 codename "Baby steps"</h2>`;
+    }
+  </script>
+</html>
