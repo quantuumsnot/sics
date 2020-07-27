@@ -37,26 +37,39 @@ main {
   justify-content: space-between;
   border: 2px solid #bfdfff;
   border-radius: 1.5em;
+  padding: 1em 1em;
 }
 
-/*div {
-  background: #000000;
-  flex-basis: 100%;
-  height: 100px;
-  margin-bottom: 0.5rem;
-}*/
+hr {
+  width: 100%;
+}
 
 /*textarea {
   resize: none;
 }*/
 
-ul {
-  flex-basis: 100%;
-  list-style-type: none;
+input {
+  text-align: center;
 }
 
 input[type="file"] {
-  display: none;
+  /*display: none;*/
+}
+
+.new-product, .search-product, .sell-product {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column; 
+  align-items: center;
+  margin: 1em 0;
+  text-align: center;
+}
+
+.new-product-form, .search-product-form, .sell-product-form {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column; 
+  align-items: center;
 }
 
 .fileuploadbutton {
@@ -72,24 +85,27 @@ input[type="file"] {
   color: #80ecff;
 }
 
-.addproductbutton {
+.addproductbutton, .searchproductbutton, .sellproductbutton {
   border: 2px solid #bfdfff;
   border-radius: 1.5em;
   cursor: pointer;
   background-color: #000000;
   color: #bfdfff;
+  margin: 1em 0;
+  padding: 0 1em;
 }
 
-.addproductbutton:hover {
+.addproductbutton:hover, .searchproductbutton:hover, .sellproductbutton:hover {
   cursor: pointer;
   box-shadow: 0 0 7px #0080ff;
   border-color: #80ecff;
   color: #80ecff;
 }
 
-.search-results {
+.new-product-results, .search-product-results, .sell-product-results {
   border: 2px solid #bfdfff;
   border-radius: 1.5em;
+  padding: 0 1em;
 }
 
 #loadingTime, #licensearea {
