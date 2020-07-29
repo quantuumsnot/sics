@@ -8,7 +8,22 @@
   }
 
   div {
-    flex-basis: 33%;
+    flex-basis: 66%;
+  }
+}
+
+@media (max-width: 45em) {
+  .tabs .tab,  .tabs label {
+    -webkit-box-ordinal-group: NaN;
+    -webkit-order: initial;
+    -ms-flex-order: initial;
+    order: initial;
+  }
+
+  .tabs label {
+    width: 100%;
+    margin-right: 0;
+    margin-top: 0.2rem;
   }
 }
 
@@ -30,11 +45,23 @@ html {
   /* overflow: hidden; */ /* fix for android devices, currently disabled for desktops */
 }
 
+body {
+  min-height: 100vh;
+	padding-top: 10vh;
+  font-weight: 300;
+  line-height: 1.5;
+  max-width: 60rem;
+  margin: 0 auto;
+  font-size: 112%;
+}
+
 main {
   background: #000000;
   display: flex;
-  flex-flow: wrap column;
-  justify-content: space-between;
+  flex-flow: wrap;
+  /*justify-content: space-between;*/
+  align-items: center;
+  justify-content: center;
   border: 2px solid #bfdfff;
   border-radius: 1.5em;
   padding: 1em 1em;
@@ -42,6 +69,22 @@ main {
 
 hr {
   width: 100%;
+}
+
+.blink {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 /*textarea {
@@ -52,24 +95,68 @@ input {
   text-align: center;
 }
 
-input[type="file"] {
-  /*display: none;*/
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-.new-product, .search-product, .sell-product {
+.tabs {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
   display: flex;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
   flex-wrap: wrap;
-  flex-direction: column; 
   align-items: center;
-  margin: 1em 0;
-  text-align: center;
+  justify-content: center;
 }
 
-.new-product-form, .search-product-form, .sell-product-form {
+.tabs label {
+  -webkit-box-ordinal-group: 2;
+  -webkit-order: 1;
+  -ms-flex-order: 1;
+  order: 1;
+  display: block;
+  padding: 1rem 2rem;
+  margin-right: 0.2rem;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  -webkit-transition: background ease 0.2s;
+  transition: background ease 0.2s;
+}
+
+.tabs .tab {
+  -webkit-box-ordinal-group: 100;
+  -webkit-order: 99;
+  -ms-flex-order: 99;
+  order: 99;
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  width: 100%;
+  display: none;
+  padding: 1rem;
+}
+
+.tabs input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.tabs input[type="radio"]:checked + label { background: white; color: black; }
+
+.tabs input[type="radio"]:checked + label + .tab { display: block; }
+
+.product-form {
   display: flex;
   flex-wrap: wrap;
-  flex-direction: column; 
+  flex-direction: column;
   align-items: center;
+  overflow: hidden;
 }
 
 .fileuploadbutton {

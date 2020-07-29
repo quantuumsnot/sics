@@ -21,20 +21,14 @@ if(!in_array($_SERVER['REMOTE_ADDR'], $whitelist)) {
 //global vars
 $phpVersionNumber = PHP_VERSION_ID;
 $phpVersionType = PHP_INT_SIZE * 8 . "bit";
-//$div = "<div class='center'>{{content}}</div>";
-$name = $_POST['name'];
-$number = $_POST['number'];
-$category = $_POST['category'];
-$quantity = $_POST['quantity'];
-$available = $_POST['available'];
-$price = $_POST['price'];
-$info = $_POST['info'];
+
+$action = $_POST['action'];
 
 // Open database
-$productsColumns = "name TEXT, number TEXT, category TEXT, quantity TEXT, available TEXT, price TEXT, info TEXT";//pictures BLOB";
-$productsColumnsNoDataType = "name, number, category, quantity, available, price, info";
-$salesColumns = "date TEXT, number TEXT, quantity TEXT";
-$salesColumnsNoDataType = "date, number, quantity";
+$productsColumns = "name TEXT, number TEXT, category TEXT, quantity TEXT, available TEXT, price TEXT, info TEXT, pictures BLOB";
+$productsColumnsNoDataType = "name, number, category, quantity, available, price, info, pictures";
+$salesColumns = "date TEXT, number TEXT, quantity TEXT, soldin TEXT";
+$salesColumnsNoDataType = "date, number, quantity, soldin";
 $db = new PDO('sqlite:sics.db');
 //PHP bug: if you don't specify PDO::PARAM_INT for INT values, PDO may enclose the argument in quotes. This can mess up some MySQL queries that don't expect integers to be quoted.
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -53,35 +47,105 @@ function getMemoryUsageUnits($bytes) {
   } else return 0;
 }
 
-// Search for item in the database
-//$statement = $pdo->query("SELECT some_field FROM some_table");
+function addProduct() {
+  try {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+      global $db, $productsColumnsNoDataType;
+
+      $name       = $_POST['name'];
+      $number     = $_POST['number'];
+      $category   = $_POST['category'];
+      $quantity   = $_POST['quantity'];
+      $available  = $_POST['available'];
+      $price      = $_POST['price'];
+      $info       = $_POST['info'];
+      $fhandler   = file_get_contents($_FILES['pictures']['tmp_name']);
+      
+      $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$productsColumnsNoDataType}) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+      $result->bindValue(1, $name);
+      $result->bindValue(2, $number);
+      $result->bindValue(3, $category);
+      $result->bindValue(4, $quantity);
+      $result->bindValue(5, $available);
+      $result->bindValue(6, $price);
+      $result->bindValue(7, $info);
+      $result->bindValue(8, $fhandler, PDO::PARAM_LOB);
+      $result->execute();
+      //$result = null;
+      //unset($db, $result); //close database handler
+      //$row = $db->fetch(PDO::FETCH_ASSOC);
+      //echo "Done!<br />"; //just for testing, leave it commented to stop pollution with echoes
+      //print_r($db->errorInfo());
+      //header("Location: ../index.html");
+      //fclose($fhandler);
+      echo "Done! <br />";
+    }
+  } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
+}
+
+function searchProduct() {
+  try {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+      global $db;
+
+      $searchNumber = $_POST['searchnumber'];
+      
+      $result = $db->prepare("SELECT quantity, pictures FROM {$_POST['tName']} WHERE number=?");
+      $result->execute(array($searchNumber));
+      $result->bindColumn(1, $qty);
+      $result->bindColumn(2, $lob);
+      
+      if (count($result->fetchAll(PDO::FETCH_ASSOC)) > 0) {
+        echo "Quantity: " . $qty . "<br />";
+        echo '<img alt="" src="data:image/jpg;base64,' . base64_encode($lob) . '"/>';
+      } else {
+        echo "No product found!";
+      }
+    }
+  } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
+}
+
+function sellProduct() {
+  try {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+      global $db, $salesColumnsNoDataType;
+
+      $sellNumber = $_POST['sellnumber'];
+      $sellQuantity = $_POST['sellquantity'];
+      $soldIn = $_POST['soldin'];
+      
+      $result = $db->prepare("UPDATE products SET quantity=quantity-{$_POST['sellquantity']} WHERE number=?");
+      $result->bindValue(1, $sellNumber);
+      $result->execute();
+      
+      $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$salesColumnsNoDataType}) VALUES (?, ?, ?, ?)");
+      $result->bindValue(1, date('d M Y H-i-s'));
+      $result->bindValue(2, $sellNumber);
+      $result->bindValue(3, $sellQuantity);
+      $result->bindValue(4, $soldIn);
+      $result->execute();
+      
+      echo "The given qty of a product was succesfully marked as sold!";
+    }
+  } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
+}
 
 // Add item to database
-try {
-  if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$productsColumnsNoDataType}) VALUES (?, ?, ?, ?, ?, ?, ?)");
-    $result->bindValue(1, $name);
-    $result->bindValue(2, $number);
-    $result->bindValue(3, $category);
-    $result->bindValue(4, $quantity);
-    $result->bindValue(5, $available);
-    $result->bindValue(6, $price);
-    $result->bindValue(7, $info);
-    /*$result->bindValue(7, $_POST['pictures']);*/
-    $result->execute();
-    //$result = null;
-    //unset($db, $result); //close database handler
-    //$row = $db->fetch(PDO::FETCH_ASSOC);
-    //echo "Done!<br />"; //just for testing, leave it commented to stop pollution with echoes
-    //print_r($db->errorInfo());
-    //header("Location: ../index.html");
-    echo "Done! <br />";
-  }
-} catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
+if ($_POST['action'] === "new") {
+  addProduct();
+}
 
-// Sell item and exclude it from the database
-//blabla
+// Search an item in the database
+if ($_POST['action'] === "search") {
+  searchProduct();
+}
 
+// Sell an item and exclude it from the database
+if ($_POST['action'] === "sell") {
+  sellProduct();
+}
+
+// Some script performance metrics
 //$pageStart = microtime(true);
 
 /*$div = str_ireplace('{{content}}', $tableResults, $div);

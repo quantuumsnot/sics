@@ -6,8 +6,27 @@ function addProduct() {
   var category  =  document.getElementById('category').value;
   var quantity  =  document.getElementById('quantity').value;
   var available =  document.getElementById('available').value;
-  var price =  document.getElementById('price').value;
+  var price     =  document.getElementById('price').value;
   var info      =  document.getElementById('info').value;
+  var pictures  =  document.getElementById('pictures');
+  
+  // Get the files from the form input
+  var files = pictures.files;
+
+  // Create a FormData object
+  var formData = new FormData();
+  
+  // Select only the first file from the input array
+  var file = files[0];
+
+  if (file.type !== "image/jpg" || file.type !== "image/jpeg" ) { 
+    alert('The file selected is not an image!'); 
+    pictures.value = '';
+    return false; 
+  }
+  
+  // Add the file to the AJAX request
+  formData.append('pictures', file, file.name);
 
   // Make a request to add the product
   var xhttp = new XMLHttpRequest();
@@ -25,25 +44,28 @@ function addProduct() {
     
   xhttp.open("POST", "index.php", true);
   
-  xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
   
-  if (name !== '' && 
-      number !== '' && 
-      category !== '' && 
-      quantity !== '' && 
+  if (name      !== '' && 
+      number    !== '' && 
+      category  !== '' && 
+      quantity  !== '' && 
       available !== '' && 
-      price !== '' && 
-      info !== '') {
-        xhttp.send("tName=products" + 
-                   "&name="       + name + 
-                   "&number="     + number + 
-                   "&category="   + category + 
-                   "&quantity="   + quantity + 
-                   "&available="  + available + 
-                   "&price="      + price + 
-                   "&info="       + info); /*+ 
-                   "&pictures=" + data.pictures);*/
-                   
+      price     !== '' && 
+      info      !== '') {
+        formData.append('action', "new");
+        formData.append('tName', "products");
+        formData.append('name', name);
+        formData.append('number', number);
+        formData.append('category', category);
+        formData.append('quantity', quantity);
+        formData.append('available', available);
+        formData.append('price', price);
+        formData.append('info', info); 
+        
+        xhttp.send(formData);
+        
         document.getElementById('name').value = '';
         document.getElementById('number').value = '';
         document.getElementById('category').value = '';
@@ -58,84 +80,84 @@ function addProduct() {
 
 // Search for a product in the database
 function searchProduct() {
+  var searchNumber = document.getElementById('searchnumber').value;
+
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to add the product
+  var xhttp = new XMLHttpRequest();
   
-  //executerequest();
-  
-  /*executerequest.onsuccess = function(e) {
-    if(e.state === true) {
-      // Create a list item, h3, and p to put each data item inside when displaying it
-      // structure the HTML fragment, and append it inside the list
-      let listItem = document.createElement('li');
-      let h3 = document.createElement('h3');
-      let para = document.createElement('p');
-
-      listItem.appendChild(h3);
-      listItem.appendChild(para);
-      list.appendChild(listItem);
-
-      // Put the data from the cursor inside the h3 and para
-      h3.textContent = cursor.value.title;
-      para.textContent = cursor.value.body;
-
-      // Create a button and place it inside each listItem
-      let deleteBtn = document.createElement('button');
-      listItem.appendChild(deleteBtn);
-      deleteBtn.textContent = 'Delete';
-
-      // Add an event handler for deleting a product from the database
-      deleteBtn.onclick = deleteProduct;
-
-      // Iterate to the next item in the cursor
-      cursor.continue();
-    } else {
-      // Again, if list item is empty, display a 'No notes stored' message
-      if(!list.firstChild) {
-        let listItem = document.createElement('li');
-        listItem.textContent = 'No products found';
-        list.appendChild(listItem);
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        document.getElementById("searchresults").innerHTML = this.responseText;
+      }
+      else {
+        alert("Error: returned status code " + this.status + " " + this.statusText);
       }
     }
-  };*/
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
+  
+  if (number !== '') {
+        formData.append('action', "search");
+        formData.append('tName', "products");
+        formData.append('searchnumber', searchNumber);
+        
+        xhttp.send(formData);
+        
+        document.getElementById('searchnumber').value = '';
+  } else {
+      alert("Error: Some fields are empty!");
+  }
 }
 
 // Sell a product and update the quantity left in the database
 function sellProduct() {
+  var sellNumber    = document.getElementById('sellnumber').value;
+  var sellquantity  = document.getElementById('sellquantity').value;
+  var soldin  = document.getElementById('soldin').value;
+
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to add the product
+  var xhttp = new XMLHttpRequest();
   
-  //executerequest();
-  
-  /*executerequest.onsuccess = function(e) {
-    if(e.state === true) {
-      // Create a list item, h3, and p to put each data item inside when displaying it
-      // structure the HTML fragment, and append it inside the list
-      let listItem = document.createElement('li');
-      let h3 = document.createElement('h3');
-      let para = document.createElement('p');
-
-      listItem.appendChild(h3);
-      listItem.appendChild(para);
-      list.appendChild(listItem);
-
-      // Put the data from the cursor inside the h3 and para
-      h3.textContent = cursor.value.title;
-      para.textContent = cursor.value.body;
-
-      // Create a button and place it inside each listItem
-      let deleteBtn = document.createElement('button');
-      listItem.appendChild(deleteBtn);
-      deleteBtn.textContent = 'Delete';
-
-      // Add an event handler for deleting a product from the database
-      deleteBtn.onclick = deleteProduct;
-
-      // Iterate to the next item in the cursor
-      cursor.continue();
-    } else {
-      // Again, if list item is empty, display a 'No notes stored' message
-      if(!list.firstChild) {
-        let listItem = document.createElement('li');
-        listItem.textContent = 'No products found';
-        list.appendChild(listItem);
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        document.getElementById("sellproductresults").innerHTML = this.responseText;
+      }
+      else {
+        alert("Error: returned status code " + this.status + " " + this.statusText);
       }
     }
-  };*/
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
+  
+  if (number !== '') {
+        formData.append('action', "sell");
+        formData.append('tName', "sales");
+        formData.append('sellnumber', sellNumber);
+        formData.append('sellquantity', sellquantity);
+        formData.append('soldin', soldin);
+        
+        xhttp.send(formData);
+        
+        document.getElementById('sellnumber').value   = '';
+        document.getElementById('sellquantity').value = '';
+        document.getElementById('soldin').value = '';
+  } else {
+      alert("Error: Some fields are empty!");
+  }
 }

@@ -20,53 +20,58 @@
   </head>
   <body>
     <header style="text-align: center">
-      <h1>Sales and Inventory Control System</h1>
+      <h1 class="blink">Sales and Inventory Control System</h1>
     </header>
 
     <main>
-      <h2>Add a new product</h2>
-      <section class="new-product">
-        <form class="new-product-form" name="productparameters" action="#" method="post">
-          <input type="text" id="name" name="name" required placeholder="Name" autofocus>
-          <input type="number" min="0" id="number" name="number" required placeholder="SKU">
-          <input type="text" id="category" name="category" required placeholder="Category">
-          <input type="number" min="0" id="quantity" name="quantity" required placeholder="Quantity">
-          <input type="number" min="0" id="available" name="available" required placeholder="Available">
-          <input type="number" min="0" id="price" name="price" required placeholder="Price">
-          <input type="text" id="info" name="info" required placeholder="Additional product info">
-          <label>Choose product pictures<br /><input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg"></label>
-          <button class="addproductbutton" type="submit" id="addproduct" onclick="addProduct(); return false;">Add</button>
-          <output class="new-product-results" id="newproductresults" style="text-align: center" name="newproductresults">New product results</output>
-        </form>
-      </section>
-      <hr />
-      <h2>Search for a product</h2>
-      <section class="search-product">
-        <form class="search-product-form" name="productparameters" action="#" method="post">
-          <input type="number" min="0" id="number" name="number" required placeholder="SKU" autofocus>
-          <button class="searchproductbutton" type="submit" id="searchproduct" onclick="searchProduct(); return false;">Search</button>
-          <output class="search-product-results" id="searchresults" style="text-align: center" name="searchresults">Search results</output>
-        </form>
-      </section>
-      <hr />
-      <h2>Sell a product</h2>
-      <section class="sell-product">
-        <form class="sell-product-form" name="productparameters" action="#" method="post">
-          <input type="number" min="0" id="number" name="number" required placeholder="SKU" autofocus>
-          <input type="number" min="0" id="quantity" name="quantity" required placeholder="Quantity">
-          <select name="soldin" id="soldin" required>
-            <option value="">-Choose where it was sold-</option>
-            <option value="site">SITE</option>
-            <option value="fb">Facebook</option>
-            <option value="olx">OLX</option>
-            <option value="bazar">Bazar.bg</option>
-            <option value="phone">Telephone</option>
-            <option value="viber">Viber</option>
-          </select>
-          <button class="sellproductbutton" type="submit" id="sellproduct" onclick="sellProduct(); return false;">Sell</button>
-          <output class="sell-product-results" id="sellproductresults" style="text-align: center" name="sellproductresults">Sell product results</output>
-        </form>
-      </section>
+      <div class="tabs">
+        <input type="radio" name="tabs" id="tabone" checked="checked">
+        <label for="tabone">Add</label>
+        <div class="tab">
+          <form class="product-form" id="newproductparameters" name="productparameters" action="#" method="post">
+            <input type="text" id="name" name="name" required placeholder="Name" autofocus>
+            <input type="number" min="0" id="number" name="number" required placeholder="SKU">
+            <input type="text" id="category" name="category" required placeholder="Category">
+            <input type="number" min="0" id="quantity" name="quantity" required placeholder="Quantity">
+            <input type="number" min="0" id="available" name="available" required placeholder="Available">
+            <input type="number" min="0" id="price" name="price" required placeholder="Price">
+            <input type="text" id="info" name="info" required placeholder="Additional product info">
+            <label>Choose product pictures<br /><input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg"></label>
+            <button class="addproductbutton" type="submit" id="addproduct" onclick="addProduct(); return false;">Add</button>
+            <output class="new-product-results" id="newproductresults" style="text-align: center" name="newproductresults">New product results</output>
+          </form>
+        </div>
+        
+        <input type="radio" name="tabs" id="tabtwo">
+        <label for="tabtwo">Search</label>
+        <div class="tab">
+          <form class="product-form" name="searchproductparameters" action="#" method="post">
+            <input type="number" min="0" id="searchnumber" name="searchnumber" required placeholder="SKU" autofocus>
+            <button class="searchproductbutton" type="submit" id="searchproduct" onclick="searchProduct(); return false;">Search</button>
+            <output class="search-product-results" id="searchresults" style="text-align: center" name="searchresults">Search results</output>
+          </form>
+        </div>
+        
+        <input type="radio" name="tabs" id="tabthree">
+        <label for="tabthree">Sell</label>
+        <div class="tab">
+          <form class="product-form" name="sellproductparameters" action="#" method="post">
+            <input type="number" min="0" id="sellnumber" name="sellnumber" required placeholder="SKU" autofocus>
+            <input type="number" min="0" id="sellquantity" name="sellquantity" required placeholder="Quantity">
+            <select name="soldin" id="soldin" required>
+              <option value="">-Choose where it was sold-</option>
+              <option value="site">SITE</option>
+              <option value="fb">Facebook</option>
+              <option value="olx">OLX</option>
+              <option value="bazar">Bazar.bg</option>
+              <option value="phone">Telephone</option>
+              <option value="viber">Viber</option>
+            </select>
+            <button class="sellproductbutton" type="submit" id="sellproduct" onclick="sellProduct(); return false;">Sell</button>
+            <output class="sell-product-results" id="sellproductresults" style="text-align: center" name="sellproductresults">Sell product results</output>
+          </form>
+        </div>
+      </div>
     </main>
     
     <footer>
