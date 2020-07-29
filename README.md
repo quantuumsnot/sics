@@ -1,6 +1,19 @@
 # sics
-sales and inventory control system
+Sales and Inventory Control System v0.1 codename "Baby steps"
 
 
-Works and locally using PHP's built-in server (started in project's directory):
-php -S 127.0.0.1:65000
+This web-based system works and locally using PHP's built-in server (started in project's directory):
+php -S 127.0.0.1:65000 (assuming 65000 is not used network port)
+
+
+TODO list:
+1. Manual or automatic check for products that are almost 'out of stock'
+2. Automatic check for missing product info or pictures
+3. Server-side input filtering and sanitization ... because hackers
+4. Database replication on-the-fly (sometimes hard drives die, you know)
+5. User authentication and access levels ... because stupid users
+6. UI improvements
+7. Database encryption (if it's plausible in SQLite)
+8. Finding where is my left sock
+9. World domination
+10. ~~Do nothing~~
