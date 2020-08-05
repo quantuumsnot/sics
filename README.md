@@ -17,3 +17,5 @@ TODO list:
 8. Finding where is my left sock
 9. World domination
 10. ~~Do nothing~~
+11. Uploading products from excel/json/txt lists
+12. Integration with the popular online shopping platforms (this is huge, think I probably can't handle that)
