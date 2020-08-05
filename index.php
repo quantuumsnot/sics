@@ -90,13 +90,21 @@ function searchProduct() {
 
       $searchNumber = $_POST['searchnumber'];
       
-      $result = $db->prepare("SELECT quantity, pictures FROM {$_POST['tName']} WHERE number=?");
+      $result = $db->prepare("SELECT category, quantity, available, info, price, pictures FROM {$_POST['tName']} WHERE number=?");
       $result->execute(array($searchNumber));
-      $result->bindColumn(1, $qty);
-      $result->bindColumn(2, $lob);
+      $result->bindColumn(1, $category);
+      $result->bindColumn(2, $quantity);
+      $result->bindColumn(3, $available);
+      $result->bindColumn(4, $info);
+      $result->bindColumn(5, $price);
+      $result->bindColumn(6, $lob);
       
       if (count($result->fetchAll(PDO::FETCH_ASSOC)) > 0) {
-        echo "Quantity: " . $qty . "<br />";
+        echo "Category: " . $category . "<br />";
+        echo "Quantity in shop: " . $quantity . "<br />";
+        echo "Available in warehouse: " . (($available == 1) ? "In stock" : "Out of stock") . "<br />";
+        echo "Price: " . $price . " лева". "<hr />";
+        echo $info . "<br />";
         echo '<img alt="" src="data:image/jpg;base64,' . base64_encode($lob) . '"/>';
       } else {
         echo "No product found!";
