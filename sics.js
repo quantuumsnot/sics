@@ -161,3 +161,62 @@ function sellProduct() {
       alert("Error: Some fields are empty!");
   }
 }
+
+// Check for product issues
+function checkIssues() {
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to check for product issues like out of stock, missing info or pictures
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        var data = JSON.parse(this.responseText);
+        console.log(data);
+        document.getElementById("productissues").innerHTML = data.length;
+      }
+      else {
+        alert("Error: returned status code " + this.status + " " + this.statusText);
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  formData.append('action', "checkissues");
+  formData.append('tName', "products");
+        
+  xhttp.send(formData);
+}
+
+// Get user messages
+function checkMessages() {
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to check for product issues like out of stock, missing info or pictures
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        var data = JSON.parse(this.responseText);
+        console.log(data);
+        document.getElementById("usermessages").innerHTML = data.length;
+      }
+      else {
+        alert("Error: returned status code " + this.status + " " + this.statusText);
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  formData.append('action', "checkmessages");
+  formData.append('tName', "messages");
+        
+  xhttp.send(formData);
+}
+

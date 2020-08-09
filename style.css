@@ -105,6 +105,54 @@ input[type=number]::-webkit-outer-spin-button {
   margin: 0;
 }
 
+.notificationarea {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+}
+
+.notificationicons {
+  border-bottom: 2px solid #bfdfff;
+  flex: 0 1 auto;
+  margin: 10px;
+  width: 2em;
+  height: 2em;
+}
+
+.notificationicons:hover {
+  border-bottom: 2px solid #80ecff;
+  cursor: pointer;
+}
+
+.checkissues {
+  background: url("icons8-sugar-cubes-50.png");
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Do not repeat the image */
+  background-size: cover; /* Resize the background image to cover the entire container */
+}
+
+.usermessages {
+  background: url("icons8-messaging-48.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.usermessages, .checkissues {
+  text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black; /* text outlines */
+  color: yellow;
+  position: relative;
+}
+
+#productissues, #usermessages {
+  position: absolute;
+  top: -40%;
+  right: -20%;
+}
+
 .tabs {
   display: -webkit-box;
   display: -webkit-flex;

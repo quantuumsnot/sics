@@ -29,6 +29,8 @@ $productsColumns = "name TEXT, number TEXT, category TEXT, quantity TEXT, availa
 $productsColumnsNoDataType = "name, number, category, quantity, available, price, info, pictures";
 $salesColumns = "date TEXT, number TEXT, quantity TEXT, soldin TEXT";
 $salesColumnsNoDataType = "date, number, quantity, soldin";
+$messagesColumns = "date TEXT, user TEXT, message TEXT, status TEXT";
+$messagesColumnsNoDataType = "date, user, message, status";
 $db = new PDO('sqlite:sics.db');
 //PHP bug: if you don't specify PDO::PARAM_INT for INT values, PDO may enclose the argument in quotes. This can mess up some MySQL queries that don't expect integers to be quoted.
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -36,6 +38,7 @@ $db->setAttribute(PDO::ATTR_PERSISTENT, false);
 $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false); //disable emulated prepares to prevent injection, see http://stackoverflow.com/a/12202218/1196983
 $db->exec("CREATE TABLE IF NOT EXISTS {$_POST['tName']}({$productsColumns})");
 $db->exec("CREATE TABLE IF NOT EXISTS `sales`(${salesColumns})");
+$db->exec("CREATE TABLE IF NOT EXISTS `messages`(${messagesColumns})");
 
 
 //Peak memory usage for output, see http://stackoverflow.com/a/2510468/1196983
@@ -138,12 +141,79 @@ function sellProduct() {
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
 }
 
+function checkIssues() {
+  try {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+      global $db;
+      
+      $result = $db->prepare("SELECT * FROM {$_POST['tName']} WHERE quantity < 2 OR info IS NULL OR pictures IS NULL");
+      $result->execute();
+      $result = $result->fetchAll(PDO::FETCH_ASSOC);
+
+      
+      if (count($result) > 0) {
+        $output = [];
+        $i = 0;
+        foreach ($result as $product) {
+          $output [] = array($product['number'], $product['name']);
+          
+          if ($product['quantity'] < 2) {
+            $output[$i][] = "LESS THAN 2";
+          }
+          
+          if ($product['info'] === null) {
+            $output[$i][] = "NOINFO";
+          }
+          
+          if ($product['pictures'] === null) {
+            $output[$i][] = "NOPICTURES";
+          }
+          $i++;
+        }
+        //echo json_encode(count($result));
+        echo json_encode($output);
+      } else {
+        echo "";
+      }
+    }
+  } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
+}
+
+function checkMessages() {
+  try {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+      global $db;
+      
+      $result = $db->prepare("SELECT * FROM {$_POST['tName']} WHERE status == 0");
+      $result->execute();
+      $result = $result->fetchAll(PDO::FETCH_ASSOC);
+
+      
+      if (count($result) > 0) {
+        $output = [];
+        $i = 0;
+        foreach ($result as $message) {
+          $output [] = array($message['user'], $message['message']);
+        }
+
+        echo json_encode($output);
+      } else {
+        echo "";
+      }
+    }
+  } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
+}
+
+function sendMessage() {
+  ;
+}
+
 // Add item to database
 if ($_POST['action'] === "new") {
   addProduct();
 }
 
-// Search an item in the database
+// Search for item in the database
 if ($_POST['action'] === "search") {
   searchProduct();
 }
@@ -151,6 +221,21 @@ if ($_POST['action'] === "search") {
 // Sell an item and exclude it from the database
 if ($_POST['action'] === "sell") {
   sellProduct();
+}
+
+// Check for product issues
+if ($_POST['action'] === "checkissues") {
+  checkIssues();
+}
+
+// Check for important messages or tasks
+if ($_POST['action'] === "checkmessages") {
+  checkMessages();
+}
+
+// Send important message or task
+if ($_POST['action'] === "sendmessage") {
+  sendMessage();
 }
 
 // Some script performance metrics
