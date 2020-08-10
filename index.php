@@ -31,14 +31,17 @@ $salesColumns = "date TEXT, number TEXT, quantity TEXT, soldin TEXT";
 $salesColumnsNoDataType = "date, number, quantity, soldin";
 $messagesColumns = "date TEXT, user TEXT, message TEXT, status TEXT";
 $messagesColumnsNoDataType = "date, user, message, status";
+$banlistColumns = "customernames TEXT, customerphonenumber TEXT, customeraddress TEXT, customerorderdate TEXT, wherewasordered TEXT";
+$banlistNoDataType = "customernames, customerphonenumber, customeraddress, customerorderdate, wherewasordered";
 $db = new PDO('sqlite:sics.db');
 //PHP bug: if you don't specify PDO::PARAM_INT for INT values, PDO may enclose the argument in quotes. This can mess up some MySQL queries that don't expect integers to be quoted.
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $db->setAttribute(PDO::ATTR_PERSISTENT, false);
 $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false); //disable emulated prepares to prevent injection, see http://stackoverflow.com/a/12202218/1196983
-$db->exec("CREATE TABLE IF NOT EXISTS {$_POST['tName']}({$productsColumns})");
+$db->exec("CREATE TABLE IF NOT EXISTS `products`({$productsColumns})");
 $db->exec("CREATE TABLE IF NOT EXISTS `sales`(${salesColumns})");
 $db->exec("CREATE TABLE IF NOT EXISTS `messages`(${messagesColumns})");
+$db->exec("CREATE TABLE IF NOT EXISTS `customerbanlist`(${banlistColumns})");
 
 
 //Peak memory usage for output, see http://stackoverflow.com/a/2510468/1196983
@@ -55,33 +58,36 @@ function addProduct() {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
       global $db, $productsColumnsNoDataType;
 
-      $name       = $_POST['name'];
       $number     = $_POST['number'];
-      $category   = $_POST['category'];
-      $quantity   = $_POST['quantity'];
-      $available  = $_POST['available'];
-      $price      = $_POST['price'];
-      $info       = $_POST['info'];
-      $fhandler   = file_get_contents($_FILES['pictures']['tmp_name']);
       
-      $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$productsColumnsNoDataType}) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-      $result->bindValue(1, $name);
-      $result->bindValue(2, $number);
-      $result->bindValue(3, $category);
-      $result->bindValue(4, $quantity);
-      $result->bindValue(5, $available);
-      $result->bindValue(6, $price);
-      $result->bindValue(7, $info);
-      $result->bindValue(8, $fhandler, PDO::PARAM_LOB);
-      $result->execute();
-      //$result = null;
-      //unset($db, $result); //close database handler
-      //$row = $db->fetch(PDO::FETCH_ASSOC);
-      //echo "Done!<br />"; //just for testing, leave it commented to stop pollution with echoes
-      //print_r($db->errorInfo());
-      //header("Location: ../index.html");
-      //fclose($fhandler);
-      echo "Done! <br />";
+      $result = $db->prepare("SELECT * FROM {$_POST['tName']} WHERE number=?");
+      $result->execute(array($number));
+      $result->bindColumn(1, $number);
+      
+      if (count($result->fetchAll(PDO::FETCH_ASSOC)) === 0) {
+        $name       = $_POST['name'];
+        $category   = $_POST['category'];
+        $quantity   = $_POST['quantity'];
+        $available  = $_POST['available'];
+        $price      = $_POST['price'];
+        $info       = $_POST['info'];
+        $fhandler   = file_get_contents($_FILES['pictures']['tmp_name']);
+             
+        $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$productsColumnsNoDataType}) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $result->bindValue(1, $name);
+        $result->bindValue(2, $number);
+        $result->bindValue(3, $category);
+        $result->bindValue(4, $quantity);
+        $result->bindValue(5, $available);
+        $result->bindValue(6, $price);
+        $result->bindValue(7, $info);
+        $result->bindValue(8, $fhandler, PDO::PARAM_LOB);
+        $result->execute();
+        
+        echo "The product was succesfully added!";
+      } else {
+        echo "This product is already in the database!";
+      }
     }
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
 }
@@ -137,6 +143,58 @@ function sellProduct() {
       $result->execute();
       
       echo "The given qty of a product was succesfully marked as sold!";
+    }
+  } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
+}
+
+function searchCustomer() {
+  try {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+      global $db;
+
+      $customerphonenumber = $_POST['customerphonenumber'];
+      
+      $result = $db->prepare("SELECT customernames, customerphonenumber, customeraddress, customerorderdate, wherewasordered FROM {$_POST['tName']} WHERE customerphonenumber=?");
+      $result->execute(array($customerphonenumber));
+      $result->bindColumn(1, $customernames);
+      $result->bindColumn(2, $customerphonenumber);
+      $result->bindColumn(3, $customeraddress);
+      $result->bindColumn(4, $customerorderdate);
+      $result->bindColumn(5, $wherewasordered);
+      
+      if (count($result->fetchAll(PDO::FETCH_ASSOC)) > 0) {
+        echo "Names: " . $customernames . "<br />";
+        echo "Phone number: " . $customerphonenumber . "<br />";
+        echo "Address: " . $customeraddress . "<br />";
+        echo "Order date: " . $customerorderdate . "<hr />";
+        echo "Where was ordered: " . $wherewasordered . "<hr />";
+      } else {
+        echo "The customer was not found in the banlist!";
+      }
+    }
+  } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
+}
+
+function banCustomer() {
+  try {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+      global $db, $banlistNoDataType;
+
+      $customernames        = $_POST['bancustomernames'];
+      $customerphonenumber  = $_POST['bancustomerphonenumber'];
+      $customeraddress      = $_POST['bancustomeraddress'];
+      $customerorderdate    = date("d M Y", strtotime($_POST['bancustomerorderdate']));
+      $wherewasordered      = $_POST['wherewasordered'];
+      
+      $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$banlistNoDataType}) VALUES (?, ?, ?, ?, ?)");
+      $result->bindValue(1, $customernames);
+      $result->bindValue(2, $customerphonenumber);
+      $result->bindValue(3, $customeraddress);
+      $result->bindValue(4, $customerorderdate);
+      $result->bindValue(5, $wherewasordered);
+      $result->execute();
+      
+      echo "The customer was succesfully added to banlist!";
     }
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
 }
@@ -221,6 +279,16 @@ if ($_POST['action'] === "search") {
 // Sell an item and exclude it from the database
 if ($_POST['action'] === "sell") {
   sellProduct();
+}
+
+// Check if the customer is marked as dishonest ie not picking their order, not paying the shipping fee for returning or breaking the products
+if ($_POST['action'] === "searchcustomer") {
+  searchCustomer();
+}
+
+// Ban the customer if not picking their order, not paying the shipping fee for returning or breaking the products
+if ($_POST['action'] === "bancustomer") {
+  banCustomer();
 }
 
 // Check for product issues

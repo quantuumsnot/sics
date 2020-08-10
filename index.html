@@ -34,9 +34,9 @@
     <main>
       <div class="tabs">
         <input type="radio" name="tabs" id="tabone" checked="checked">
-        <label for="tabone">Add</label>
+        <label for="tabone">Add new product</label>
         <div class="tab">
-          <form class="product-form" id="newproductparameters" name="productparameters" action="#" method="post">
+          <form class="addproduct-form" id="newproductparameters" name="productparameters" action="#" method="post">
             <input type="text" id="name" name="name" required placeholder="Name" autofocus>
             <input type="number" min="0" id="number" name="number" required placeholder="SKU">
             <input type="text" id="category" name="category" required placeholder="Category">
@@ -44,30 +44,31 @@
             <input type="number" min="0" id="available" name="available" required placeholder="Available">
             <input type="number" min="0" id="price" name="price" required placeholder="Price">
             <input type="text" id="info" name="info" required placeholder="Additional product info">
-            <label>Choose product pictures<br /><input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg"></label>
+            <label>Choose product pictures<br /><input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg, image/jpg"></label>
             <button class="addproductbutton" type="submit" id="addproduct" onclick="addProduct(); return false;">Add</button>
-            <output class="new-product-results" id="newproductresults" style="text-align: center" name="newproductresults">New product results</output>
+            <output class="new-product-results" id="newproductresults" style="text-align: center" name="newproductresults"></output>
           </form>
         </div>
         
         <input type="radio" name="tabs" id="tabtwo">
-        <label for="tabtwo">Search</label>
+        <label for="tabtwo">Product Search</label>
         <div class="tab">
-          <form class="product-form" name="searchproductparameters" action="#" method="post">
+          <form class="searchproduct-form" name="searchproductparameters" action="#" method="post">
             <input type="number" min="0" id="searchnumber" name="searchnumber" required placeholder="SKU" autofocus>
             <button class="searchproductbutton" type="submit" id="searchproduct" onclick="searchProduct(); return false;">Search</button>
-            <output class="search-product-results" id="searchresults" style="text-align: center" name="searchresults">Search results</output>
+            <output class="search-product-results" id="searchresults" style="text-align: center" name="searchresults"></output>
           </form>
         </div>
         
         <input type="radio" name="tabs" id="tabthree">
         <label for="tabthree">Sell</label>
         <div class="tab">
-          <form class="product-form" name="sellproductparameters" action="#" method="post">
+          <form class="sellproduct-form" name="sellproductparameters" action="#" method="post">
             <input type="number" min="0" id="sellnumber" name="sellnumber" required placeholder="SKU" autofocus>
             <input type="number" min="0" id="sellquantity" name="sellquantity" required placeholder="Quantity">
             <select name="soldin" id="soldin" required>
               <option value="">-Choose where it was sold-</option>
+              <option value="store">STORE</option>
               <option value="site">SITE</option>
               <option value="fb">Facebook</option>
               <option value="olx">OLX</option>
@@ -76,7 +77,39 @@
               <option value="viber">Viber</option>
             </select>
             <button class="sellproductbutton" type="submit" id="sellproduct" onclick="sellProduct(); return false;">Sell</button>
-            <output class="sell-product-results" id="sellproductresults" style="text-align: center" name="sellproductresults">Sell product results</output>
+            <output class="sell-product-results" id="sellproductresults" style="text-align: center" name="sellproductresults"></output>
+          </form>
+        </div>
+        
+        <input type="radio" name="tabs" id="tabfour">
+        <label for="tabfour">Customer Banlist</label>
+        <div class="tab">
+          <form class="customerbanlist-form" name="customerbanlistparameters" action="#" method="post">
+            <input type="number" min="0" id="customerphonenumber" name="customerphonenumber" required placeholder="Customer Phone Number">
+            <button class="customerbanlistbutton" type="submit" id="customerbanlist" onclick="searchCustomer(); return false;">Search</button>
+            <output class="customerbanlist-results" id="customerbanlistresults" style="text-align: center" name="customerbanlistresults"></output>
+          </form>
+        </div>
+        
+        <input type="radio" name="tabs" id="tabfive">
+        <label for="tabfive">Ban customer</label>
+        <div class="tab">
+          <form class="bancustomer-form" name="bancustomerparameters" action="#" method="post">
+            <input type="text" id="bancustomernames" name="bancustomernames" required placeholder="Customer names" autofocus>
+            <input type="number" min="0" id="bancustomerphonenumber" name="bancustomerphonenumber" required placeholder="Customer Phone Number">
+            <input type="text" id="bancustomeraddress" name="bancustomeraddress" required placeholder="Customer Address">
+            <input type="date" min="01-01-1970" id="bancustomerorderdate" name="bancustomerorderdate" required>
+            <select name="wherewasordered" id="wherewasordered" required>
+              <option value="">-Choose where it was ordered-</option>
+              <option value="site">SITE</option>
+              <option value="fb">Facebook</option>
+              <option value="olx">OLX</option>
+              <option value="bazar">Bazar.bg</option>
+              <option value="phone">Telephone</option>
+              <option value="viber">Viber</option>
+            </select>
+            <button class="bancustomerbutton" type="submit" id="bancustomer" onclick="banCustomer(); return false;">Ban</button>
+            <output class="bancustomer-results" id="bancustomerresults" style="text-align: center" name="bancustomerresults"></output>
           </form>
         </div>
       </div>
