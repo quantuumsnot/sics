@@ -20,19 +20,19 @@ if(!in_array($_SERVER['REMOTE_ADDR'], $whitelist)) {
 
 //global vars
 $phpVersionNumber = PHP_VERSION_ID;
-$phpVersionType = PHP_INT_SIZE * 8 . "bit";
+$phpVersionType   = PHP_INT_SIZE * 8 . "bit";
 
 $action = $_POST['action'];
 
 // Open database
-$productsColumns = "name TEXT, number TEXT, category TEXT, quantity TEXT, available TEXT, price TEXT, info TEXT, pictures BLOB";
-$productsColumnsNoDataType = "name, number, category, quantity, available, price, info, pictures";
-$salesColumns = "date TEXT, number TEXT, quantity TEXT, soldin TEXT";
-$salesColumnsNoDataType = "date, number, quantity, soldin";
-$messagesColumns = "date TEXT, user TEXT, message TEXT, status TEXT";
-$messagesColumnsNoDataType = "date, user, message, status";
-$banlistColumns = "customernames TEXT, customerphonenumber TEXT, customeraddress TEXT, customerorderdate TEXT, wherewasordered TEXT";
-$banlistNoDataType = "customernames, customerphonenumber, customeraddress, customerorderdate, wherewasordered";
+$productsColumns            = "name TEXT, number TEXT, category TEXT, quantity TEXT, available TEXT, price TEXT, info TEXT, pictures BLOB";
+$productsColumnsNoDataType  = "name, number, category, quantity, available, price, info, pictures";
+$salesColumns               = "date TEXT, number TEXT, quantity TEXT, soldin TEXT";
+$salesColumnsNoDataType     = "date, number, quantity, soldin";
+$messagesColumns            = "date TEXT, user TEXT, message TEXT, status TEXT";
+$messagesColumnsNoDataType  = "date, user, message, status";
+$banlistColumns             = "customernames TEXT, customerphonenumber TEXT, customeraddress TEXT, customerorderdate TEXT, wherewasordered TEXT";
+$banlistNoDataType          = "customernames, customerphonenumber, customeraddress, customerorderdate, wherewasordered";
 $db = new PDO('sqlite:sics.db');
 //PHP bug: if you don't specify PDO::PARAM_INT for INT values, PDO may enclose the argument in quotes. This can mess up some MySQL queries that don't expect integers to be quoted.
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -47,7 +47,7 @@ $db->exec("CREATE TABLE IF NOT EXISTS `customerbanlist`(${banlistColumns})");
 //Peak memory usage for output, see http://stackoverflow.com/a/2510468/1196983
 function getMemoryUsageUnits($bytes) {
   if ($bytes > 0) {
-    $base = log($bytes) / log(1024);
+    $base   = log($bytes) / log(1024);
     $suffix = array("", "KB", "MB", "GB", "TB")[(int)floor($base)];
     return number_format(round(pow(1024, $base - floor($base)), 3), 3)  . " {$suffix}";
   } else return 0;
@@ -109,12 +109,12 @@ function searchProduct() {
       $result->bindColumn(6, $lob);
       
       if (count($result->fetchAll(PDO::FETCH_ASSOC)) > 0) {
-        echo "Category: " . $category . "<br />";
-        echo "Quantity in shop: " . $quantity . "<br />";
-        echo "Available in warehouse: " . (($available == 1) ? "In stock" : "Out of stock") . "<br />";
-        echo "Price: " . $price . " лева". "<hr />";
-        echo $info . "<br />";
-        echo '<img alt="" src="data:image/jpg;base64,' . base64_encode($lob) . '"/>';
+        echo "Category: "                               . $category . "<br />";
+        echo "Quantity in shop: "                       . $quantity . "<br />";
+        echo "Available in warehouse: "                 . (($available == 1) ? "In stock" : "Out of stock") . "<br />";
+        echo "Price: "                                  . $price . " лева" . "<hr />";
+        echo $info                                      . "<br />";
+        echo '<img alt="" src="data:image/jpg;base64,'  . base64_encode($lob) . '"/>';
       } else {
         echo "No product found!";
       }
@@ -266,44 +266,16 @@ function sendMessage() {
   ;
 }
 
-// Add item to database
-if ($_POST['action'] === "new") {
-  addProduct();
-}
-
-// Search for item in the database
-if ($_POST['action'] === "search") {
-  searchProduct();
-}
-
-// Sell an item and exclude it from the database
-if ($_POST['action'] === "sell") {
-  sellProduct();
-}
-
-// Check if the customer is marked as dishonest ie not picking their order, not paying the shipping fee for returning or breaking the products
-if ($_POST['action'] === "searchcustomer") {
-  searchCustomer();
-}
-
-// Ban the customer if not picking their order, not paying the shipping fee for returning or breaking the products
-if ($_POST['action'] === "bancustomer") {
-  banCustomer();
-}
-
-// Check for product issues
-if ($_POST['action'] === "checkissues") {
-  checkIssues();
-}
-
-// Check for important messages or tasks
-if ($_POST['action'] === "checkmessages") {
-  checkMessages();
-}
-
-// Send important message or task
-if ($_POST['action'] === "sendmessage") {
-  sendMessage();
+// Our main loop
+switch ($_POST['action']) {
+  case "new"            : addProduct();     break; // Add item to database
+  case "search"         : searchProduct();  break; // Search for item in the database
+  case "sell"           : sellProduct();    break; // Sell an item and exclude it from the database
+  case "searchcustomer" : searchCustomer(); break; // Check if the customer is marked as dishonest ie not picking their order, not paying the shipping fee for returning or breaking the products
+  case "bancustomer"    : banCustomer();    break; // Ban the customer if not picking their order, not paying the shipping fee for returning or breaking the products
+  case "checkissues"    : checkIssues();    break; // Check for product issues
+  case "checkmessages"  : checkMessages();  break; // Check for important messages or tasks
+  case "sendmessage"    : sendMessage();    break; // Send important message or task
 }
 
 // Some script performance metrics
