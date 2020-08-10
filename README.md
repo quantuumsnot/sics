@@ -19,3 +19,5 @@ TODO list:
 10. ~~Do nothing~~
 11. Uploading products from excel/json/txt lists
 12. Integration with the popular online shopping platforms (this is huge, think I probably can't handle that)
+13. ~~Customer banlist feature because those rats deserve it!~~
+14. Security and performance tests (y'all just buy faster computors)
