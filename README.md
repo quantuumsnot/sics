@@ -21,3 +21,4 @@ TODO list:
 12. Integration with the popular online shopping platforms (this is huge, think I probably can't handle that)
 13. ~~Customer banlist feature ... because those rats deserve it!~~
 14. Security and performance tests (y'all just buy faster computors)
+15. Sales report by the end of the day
