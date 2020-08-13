@@ -22,3 +22,4 @@ TODO list:
 13. ~~Customer banlist feature ... because those rats deserve it!~~
 14. Security and performance tests (y'all just buy faster computors)
 15. Sales report by the end of the day
+16. ~~Website localisation~~
