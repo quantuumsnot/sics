@@ -23,3 +23,4 @@ TODO list:
 14. Security and performance tests (y'all just buy faster computors)
 15. Sales report by the end of the day
 16. ~~Website localisation~~
+17. Almost forgot about adding the feature for product updates like price, info, etc ... My bad
