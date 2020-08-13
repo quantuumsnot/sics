@@ -104,6 +104,14 @@ input[type=number]::-webkit-outer-spin-button {
   margin: 0;
 }
 
+input[type=number], input[type=text] {
+  font-size: 1em;
+}
+
+select {
+  font-size: 1em;
+}
+
 .notificationarea {
   display: flex;
   flex-wrap: wrap;
@@ -210,7 +218,7 @@ input[type=number]::-webkit-outer-spin-button {
   overflow: hidden;
 }
 
-.fileuploadbutton {
+/*.fileuploadbutton {
   border: 2px solid #bfdfff;
   border-radius: 1.5em;
   cursor: pointer;
@@ -221,6 +229,31 @@ input[type=number]::-webkit-outer-spin-button {
   box-shadow: 0 0 7px #0080ff;
   border-color: #80ecff;
   color: #80ecff;
+}*/
+
+.fileuploadbutton {
+  width: 0px;
+  display: none;
+}
+
+.prodpicuploadbutton {
+  -webkit-appearance: button;
+  -moz-appearance: button;
+  appearance: button;
+
+  text-decoration: none;
+  color: initial;
+  
+  border: 2px solid #80ecff;
+  border-radius: 1.5em;
+  cursor: pointer;
+}
+
+.prodpicuploadbutton:hover {
+  cursor: pointer;
+  box-shadow: 0 0 7px #0080ff;
+  background-color: #80ecff;
+  color: black;
 }
 
 .addproductbutton, .searchproductbutton, .sellproductbutton, .customerbanlistbutton, .bancustomerbutton {

@@ -44,7 +44,7 @@
             <input type="number" min="0" id="available" name="available" required placeholder="Available">
             <input type="number" min="0" id="price" name="price" required placeholder="Price">
             <input type="text" id="info" name="info" required placeholder="Additional product info">
-            <label>Choose product pictures<br /><input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg, image/jpg"></label>
+            <label class="prodpicuploadbutton">Choose product pictures<br /><input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg, image/jpg"></label>
             <button class="addproductbutton" type="submit" id="addproduct" onclick="addProduct(); return false;">Add</button>
             <output class="new-product-results" id="newproductresults" style="text-align: center" name="newproductresults"></output>
           </form>
@@ -67,7 +67,7 @@
             <input type="number" min="0" id="sellnumber" name="sellnumber" required placeholder="SKU" autofocus>
             <input type="number" min="0" id="sellquantity" name="sellquantity" required placeholder="Quantity">
             <select name="soldin" id="soldin" required>
-              <option value="">-Choose where it was sold-</option>
+              <option value="a">-Choose where it was sold-</option>
               <option value="store">STORE</option>
               <option value="site">SITE</option>
               <option value="fb">Facebook</option>
@@ -100,7 +100,7 @@
             <input type="text" id="bancustomeraddress" name="bancustomeraddress" required placeholder="Customer Address">
             <input type="date" min="01-01-1970" id="bancustomerorderdate" name="bancustomerorderdate" required>
             <select name="wherewasordered" id="wherewasordered" required>
-              <option value="">-Choose where it was ordered-</option>
+              <option value="a">-Choose where it was ordered-</option>
               <option value="site">SITE</option>
               <option value="fb">Facebook</option>
               <option value="olx">OLX</option>
