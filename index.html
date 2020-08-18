@@ -22,14 +22,17 @@
     <header style="text-align: center">
       <h1>Sales and Inventory Control System</h1>
       <div class="notificationarea">
-        <div class="notificationicons checkissues" onclick="checkIssues(); return false;">
+        <div class="notificationicons checkissues" id="checkissuesbutton" onclick="checkissuespopup.showModal(); checkIssues(); return false;" title="Show all products with issues">
           <div id="productissues"></div>
         </div>
-        <div class="notificationicons usermessages" onclick="checkMessages(); return false;">
+        <div class="notificationicons usermessages" id="checkmessagesbutton" onclick="usermessagespopup.showModal(); checkMessages(); return false;" title="Show all events or messages">
           <div id="usermessages"></div>
         </div>
       </div>
     </header>
+    
+    <dialog id="checkissuespopup"></dialog>
+    <dialog id="usermessagespopup"></dialog>
 
     <main>
       <div class="tabs">
@@ -146,7 +149,7 @@
     var totalTime = (endTime - startTime)/1000;
     if (document.getElementById("loadingTime"))
     {
-      document.getElementById("loadingTime").innerHTML = `Page loaded in ${totalTime} seconds<br /><h2>v0.2 codename "Running with diapers"</h2>`;
+      document.getElementById("loadingTime").innerHTML = `Page loaded in ${totalTime} seconds<br /><h2>v0.3 codename "Broken toys"</h2>`;
     }
   </script>
 </html>

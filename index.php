@@ -33,6 +33,8 @@ $messagesColumns            = "date TEXT, user TEXT, message TEXT, status TEXT";
 $messagesColumnsNoDataType  = "date, user, message, status";
 $banlistColumns             = "customernames TEXT, customerphonenumber TEXT, customeraddress TEXT, customerorderdate TEXT, wherewasordered TEXT";
 $banlistNoDataType          = "customernames, customerphonenumber, customeraddress, customerorderdate, wherewasordered";
+$usersColumns               = "username TEXT, password TEXT";
+$usersNoDataType            = "username, password";
 $db = new PDO('sqlite:sics.db');
 //PHP bug: if you don't specify PDO::PARAM_INT for INT values, PDO may enclose the argument in quotes. This can mess up some MySQL queries that don't expect integers to be quoted.
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -42,6 +44,7 @@ $db->exec("CREATE TABLE IF NOT EXISTS `products`({$productsColumns})");
 $db->exec("CREATE TABLE IF NOT EXISTS `sales`(${salesColumns})");
 $db->exec("CREATE TABLE IF NOT EXISTS `messages`(${messagesColumns})");
 $db->exec("CREATE TABLE IF NOT EXISTS `customerbanlist`(${banlistColumns})");
+$db->exec("CREATE TABLE IF NOT EXISTS `users`(${usersColumns})");
 
 
 //Peak memory usage for output, see http://stackoverflow.com/a/2510468/1196983
@@ -251,7 +254,7 @@ function checkMessages() {
         $output = [];
         $i = 0;
         foreach ($result as $message) {
-          $output [] = array($message['user'], $message['message']);
+          $output [] = array($message['date'], $message['user'], $message['message'], $message['status']);
         }
 
         echo json_encode($output);

@@ -12,6 +12,10 @@ function setLocalization() {
     
     var i, j;
     
+    // Localize notification area buttons
+    document.getElementById("checkissuesbutton").title = "Покажи всички продукти с проблеми";
+    document.getElementById("checkmessagesbutton").title = "Покажи всички съобщения или събития";
+    
     // Localize input fields
     for (i of x) {
       switch (i.placeholder) {
@@ -348,7 +352,33 @@ function checkIssues() {
     if (this.readyState == 4) {
       if (this.status == 200) {
         var data = JSON.parse(this.responseText);
-        console.log(data);
+        
+        var i, j, SKU, Name, Problem;
+        if (localization === "BG") {
+          SKU     = "Арт. номер";
+          Name    = "Име на продукта";
+          Problem = "Проблем";
+        } else {
+          SKU     = "SKU";
+          Name    = "Name";
+          Problem = "Problem";
+        }
+        j = `<table><tr><th>${SKU}</th><th>${Name}</th><th>${Problem}</th></tr>`;
+        for (i of data) {
+          if (localization === "BG") {
+            if (i[2] === "LESS THAN 2") {
+              i[2] = "ПО-МАЛКО ОТ 2 БРОЙКИ В МАГАЗИНА";
+            }
+            
+            if (i[2] === "NOPICTURES") {
+              i[2] = "ПРОДУКТА НЯМА СНИМКА";
+            }
+          }
+          j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td></tr>`;
+        }
+        j += "</table>";
+        document.getElementById("checkissuespopup").innerHTML = j;
+        
         document.getElementById("productissues").innerHTML = data.length;
       }
       else {
@@ -377,7 +407,19 @@ function checkMessages() {
     if (this.readyState == 4) {
       if (this.status == 200) {
         var data = JSON.parse(this.responseText);
-        console.log(data);
+        
+        var i, j, Date, User, Message, Status;
+        if (localization === "BG") {
+          j = "<table><tr><th>Дата</th><th>Потребител</th><th>Съобщение</th><th>Статус</th></tr>";
+        } else {
+          j = "<table><tr><th>Date</th><th>User</th><th>Message</th><th>Status</th></tr>";
+        }
+        for (i of data) {
+          j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td></tr>`;
+        }
+        j += "</table>";
+        document.getElementById("usermessagespopup").innerHTML = j;
+        
         document.getElementById("usermessages").innerHTML = data.length;
       }
       else {
