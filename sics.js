@@ -6,15 +6,15 @@ var langs = ["EN", "BG", "RU", "FR", "DE"];
 var localization = "BG";
 
 function setLocalization() {
-  if (langs.includes(localization)) {
+  if (localization === "BG") {
     var x = document.querySelectorAll("input");
     var y = document.querySelectorAll("label");
     
     var i, j;
     
     // Localize notification area buttons
-    document.getElementById("checkissuesbutton").title = "Покажи всички продукти с проблеми";
-    document.getElementById("checkmessagesbutton").title = "Покажи всички съобщения или събития";
+    document.getElementById("checkissuesbutton").title    = "Покажи всички продукти с проблеми";
+    document.getElementById("checkmessagesbutton").title  = "Покажи всички съобщения или събития";
     
     // Localize input fields
     for (i of x) {
@@ -366,8 +366,8 @@ function checkIssues() {
         j = `<table><tr><th>${SKU}</th><th>${Name}</th><th>${Problem}</th></tr>`;
         for (i of data) {
           if (localization === "BG") {
-            if (i[2] === "LESS THAN 2") {
-              i[2] = "ПО-МАЛКО ОТ 2 БРОЙКИ В МАГАЗИНА";
+            if (i[2].includes("LESS THAN 2")) {
+              i[2] = `ПО-МАЛКО ОТ 2 БРОЙКИ В МАГАЗИНА (в момента ${i[length]} бр)`;
             }
             
             if (i[2] === "NOPICTURES") {

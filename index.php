@@ -219,7 +219,7 @@ function checkIssues() {
           $output [] = array($product['number'], $product['name']);
           
           if ($product['quantity'] < 2) {
-            $output[$i][] = "LESS THAN 2";
+            $output[$i][] = "LESS THAN 2 (currently {$product['quantity']} qty)";
           }
           
           if ($product['info'] === null) {
@@ -229,6 +229,9 @@ function checkIssues() {
           if ($product['pictures'] === null) {
             $output[$i][] = "NOPICTURES";
           }
+          
+          if ($output[$i][0] === "LESS THAN 2") { $output[$i][] = int($product['quantity']); }
+          
           $i++;
         }
         //echo json_encode(count($result));
