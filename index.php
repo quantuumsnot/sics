@@ -25,8 +25,8 @@ $phpVersionType   = PHP_INT_SIZE * 8 . "bit";
 $action = $_POST['action'];
 
 // Open database
-$productsColumns            = "name TEXT, number TEXT, category TEXT, quantity TEXT, available TEXT, price TEXT, info TEXT, pictures BLOB";
-$productsColumnsNoDataType  = "name, number, category, quantity, available, price, info, pictures";
+$productsColumns            = "name TEXT, number TEXT, category TEXT, quantity TEXT, available TEXT, price TEXT, info TEXT, prodlinks TEXT, pictures BLOB";
+$productsColumnsNoDataType  = "name, number, category, quantity, available, price, info, prodlinks, pictures";
 $salesColumns               = "date TEXT, number TEXT, quantity TEXT, soldin TEXT";
 $salesColumnsNoDataType     = "date, number, quantity, soldin";
 $messagesColumns            = "date TEXT, user TEXT, message TEXT, status TEXT";
@@ -74,9 +74,10 @@ function addProduct() {
         $available  = $_POST['available'];
         $price      = $_POST['price'];
         $info       = $_POST['info'];
+        $prodlinks  = $_POST['prodlinks'];
         $fhandler   = file_get_contents($_FILES['pictures']['tmp_name']);
              
-        $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$productsColumnsNoDataType}) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$productsColumnsNoDataType}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $result->bindValue(1, $name);
         $result->bindValue(2, $number);
         $result->bindValue(3, $category);
@@ -84,7 +85,8 @@ function addProduct() {
         $result->bindValue(5, $available);
         $result->bindValue(6, $price);
         $result->bindValue(7, $info);
-        $result->bindValue(8, $fhandler, PDO::PARAM_LOB);
+        $result->bindValue(8, $prodlinks);
+        $result->bindValue(9, $fhandler, PDO::PARAM_LOB);
         $result->execute();
         
         echo "The product was succesfully added!";
@@ -102,22 +104,31 @@ function searchProduct() {
 
       $searchNumber = $_POST['searchnumber'];
       
-      $result = $db->prepare("SELECT category, quantity, available, info, price, pictures FROM {$_POST['tName']} WHERE number=?");
+      $result = $db->prepare("SELECT name, number, category, quantity, available, info, prodlinks, price, pictures FROM {$_POST['tName']} WHERE number=?");
       $result->execute(array($searchNumber));
-      $result->bindColumn(1, $category);
-      $result->bindColumn(2, $quantity);
-      $result->bindColumn(3, $available);
-      $result->bindColumn(4, $info);
-      $result->bindColumn(5, $price);
-      $result->bindColumn(6, $lob);
+      $result->bindColumn(1, $name);
+      $result->bindColumn(2, $number);
+      $result->bindColumn(3, $category);
+      $result->bindColumn(4, $quantity);
+      $result->bindColumn(5, $available);
+      $result->bindColumn(6, $info);
+      $result->bindColumn(7, $prodlinks);
+      $result->bindColumn(8, $price);
+      $result->bindColumn(9, $lob);
+      
+      $output = [];
       
       if (count($result->fetchAll(PDO::FETCH_ASSOC)) > 0) {
-        echo "Category: "                               . $category . "<br />";
-        echo "Quantity in shop: "                       . $quantity . "<br />";
-        echo "Available in warehouse: "                 . (($available == 1) ? "In stock" : "Out of stock") . "<br />";
-        echo "Price: "                                  . $price . " лева" . "<hr />";
-        echo $info                                      . "<br />";
-        echo '<img alt="" src="data:image/jpg;base64,'  . base64_encode($lob) . '"/>';
+        $output [] = array("Name" => $name);
+        $output [] = array("Number" => $number);
+        $output [] = array("Category" => $category);
+        $output [] = array("Quantity in shop" => $quantity);
+        $output [] = array("Available in warehouse" => $available);
+        $output [] = array("Price" => $price);
+        $output [] = array("Info" => $info);
+        $output [] = array("Product links" => $prodlinks);
+        $output [] = array("Picture" => '<img alt="" src="data:image/jpg;base64,'  . base64_encode($lob) . '" onerror="if (this.src != \'image-not-available.jpg\') this.src = \'image-not-available.jpg\';"/>');
+        echo json_encode($output);
       } else {
         echo "No product found!";
       }

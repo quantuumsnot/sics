@@ -20,7 +20,7 @@
   </head>
   <body>
     <header style="text-align: center">
-      <h1>Sales and Inventory Control System</h1>
+      <h1 id="softwarename">Sales and Inventory Control System</h1>
       <div class="notificationarea">
         <div class="notificationicons checkissues" id="checkissuesbutton" onclick="checkissuespopup.showModal(); checkIssues(); return false;" title="Show all products with issues">
           <div id="productissues"></div>
@@ -39,15 +39,16 @@
         <input type="radio" name="tabs" id="tabone" checked="checked">
         <label for="tabone">Add new product</label>
         <div class="tab">
-          <form class="addproduct-form" id="newproductparameters" name="productparameters" action="#" method="post">
-            <input type="text" id="name" name="name" required placeholder="Name" autofocus>
-            <input type="number" min="0" id="number" name="number" required placeholder="SKU">
-            <input type="text" id="category" name="category" required placeholder="Category">
-            <input type="number" min="0" id="quantity" name="quantity" required placeholder="Quantity">
-            <input type="number" min="0" id="available" name="available" required placeholder="Available">
-            <input type="number" min="0" id="price" name="price" required placeholder="Price">
-            <input type="text" id="info" name="info" required placeholder="Additional product info">
-            <label class="prodpicuploadbutton">Choose product pictures<br /><input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg, image/jpg"></label>
+          <form class="addproduct-form" id="addproduct-form" name="addproduct-form" action="#" method="post">
+            <input type="text"    id="name"       name="name"       required placeholder="Name" autofocus>
+            <input type="number"  id="number"     name="number"     required placeholder="SKU" min="0">
+            <input type="text"    id="category"   name="category"   required placeholder="Category">
+            <input type="number"  id="quantity"   name="quantity"   required placeholder="Quantity" min="0">
+            <input type="number"  id="available"  name="available"  required placeholder="Available" min="0">
+            <input type="number"  id="price"      name="price"      required placeholder="Price" min="0">
+            <input type="text"    id="info"       name="info"       required placeholder="Additional product info">
+            <input type="text"    id="prodlinks"  name="prodlinks"  required placeholder="Product Links">
+            <label class="prodpicuploadbutton"><div id="prodpicuploadbuttontext">Choose product pictures</div><input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg, image/jpg"></label>
             <button class="addproductbutton" type="submit" id="addproduct" onclick="addProduct(); return false;">Add</button>
             <output class="new-product-results" id="newproductresults" style="text-align: center" name="newproductresults"></output>
           </form>
@@ -56,19 +57,31 @@
         <input type="radio" name="tabs" id="tabtwo">
         <label for="tabtwo">Product Search</label>
         <div class="tab">
-          <form class="searchproduct-form" name="searchproductparameters" action="#" method="post">
-            <input type="number" min="0" id="searchnumber" name="searchnumber" required placeholder="SKU" autofocus>
+          <form class="searchproduct-form" name="searchproduct-form" action="#" method="post">
+            <input type="number" id="searchnumber" name="searchnumber" required placeholder="SKU" min="0" autofocus>
             <button class="searchproductbutton" type="submit" id="searchproduct" onclick="searchProduct(); return false;">Search</button>
-            <output class="search-product-results" id="searchresults" style="text-align: center" name="searchresults"></output>
           </form>
+          <output class="search-product-results" id="searchresults" style="text-align: center" name="searchresults">
+            <form class="search-results-form" id="search-results-form" name="search-results-form" action="#" method="post">
+              <label id="searchlabelname">Name<input type="text"   id="search-results-name"      name="search-results-name"       required placeholder="Name" autofocus></label>
+              <label id="searchlabelnumber">SKU<input type="number" id="search-results-number"    name="search-results-number"     required placeholder="SKU" min="0"></label>
+              <label id="searchlabelcategory">Category<input type="text"   id="search-results-category"  name="search-results-category"   required placeholder="Category"></label>
+              <label id="searchlabelquantity">Quantity<input type="number" id="search-results-quantity"  name="search-results-quantity"   required placeholder="Quantity" min="0"></label>
+              <label id="searchlabelavailable">Available<input type="number" id="search-results-available" name="search-results-available"  required placeholder="Available" min="0"></label>
+              <label id="searchlabelprice">Price<input type="number" id="search-results-price"     name="search-results-price"      required placeholder="Price" min="0"></label>
+              <label id="searchlabelinfo">Additional product info<input type="text"   id="search-results-info"      name="search-results-info"       required placeholder="Additional product info"></label>
+              <label id="searchlabelprodlinks">Product Links<input type="text"   id="search-results-prodlinks" name="search-results-prodlinks"  required placeholder="Product Links"></label>
+            </form>
+            <div id="prodpicture"></div>
+          </output>
         </div>
         
         <input type="radio" name="tabs" id="tabthree">
         <label for="tabthree">Sell</label>
         <div class="tab">
-          <form class="sellproduct-form" name="sellproductparameters" action="#" method="post">
-            <input type="number" min="0" id="sellnumber" name="sellnumber" required placeholder="SKU" autofocus>
-            <input type="number" min="0" id="sellquantity" name="sellquantity" required placeholder="Quantity">
+          <form class="sellproduct-form" name="sellproduct-form" action="#" method="post">
+            <input type="number" id="sellnumber"    name="sellnumber"   required placeholder="SKU" autofocus min="0">
+            <input type="number" id="sellquantity"  name="sellquantity" required placeholder="Quantity" min="0">
             <select name="soldin" id="soldin" required>
               <option value="a">-Choose where it was sold-</option>
               <option value="store">STORE</option>
@@ -87,8 +100,8 @@
         <input type="radio" name="tabs" id="tabfour">
         <label for="tabfour">Customer Banlist</label>
         <div class="tab">
-          <form class="customerbanlist-form" name="customerbanlistparameters" action="#" method="post">
-            <input type="number" min="0" id="customerphonenumber" name="customerphonenumber" required placeholder="Customer Phone Number">
+          <form class="customerbanlist-form" name="customerbanlist-form" action="#" method="post">
+            <input type="number" id="customerphonenumber" name="customerphonenumber" required placeholder="Customer Phone Number" min="0">
             <button class="customerbanlistbutton" type="submit" id="customerbanlist" onclick="searchCustomer(); return false;">Search</button>
             <output class="customerbanlist-results" id="customerbanlistresults" style="text-align: center" name="customerbanlistresults"></output>
           </form>
@@ -97,11 +110,11 @@
         <input type="radio" name="tabs" id="tabfive">
         <label for="tabfive">Ban customer</label>
         <div class="tab">
-          <form class="bancustomer-form" name="bancustomerparameters" action="#" method="post">
-            <input type="text" id="bancustomernames" name="bancustomernames" required placeholder="Customer names" autofocus>
-            <input type="number" min="0" id="bancustomerphonenumber" name="bancustomerphonenumber" required placeholder="Customer Phone Number">
-            <input type="text" id="bancustomeraddress" name="bancustomeraddress" required placeholder="Customer Address">
-            <input type="date" min="01-01-1970" id="bancustomerorderdate" name="bancustomerorderdate" required>
+          <form class="bancustomer-form" name="bancustomer-form" action="#" method="post">
+            <input type="text"    id="bancustomernames"       name="bancustomernames"       required placeholder="Customer names" autofocus>
+            <input type="number"  id="bancustomerphonenumber" name="bancustomerphonenumber" required placeholder="Customer Phone Number" min="0">
+            <input type="text"    id="bancustomeraddress"     name="bancustomeraddress"     required placeholder="Customer Address">
+            <input type="date"    id="bancustomerorderdate"   name="bancustomerorderdate"   required min="01-01-1970">
             <select name="wherewasordered" id="wherewasordered" required>
               <option value="a">-Choose where it was ordered-</option>
               <option value="site">SITE</option>

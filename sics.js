@@ -3,6 +3,7 @@
 console.clear();
 
 var langs = ["EN", "BG", "RU", "FR", "DE"];
+//var localization = "EN";
 var localization = "BG";
 
 function setLocalization() {
@@ -12,16 +13,20 @@ function setLocalization() {
     
     var i, j;
     
+    // Localize software name in main h1 element
+    document.getElementById("softwarename").innerHTML = "Система за контрол на продажбите и наличностите";
+    
     // Localize notification area buttons
     document.getElementById("checkissuesbutton").title    = "Покажи всички продукти с проблеми";
     document.getElementById("checkmessagesbutton").title  = "Покажи всички съобщения или събития";
     
-    // Localize input fields
+    // Localize input fields for Add New Product tab
     for (i of x) {
       switch (i.placeholder) {
         case "Name":                    i.placeholder = "Име на продукта"; break;
         case "Category":                i.placeholder = "Категория"; break;
         case "Additional product info": i.placeholder = "Информация за продукта"; break;
+        case "Product Links":           i.placeholder = "Линкове към продукта"; break;
         case "SKU":                     i.placeholder = "Артикулен номер"; break;
         case "Quantity":                i.placeholder = "Брой"; break;
         case "Available":               i.placeholder = "Наличност в склада"; break;
@@ -32,14 +37,28 @@ function setLocalization() {
       }
     }
     
+    // BUG 2: If enabled this leads to t Uncaught TypeError: Cannot set property 'value' of null at XMLHttpRequest.xhttp.onreadystatechange (sics.js:214)
+    // Localize labels for input fields in Product Search tab search results
+    /*document.getElementById("searchlabelname").textContent      = "Име на продукта";
+    document.getElementById("searchlabelnumber").textContent    = "Артикулен номер";
+    document.getElementById("searchlabelcategory").textContent  = "Категория";
+    document.getElementById("searchlabelquantity").textContent  = "Брой";
+    document.getElementById("searchlabelavailable").textContent = "Наличност в склада";
+    document.getElementById("searchlabelprice").textContent     = "Цена";
+    document.getElementById("searchlabelinfo").textContent      = "Информация за продукта";
+    document.getElementById("searchlabelprodlinks").textContent = "Линкове към продукта";*/
+    
+    // Localize upload picture button
+    document.getElementById("prodpicuploadbuttontext").textContent = "Добави снимка";
+    
     // Localize labels
     for (j of y) {
       switch (j.getAttribute("for")) {
-        case "tabone":   j.innerHTML = "Добави нов продукт"; break;
-        case "tabtwo":   j.innerHTML = "Търсене на продукт"; break;
-        case "tabthree": j.innerHTML = "Продай"; break;
-        case "tabfour":  j.innerHTML = "Некоректни клиенти"; break;
-        case "tabfive":  j.innerHTML = "Добави некоректен клиент"; break;
+        case "tabone":   j.innerHTML = "Добави продукт"; break;
+        case "tabtwo":   j.innerHTML = "Търсене"; break;
+        case "tabthree": j.innerHTML = "Продажби"; break;
+        case "tabfour":  j.innerHTML = "Некоректни"; break;
+        case "tabfive":  j.innerHTML = "Добави некоректен"; break;
       }
     }
     
@@ -90,6 +109,7 @@ function addProduct() {
   var available =  document.getElementById('available').value;
   var price     =  document.getElementById('price').value;
   var info      =  document.getElementById('info').value;
+  var prodlinks =  document.getElementById('prodlinks').value;
   var pictures  =  document.getElementById('pictures');
   
   // Create a FormData object
@@ -134,7 +154,8 @@ function addProduct() {
       quantity  !== '' && 
       available !== '' && 
       price     !== '' && 
-      info      !== '') {
+      info      !== '' && 
+      prodlinks !== '') {
         formData.append('action', "new");
         formData.append('tName', "products");
         formData.append('name', name);
@@ -143,7 +164,8 @@ function addProduct() {
         formData.append('quantity', quantity);
         formData.append('available', available);
         formData.append('price', price);
-        formData.append('info', info); 
+        formData.append('info', info);
+        formData.append('prodlinks', prodlinks);
         
         xhttp.send(formData);
         
@@ -154,6 +176,7 @@ function addProduct() {
         document.getElementById('available').value = '';
         document.getElementById('price').value = '';
         document.getElementById('info').value = '';
+        document.getElementById('prodlinks').value = '';
   } else {
       alert("Error: Some fields are empty!");
   }
@@ -172,7 +195,37 @@ function searchProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        document.getElementById("searchresults").innerHTML = this.responseText;
+        var data = JSON.parse(this.responseText);
+        //console.log(data);
+        
+        var i, j;
+        /*j = `<table class="maintable">`;
+        for (i of data) {
+          if (Object.keys(i)[0] === "Picture") {
+            j += `<tr><td colspan="2">` + i[Object.keys(i)[0]] + `</tr>`;
+          } else {
+            j += `<tr><td>`+ Object.keys(i)[0] + `</td><td>` + i[Object.keys(i)[0]] + `</td></tr>`;
+          }
+        }
+        j += "</table>";*/
+        
+        for (i of data) {
+          switch (Object.keys(i)[0]) {
+            case "Name":                    document.getElementById("search-results-name").value      = i[Object.keys(i)[0]]; break;
+            case "Number":                  document.getElementById("search-results-number").value    = i[Object.keys(i)[0]]; break;
+            case "Category":                document.getElementById("search-results-category").value  = i[Object.keys(i)[0]]; break;
+            case "Quantity in shop":        document.getElementById("search-results-quantity").value  = i[Object.keys(i)[0]]; break;
+            case "Available in warehouse":  document.getElementById("search-results-available").value = i[Object.keys(i)[0]]; break;
+            case "Price":                   document.getElementById("search-results-price").value     = i[Object.keys(i)[0]]; break;
+            case "Info":                    document.getElementById("search-results-info").value      = i[Object.keys(i)[0]]; break;
+            case "Product links":           document.getElementById("search-results-prodlinks").value = i[Object.keys(i)[0]]; break;
+            case "Picture":                 document.getElementById("prodpicture").innerHTML          = i[Object.keys(i)[0]]; break;
+          }
+        }
+        
+        document.getElementById("searchresults").style.display = 'flex';
+        document.getElementById("searchresults").classList.remove("testtest");
+        document.getElementById("searchresults").classList.add("testtest");
       }
       else {
         alert("Error: returned status code " + this.status + " " + this.statusText);
@@ -380,6 +433,7 @@ function checkIssues() {
         document.getElementById("checkissuespopup").innerHTML = j;
         
         document.getElementById("productissues").innerHTML = data.length;
+        document.getElementById("productissues").classList.add("blink");
       }
       else {
         alert("Error: returned status code " + this.status + " " + this.statusText);
@@ -421,6 +475,7 @@ function checkMessages() {
         document.getElementById("usermessagespopup").innerHTML = j;
         
         document.getElementById("usermessages").innerHTML = data.length;
+        document.getElementById("usermessages").classList.add("blink");
       }
       else {
         alert("Error: returned status code " + this.status + " " + this.statusText);
@@ -434,6 +489,11 @@ function checkMessages() {
   formData.append('tName', "messages");
         
   xhttp.send(formData);
+}
+
+// Send user message
+function sendMessage() {
+  ;
 }
 
 setLocalization();

@@ -169,11 +169,13 @@ select {
 }
 
 #checkissuespopup {
-  ;
+  border: 2px solid #80ecff;
+  border-radius: 1.5em;
 }
 
 #usermessagespopup {
-  ;
+  border: 2px solid #80ecff;
+  border-radius: 1.5em;
 }
 
 dialog::backdrop {
@@ -193,6 +195,17 @@ table {
 
 table, th, td {
   border: 1px solid black;
+}
+
+.maintable {
+  border-collapse: collapse;
+  width: auto !important;
+  table-layout: fixed;
+  word-break: break-word;
+}
+
+.maintable > th, td {
+  border: 1px solid white;
 }
 
 #productissues, #usermessages {
@@ -259,6 +272,64 @@ table, th, td {
   flex-direction: column;
   align-items: center;
   overflow: hidden;
+}
+
+.search-product-results > * {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-wrap: nowrap;
+  -ms-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.testtest {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-wrap: nowrap;
+  -ms-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-product-results {
+  display: none;
+}
+
+.search-results-form { display: grid; overflow: hidden; }
+.search-results-form label { float: left; font-size: 0.8em; }
+.search-results-form input { grid-column: 2 / 3; margin: 0; padding: 0; }
+
+@media (min-width: 400px) {
+  .search-results-form {
+    grid-template-columns: max-content 1fr;
+    grid-gap: 2px;
+  }
+
+  .search-results-form label {
+    text-align: right;
+    grid-column: 1 / 2;
+  }
+
+  .search-results-form input {
+    grid-column: 2 / 3;
+  }
+}
+
+#prodpicture {
+  width: auto;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
 }
 
 /*.fileuploadbutton {
