@@ -266,12 +266,17 @@ table, th, td {
 
 .tabs input[type="radio"]:checked + label + .tab { display: block; }
 
-.addproduct-form, .searchproduct-form, .sellproduct-form, .customerbanlist-form, .bancustomer-form {
+.addproduct-form, .searchproduct-form, .sellproduct-form, .customerbanlist-form, .bancustomer-form, .restockproduct-form {
   display: flex;
   flex-wrap: wrap;
   flex-direction: column;
   align-items: center;
   overflow: hidden;
+}
+
+/* This fixes the nasty bug of clicking in the middle of the viewport that opens the last tab */
+#tabone, #tabtwo, #tabthree, #tabfour, #tabfive, #tabsix {
+  pointer-events: none;
 }
 
 .search-product-results > * {
@@ -287,7 +292,7 @@ table, th, td {
   justify-content: center;
 }
 
-.testtest {
+/*.testtest {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -298,7 +303,7 @@ table, th, td {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-}
+}*/
 
 .search-product-results {
   display: none;
@@ -370,7 +375,7 @@ table, th, td {
   color: black;
 }
 
-.addproductbutton, .searchproductbutton, .sellproductbutton, .customerbanlistbutton, .bancustomerbutton {
+.addproductbutton, .searchproductbutton, .sellproductbutton, .customerbanlistbutton, .bancustomerbutton, .restockproductbutton {
   border: 2px solid #bfdfff;
   border-radius: 1.5em;
   cursor: pointer;
@@ -380,14 +385,14 @@ table, th, td {
   padding: 0 1em;
 }
 
-.addproductbutton:hover, .searchproductbutton:hover, .sellproductbutton:hover, .customerbanlistbutton:hover, .bancustomerbutton:hover {
+.addproductbutton:hover, .searchproductbutton:hover, .sellproductbutton:hover, .customerbanlistbutton:hover, .bancustomerbutton:hover, .restockproductbutton:hover {
   cursor: pointer;
   box-shadow: 0 0 7px #0080ff;
   border-color: #80ecff;
   color: #80ecff;
 }
 
-.new-product-results, .search-product-results, .sell-product-results, .customerbanlist-results, .bancustomer-results {
+.new-product-results, .search-product-results, .sell-product-results, .customerbanlist-results, .bancustomer-results, .restock-product-results {
   border: 2px solid #bfdfff;
   border-radius: 1.5em;
   padding: 0 1em;

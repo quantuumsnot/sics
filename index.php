@@ -3,8 +3,8 @@
 error_reporting(-1); //Rasmus Lerdorf said to use this
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
-mb_internal_encoding('UTF-8');
-mb_http_output('UTF-8');
+//mb_internal_encoding('UTF-8');
+//mb_http_output('UTF-8');
 gc_enable(); //enables Garbage Collector
 /*IMPORTANT - after each include of external file get the memory allocated by OS
  with memory_get_peak_usage(true) to get correct memory usage*/
@@ -12,11 +12,11 @@ gc_enable(); //enables Garbage Collector
 header("Content-type: text/plain");
 
 // Simple IP filtering, not hacker-resistant
-$whitelist = array("127.0.0.1", "192.168.100.3"); // list of allowed IPs
-if(!in_array($_SERVER['REMOTE_ADDR'], $whitelist)) {
-  echo $_SERVER['REMOTE_ADDR'];
-  exit("This IP address is banned from accessing this service");
-}
+//$whitelist = array("127.0.0.1", "192.168.100.3", "192.168.0.102"); // list of allowed IPs
+/*if(!in_array($_SERVER['REMOTE_ADDR'], $whitelist)) {
+  echo $_SERVER['REMOTE_ADDR'] . " - This IP address is banned from accessing this service";
+  exit();
+}*/
 
 //global vars
 $phpVersionNumber = PHP_VERSION_ID;
@@ -161,6 +161,25 @@ function sellProduct() {
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
 }
 
+function restockProduct() {
+  try {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+      global $db;
+
+      $restockNumber    = $_POST['restocknumber'];
+      $restockQuantity  = $_POST['restockquantity'];
+      
+      $result = $db->prepare("UPDATE products SET quantity=quantity+{$_POST['restockquantity']} WHERE number=?");
+      $result->bindValue(1, $restockNumber);
+      //$result->bindValue(1, date('d M Y H-i-s'));
+      
+      $result->execute();
+      
+      echo "The product's quantity was succesfully updated!";
+    }
+  } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
+}
+
 function searchCustomer() {
   try {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -288,6 +307,7 @@ switch ($_POST['action']) {
   case "new"            : addProduct();     break; // Add item to database
   case "search"         : searchProduct();  break; // Search for item in the database
   case "sell"           : sellProduct();    break; // Sell an item and exclude it from the database
+  case "restock"        : restockProduct(); break; // Restock an item
   case "searchcustomer" : searchCustomer(); break; // Check if the customer is marked as dishonest ie not picking their order, not paying the shipping fee for returning or breaking the products
   case "bancustomer"    : banCustomer();    break; // Ban the customer if not picking their order, not paying the shipping fee for returning or breaking the products
   case "checkissues"    : checkIssues();    break; // Check for product issues

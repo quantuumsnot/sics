@@ -59,6 +59,7 @@ function setLocalization() {
         case "tabthree": j.innerHTML = "Продажби"; break;
         case "tabfour":  j.innerHTML = "Некоректни"; break;
         case "tabfive":  j.innerHTML = "Добави некоректен"; break;
+        case "tabsix":   j.innerHTML = "Зареждане"; break;
       }
     }
     
@@ -68,6 +69,7 @@ function setLocalization() {
     document.getElementById("sellproduct").innerHTML      = "ОТЧЕТИ ПРОДАЖБА";
     document.getElementById("customerbanlist").innerHTML  = "ТЪРСИ";
     document.getElementById("bancustomer").innerHTML      = "ЗАПИС";
+    document.getElementById("restockproduct").innerHTML   = "ЗАПИС";
     
     // Localize drop-down select button for Sell action
     var soldinselect = document.getElementById("soldin").options;
@@ -135,7 +137,9 @@ function addProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        document.getElementById("newproductresults").innerHTML = this.responseText;
+        if (localization === "BG") {
+          document.getElementById("newproductresults").innerHTML = "Продуктът беше успешно добавен!";
+        } else document.getElementById("newproductresults").innerHTML = this.responseText;
       }
       else {
         alert("Error: returned status code " + this.status + " " + this.statusText);
@@ -251,6 +255,51 @@ function searchProduct() {
   }
 }
 
+// Restock a product and update the quantity left in the database
+function restockProduct() {
+  var restockNumber    = document.getElementById('restocknumber').value;
+  var restockQuantity  = document.getElementById('restockquantity').value;
+
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to add the product
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        if (localization === "BG") {
+          document.getElementById("restockproductresults").innerHTML = "Продуктовата наличност беше успешно обновена!";
+        } else document.getElementById("restockproductresults").innerHTML = this.responseText;
+      }
+      else {
+        alert("Error: returned status code " + this.status + " " + this.statusText);
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
+  
+  if (restockNumber    !== '' &&
+      restockQuantity  !== '') {
+        formData.append('action', "restock");
+        formData.append('tName', "products");
+        formData.append('restocknumber', restockNumber);
+        formData.append('restockquantity', restockQuantity);
+        
+        xhttp.send(formData);
+        
+        document.getElementById('restocknumber').value   = '';
+        document.getElementById('restockquantity').value = '';
+  } else {
+      alert("Error: Some fields are empty!");
+  }
+}
+
 // Sell a product and update the quantity left in the database
 function sellProduct() {
   var sellNumber    = document.getElementById('sellnumber').value;
@@ -266,7 +315,9 @@ function sellProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        document.getElementById("sellproductresults").innerHTML = this.responseText;
+        if (localization === "BG") {
+          document.getElementById("sellproductresults").innerHTML = "Продуктът беше успешно записан като продаден!";
+        } else document.getElementById("sellproductresults").innerHTML = this.responseText;
       }
       else {
         alert("Error: returned status code " + this.status + " " + this.statusText);
@@ -354,7 +405,9 @@ function banCustomer() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        document.getElementById("bancustomerresults").innerHTML = this.responseText;
+        if (localization === "BG") {
+          document.getElementById("bancustomerresults").innerHTML = "Клиентът беше успешно добавен в черния списък!";
+        } else document.getElementById("bancustomerresults").innerHTML = this.responseText;
       }
       else {
         alert("Error: returned status code " + this.status + " " + this.statusText);

@@ -128,7 +128,19 @@
             <output class="bancustomer-results" id="bancustomerresults" style="text-align: center" name="bancustomerresults"></output>
           </form>
         </div>
+        
+        <input type="radio" name="tabs" id="tabsix">
+        <label for="tabsix">Restock</label>
+        <div class="tab">
+          <form class="restockproduct-form" name="restockproduct-form" action="#" method="post">
+            <input type="number" id="restocknumber"    name="restocknumber"   required placeholder="SKU" autofocus min="0">
+            <input type="number" id="restockquantity"  name="restockquantity" required placeholder="Quantity" min="0">
+            <button class="restockproductbutton" type="submit" id="restockproduct" onclick="restockProduct(); return false;">Restock</button>
+            <output class="restock-product-results" id="restockproductresults" style="text-align: center" name="restockproductresults"></output>
+          </form>
+        </div>
       </div>
+        
     </main>
     
     <footer>
@@ -162,7 +174,7 @@
     var totalTime = (endTime - startTime)/1000;
     if (document.getElementById("loadingTime"))
     {
-      document.getElementById("loadingTime").innerHTML = `Page loaded in ${totalTime} seconds<br /><h2>v0.3 codename "Broken toys"</h2>`;
+      document.getElementById("loadingTime").innerHTML = `Page loaded in ${totalTime} seconds<br /><h2>v0.4 codename "Falling teeth"</h2>`;
     }
   </script>
 </html>
