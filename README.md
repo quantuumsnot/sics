@@ -1,5 +1,5 @@
 # sics
-Sales and Inventory Control System v0.3 codename "Falling teeth"
+Sales and Inventory Control System v0.4 codename "Falling teeth"
 
 
 This web-based system works and locally using PHP's built-in server (started in project's directory):
