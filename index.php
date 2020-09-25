@@ -246,21 +246,19 @@ function checkIssues() {
         $output = [];
         $i = 0;
         foreach ($result as $product) {
-          $output [] = array($product['number'], $product['name']);
+          $output[$i] = array($product['number'], $product['name'], null);
           
           if ($product['quantity'] < 2) {
-            $output[$i][] = "LESS THAN 2 (currently {$product['quantity']} qty)";
+            $output[$i][2] = "_LESS THAN 2 (currently {$product['quantity']} qty)";
           }
           
           if ($product['info'] === null) {
-            $output[$i][] = "NOINFO";
+            $output[$i][2] .= "_NOINFO";
           }
           
           if ($product['pictures'] === null) {
-            $output[$i][] = "NOPICTURES";
+            $output[$i][2] .= "_NOPICTURES";
           }
-          
-          if ($output[$i][0] === "LESS THAN 2") { $output[$i][] = int($product['quantity']); }
           
           $i++;
         }

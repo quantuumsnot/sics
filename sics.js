@@ -469,17 +469,19 @@ function checkIssues() {
           Name    = "Name";
           Problem = "Problem";
         }
+        var itemproblem = "";
+        
         j = `<table><tr><th>${SKU}</th><th>${Name}</th><th>${Problem}</th></tr>`;
         for (i of data) {
-          if (localization === "BG") {
-            if (i[2].includes("LESS THAN 2")) {
-              i[2] = `ПО-МАЛКО ОТ 2 БРОЙКИ В МАГАЗИНА (в момента ${i[length]} бр)`;
+          /*if (localization === "BG") {
+            if (i.includes("LESS THAN 2")) {
+              itemproblem = `ПО-МАЛКО ОТ 2 БРОЙКИ В МАГАЗИНА (в момента ${i[length - 1]} бр)`;
             }
             
-            if (i[2] === "NOPICTURES") {
-              i[2] = "ПРОДУКТА НЯМА СНИМКА";
+            if (i.includes("NOPICTURES")) {
+              itemproblem += " | ПРОДУКТА НЯМА СНИМКА";
             }
-          }
+          }*/
           j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td></tr>`;
         }
         j += "</table>";
