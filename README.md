@@ -26,5 +26,5 @@ TODO list:
 17. Almost forgot about adding the feature for product updates like price, info, etc ... My bad
 18. Sales statistics (almost forgot this feature, it's very important according to traders)
 19. Automated competition intelligence (Also very important feature, it's mainly an item price comparison against other sites)
-20. Restocking and generating restock order feature - automatic ordering of low in stock products and updating quantities at their arrival
+20. ~~Restocking~~ and generating restock order feature - automatic ordering of low in stock products and updating quantities at their arrival
 21. Product label generator
