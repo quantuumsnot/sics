@@ -171,11 +171,15 @@ select {
 #checkissuespopup {
   border: 2px solid #80ecff;
   border-radius: 1.5em;
+  height: 480px;
+  overflow: auto;
 }
 
 #usermessagespopup {
   border: 2px solid #80ecff;
   border-radius: 1.5em;
+  height: 480px;
+  overflow: auto;
 }
 
 dialog::backdrop {

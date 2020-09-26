@@ -25,11 +25,11 @@ $phpVersionType   = PHP_INT_SIZE * 8 . "bit";
 $action = $_POST['action'];
 
 // Open database
-$productsColumns            = "name TEXT, number TEXT, category TEXT, quantity TEXT, available TEXT, price TEXT, info TEXT, prodlinks TEXT, pictures BLOB";
+$productsColumns            = "name TEXT, number INTEGER, category TEXT, quantity INTEGER, available INTEGER, price REAL, info TEXT, prodlinks TEXT, pictures BLOB";
 $productsColumnsNoDataType  = "name, number, category, quantity, available, price, info, prodlinks, pictures";
-$salesColumns               = "date TEXT, number TEXT, quantity TEXT, soldin TEXT";
+$salesColumns               = "date TEXT, number INTEGER, quantity INTEGER, soldin TEXT";
 $salesColumnsNoDataType     = "date, number, quantity, soldin";
-$messagesColumns            = "date TEXT, user TEXT, message TEXT, status TEXT";
+$messagesColumns            = "date TEXT, user TEXT, message TEXT, status INTEGER";
 $messagesColumnsNoDataType  = "date, user, message, status";
 $banlistColumns             = "customernames TEXT, customerphonenumber TEXT, customeraddress TEXT, customerorderdate TEXT, wherewasordered TEXT";
 $banlistNoDataType          = "customernames, customerphonenumber, customeraddress, customerorderdate, wherewasordered";
