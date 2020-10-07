@@ -29,7 +29,7 @@ function setLocalization() {
         case "Product Links":           i.placeholder = "Линкове към продукта"; break;
         case "SKU":                     i.placeholder = "Артикулен номер"; break;
         case "Quantity":                i.placeholder = "Брой"; break;
-        case "Available":               i.placeholder = "Наличност в склада"; break;
+        case "Contractor":              i.placeholder = "Доставчик"; break;
         case "Price":                   i.placeholder = "Цена"; break;
         case "Customer names":          i.placeholder = "Имена на клиента"; break;
         case "Customer Phone Number":   i.placeholder = "Телефонен номер на клиента"; break;
@@ -103,16 +103,21 @@ function setLocalization() {
   }
 }
 
+function loadPreview() {
+  var image = document.getElementById('prodpicpreview');
+	image.src = URL.createObjectURL(event.target.files[0]);
+}
+
 function addProduct() {
-  var name      =  document.getElementById('name').value;
-  var number    =  document.getElementById('number').value;
-  var category  =  document.getElementById('category').value;
-  var quantity  =  document.getElementById('quantity').value;
-  var available =  document.getElementById('available').value;
-  var price     =  document.getElementById('price').value;
-  var info      =  document.getElementById('info').value;
-  var prodlinks =  document.getElementById('prodlinks').value;
-  var pictures  =  document.getElementById('pictures');
+  var name        =  document.getElementById('name').value;
+  var number      =  document.getElementById('number').value;
+  var category    =  document.getElementById('category').value;
+  var quantity    =  document.getElementById('quantity').value;
+  var contractor  =  document.getElementById('contractor').value;
+  var price       =  document.getElementById('price').value;
+  var info        =  document.getElementById('info').value;
+  var prodlinks   =  document.getElementById('prodlinks').value;
+  var pictures    =  document.getElementById('pictures');
   
   // Create a FormData object
   var formData = new FormData();
@@ -126,8 +131,13 @@ function addProduct() {
   if (file.size > 0) {
     if (["image/jpg", "image/jpeg", "image/png"].includes(file.type)) {
       formData.append('pictures', file, file.name); // Add the file to the AJAX request
+      document.getElementById("prodpicuploadbuttontext").textContent = "Снимката беше добавена успешно";
+      document.getElementById("prodpicuploadbuttontext").style.backgroundColor = "green";
     } else {
-      pictures.value = ''; return false;
+      pictures.value = '';
+      document.getElementById("prodpicuploadbuttontext").textContent = "Добави снимка";
+      document.getElementById("prodpicuploadbuttontext").style.backgroundColor = "black";
+      return false;
     }
   } else { pictures.value = ''; return false; }
   
@@ -138,7 +148,13 @@ function addProduct() {
     if (this.readyState == 4) {
       if (this.status == 200) {
         if (localization === "BG") {
-          document.getElementById("newproductresults").innerHTML = "Продуктът беше успешно добавен!";
+          if (this.responseText.includes("added")) {
+            document.getElementById("newproductresults").innerHTML = "Продуктът беше успешно добавен!";
+            document.getElementById("newproductresults").style.backgroundColor = "green";
+          } else {
+              document.getElementById("newproductresults").innerHTML = "Продукт със същия арт. номер е вече качен!";
+              document.getElementById("newproductresults").style.backgroundColor = "red";
+            }
         } else document.getElementById("newproductresults").innerHTML = this.responseText;
       }
       else {
@@ -152,21 +168,21 @@ function addProduct() {
   //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
   //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
   
-  if (name      !== '' && 
-      number    !== '' && 
-      category  !== '' && 
-      quantity  !== '' && 
-      available !== '' && 
-      price     !== '' && 
-      info      !== '' && 
-      prodlinks !== '') {
+  if (name        !== '' && 
+      number      !== '' && 
+      category    !== '' && 
+      quantity    !== '' && 
+      contractor  !== '' && 
+      price       !== '' && 
+      info        !== '' && 
+      prodlinks   !== '') {
         formData.append('action', "new");
         formData.append('tName', "products");
         formData.append('name', name);
         formData.append('number', number);
         formData.append('category', category);
         formData.append('quantity', quantity);
-        formData.append('available', available);
+        formData.append('contractor', contractor);
         formData.append('price', price);
         formData.append('info', info);
         formData.append('prodlinks', prodlinks);
@@ -177,10 +193,50 @@ function addProduct() {
         document.getElementById('number').value = '';
         document.getElementById('category').value = '';
         document.getElementById('quantity').value = '';
-        document.getElementById('available').value = '';
+        document.getElementById('contractor').value = '';
         document.getElementById('price').value = '';
         document.getElementById('info').value = '';
         document.getElementById('prodlinks').value = '';
+  } else {
+      alert("Error: Some fields are empty!");
+  }
+}
+
+function checkProduct() {
+  var number      =  document.getElementById('number').value;
+  
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to add the product
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        if (localization === "BG") {
+          if (this.responseText.includes("Already") || this.responseText.includes("Not")) {
+            alert(this.responseText);
+          }
+        } else alert(this.responseText);
+      }
+      else {
+        alert("Error: returned status code " + this.status + " " + this.statusText);
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
+  
+  if (number      !== '') {
+        formData.append('action', "check");
+        formData.append('tName', "products");
+        formData.append('number', number);
+        
+        xhttp.send(formData);
   } else {
       alert("Error: Some fields are empty!");
   }
@@ -219,7 +275,7 @@ function searchProduct() {
             case "Number":                  document.getElementById("search-results-number").value    = i[Object.keys(i)[0]]; break;
             case "Category":                document.getElementById("search-results-category").value  = i[Object.keys(i)[0]]; break;
             case "Quantity in shop":        document.getElementById("search-results-quantity").value  = i[Object.keys(i)[0]]; break;
-            case "Available in warehouse":  document.getElementById("search-results-available").value = i[Object.keys(i)[0]]; break;
+            case "Contractor":              document.getElementById("search-results-available").value = i[Object.keys(i)[0]]; break;
             case "Price":                   document.getElementById("search-results-price").value     = i[Object.keys(i)[0]]; break;
             case "Info":                    document.getElementById("search-results-info").value      = i[Object.keys(i)[0]]; break;
             case "Product links":           document.getElementById("search-results-prodlinks").value = i[Object.keys(i)[0]]; break;
@@ -459,19 +515,21 @@ function checkIssues() {
       if (this.status == 200) {
         var data = JSON.parse(this.responseText);
         
-        var i, j, SKU, Name, Problem;
+        var i, j, SKU, Name, Problem, From;
         if (localization === "BG") {
           SKU     = "Арт. номер";
           Name    = "Име на продукта";
           Problem = "Проблем";
+          From    = "Доставчик";
         } else {
           SKU     = "SKU";
           Name    = "Name";
           Problem = "Problem";
+          From    = "Contractor";
         }
         var itemproblem = "";
         
-        j = `<table><tr><th>${SKU}</th><th>${Name}</th><th>${Problem}</th></tr>`;
+        j = `<table><tr><th>${SKU}</th><th>${Name}</th><th>${Problem}</th><th>${From}</th></tr>`;
         for (i of data) {
           /*if (localization === "BG") {
             if (i.includes("LESS THAN 2")) {
@@ -482,7 +540,7 @@ function checkIssues() {
               itemproblem += " | ПРОДУКТА НЯМА СНИМКА";
             }
           }*/
-          j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td></tr>`;
+          j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td></tr>`;
         }
         j += "</table>";
         document.getElementById("checkissuespopup").innerHTML = j;

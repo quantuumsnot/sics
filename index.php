@@ -25,9 +25,9 @@ $phpVersionType   = PHP_INT_SIZE * 8 . "bit";
 $action = $_POST['action'];
 
 // Open database
-$productsColumns            = "name TEXT, number INTEGER, category TEXT, quantity INTEGER, available INTEGER, price REAL, info TEXT, prodlinks TEXT, pictures BLOB";
-$productsColumnsNoDataType  = "name, number, category, quantity, available, price, info, prodlinks, pictures";
-$salesColumns               = "date TEXT, number INTEGER, quantity INTEGER, soldin TEXT";
+$productsColumns            = "name TEXT, number TEXT, category TEXT, quantity INTEGER, contractor TEXT, price REAL, info TEXT, prodlinks TEXT, pictures BLOB";
+$productsColumnsNoDataType  = "name, number, category, quantity, contractor, price, info, prodlinks, pictures";
+$salesColumns               = "date TEXT, number TEXT, quantity INTEGER, soldin TEXT";
 $salesColumnsNoDataType     = "date, number, quantity, soldin";
 $messagesColumns            = "date TEXT, user TEXT, message TEXT, status INTEGER";
 $messagesColumnsNoDataType  = "date, user, message, status";
@@ -71,7 +71,7 @@ function addProduct() {
         $name       = $_POST['name'];
         $category   = $_POST['category'];
         $quantity   = $_POST['quantity'];
-        $available  = $_POST['available'];
+        $contractor = $_POST['contractor'];
         $price      = $_POST['price'];
         $info       = $_POST['info'];
         $prodlinks  = $_POST['prodlinks'];
@@ -82,7 +82,7 @@ function addProduct() {
         $result->bindValue(2, $number);
         $result->bindValue(3, $category);
         $result->bindValue(4, $quantity);
-        $result->bindValue(5, $available);
+        $result->bindValue(5, $contractor);
         $result->bindValue(6, $price);
         $result->bindValue(7, $info);
         $result->bindValue(8, $prodlinks);
@@ -97,6 +97,26 @@ function addProduct() {
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
 }
 
+function checkProduct() {
+  try {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+      global $db;
+
+      $searchNumber = $_POST['number'];
+      
+      $result = $db->prepare("SELECT * FROM {$_POST['tName']} WHERE number=?");
+      $result->execute(array($searchNumber));
+      $result->bindColumn(1, $number);
+      
+      if (count($result->fetchAll(PDO::FETCH_ASSOC)) > 0) {
+        echo "Already saved";
+      } else {
+        echo "Not saved";
+      }
+    }
+  } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
+}
+
 function searchProduct() {
   try {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -104,13 +124,13 @@ function searchProduct() {
 
       $searchNumber = $_POST['searchnumber'];
       
-      $result = $db->prepare("SELECT name, number, category, quantity, available, info, prodlinks, price, pictures FROM {$_POST['tName']} WHERE number=?");
+      $result = $db->prepare("SELECT name, number, category, quantity, contractor, info, prodlinks, price, pictures FROM {$_POST['tName']} WHERE number=?");
       $result->execute(array($searchNumber));
       $result->bindColumn(1, $name);
       $result->bindColumn(2, $number);
       $result->bindColumn(3, $category);
       $result->bindColumn(4, $quantity);
-      $result->bindColumn(5, $available);
+      $result->bindColumn(5, $contractor);
       $result->bindColumn(6, $info);
       $result->bindColumn(7, $prodlinks);
       $result->bindColumn(8, $price);
@@ -123,7 +143,7 @@ function searchProduct() {
         $output [] = array("Number" => $number);
         $output [] = array("Category" => $category);
         $output [] = array("Quantity in shop" => $quantity);
-        $output [] = array("Available in warehouse" => $available);
+        $output [] = array("Contractor" => $contractor);
         $output [] = array("Price" => $price);
         $output [] = array("Info" => $info);
         $output [] = array("Product links" => $prodlinks);
@@ -246,7 +266,7 @@ function checkIssues() {
         $output = [];
         $i = 0;
         foreach ($result as $product) {
-          $output[$i] = array($product['number'], $product['name'], null);
+          $output[$i] = array($product['number'], $product['name'], null, $product['contractor']);
           
           if ($product['quantity'] < 2) {
             $output[$i][2] = "_LESS THAN 2 (currently {$product['quantity']} qty)";
@@ -303,6 +323,7 @@ function sendMessage() {
 // Our main loop
 switch ($_POST['action']) {
   case "new"            : addProduct();     break; // Add item to database
+  case "check"          : checkProduct();   break; // Check if an item is in the database
   case "search"         : searchProduct();  break; // Search for item in the database
   case "sell"           : sellProduct();    break; // Sell an item and exclude it from the database
   case "restock"        : restockProduct(); break; // Restock an item

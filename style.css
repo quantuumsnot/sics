@@ -182,6 +182,10 @@ select {
   overflow: auto;
 }
 
+#checkproduct {
+  
+}
+
 dialog::backdrop {
   background: repeating-linear-gradient(
     45deg,
@@ -236,7 +240,7 @@ table, th, td {
   -ms-flex-order: 1;
   order: 1;*/
   display: block;
-  padding: 1rem 2rem;
+  padding: 1rem 1rem;
   margin-right: 0.2rem;
   cursor: pointer;
   color: white;
@@ -288,57 +292,44 @@ table, th, td {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  -webkit-flex-wrap: nowrap;
-  -ms-flex-wrap: nowrap;
-  flex-wrap: nowrap;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
-
-/*.testtest {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-flex-wrap: nowrap;
-  -ms-flex-wrap: nowrap;
-  flex-wrap: nowrap;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}*/
 
 .search-product-results {
   display: none;
+  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  padding: 0;
 }
 
-.search-results-form { display: grid; overflow: hidden; }
-.search-results-form label { float: left; font-size: 0.8em; }
-.search-results-form input { grid-column: 2 / 3; margin: 0; padding: 0; }
-
-@media (min-width: 400px) {
-  .search-results-form {
-    grid-template-columns: max-content 1fr;
-    grid-gap: 2px;
-  }
-
-  .search-results-form label {
-    text-align: right;
-    grid-column: 1 / 2;
-  }
-
-  .search-results-form input {
-    grid-column: 2 / 3;
-  }
-}
+.searchresultstable { table-layout: fixed; width: 100%; }
+.searchresultstable input { width: 100%; }
 
 #prodpicture {
-  width: auto;
+  overflow: hidden;
+}
+
+#prodpicture img {
   overflow: hidden;
   height: 100%;
-  width: 100%;
-  object-fit: contain;
+  width: 50%;
+  object-fit: scale-down;
+  margin-top: 1rem;
+}
+
+#prodpicpreview {
+  overflow: hidden;
+  height: 100%;
+  width: 50%;
+  object-fit: scale-down;
 }
 
 /*.fileuploadbutton {
@@ -357,6 +348,7 @@ table, th, td {
 .fileuploadbutton {
   width: 0px;
   display: none;
+  background-color: transparent;
 }
 
 .prodpicuploadbutton {
@@ -365,7 +357,7 @@ table, th, td {
   appearance: button;
 
   text-decoration: none;
-  color: initial;
+  color: white;
   
   border: 2px solid #80ecff;
   border-radius: 1.5em;
@@ -379,21 +371,32 @@ table, th, td {
   color: black;
 }
 
-.addproductbutton, .searchproductbutton, .sellproductbutton, .customerbanlistbutton, .bancustomerbutton, .restockproductbutton {
-  border: 2px solid #bfdfff;
+.addproductbutton, .checkproductbutton, .searchproductbutton, .sellproductbutton, .customerbanlistbutton, .bancustomerbutton, .restockproductbutton {
+  -webkit-appearance: button;
+  -moz-appearance: button;
+  appearance: button;
+  
+  outline: none;
+
+  text-decoration: none;
+  color: white;
+  
+  border: 2px solid #80ecff;
   border-radius: 1.5em;
   cursor: pointer;
+  
   background-color: #000000;
-  color: #bfdfff;
+  font-weight: bold;
+  
   margin: 1em 0;
-  padding: 0 1em;
+  padding: 1em 1em;
 }
 
-.addproductbutton:hover, .searchproductbutton:hover, .sellproductbutton:hover, .customerbanlistbutton:hover, .bancustomerbutton:hover, .restockproductbutton:hover {
+.addproductbutton:hover, .checkproductbutton:hover, .searchproductbutton:hover, .sellproductbutton:hover, .customerbanlistbutton:hover, .bancustomerbutton:hover, .restockproductbutton:hover {
   cursor: pointer;
   box-shadow: 0 0 7px #0080ff;
-  border-color: #80ecff;
-  color: #80ecff;
+  background-color: #80ecff;
+  color: black;
 }
 
 .new-product-results, .search-product-results, .sell-product-results, .customerbanlist-results, .bancustomer-results, .restock-product-results {

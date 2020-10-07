@@ -42,13 +42,15 @@
           <form class="addproduct-form" id="addproduct-form" name="addproduct-form" action="#" method="post">
             <input type="text"    id="name"       name="name"       required placeholder="Name" autofocus>
             <input type="number"  id="number"     name="number"     required placeholder="SKU" min="0">
+            <button class="checkproductbutton" type="submit" id="checkproduct" onclick="checkProduct(); return false;">Check</button>
             <input type="text"    id="category"   name="category"   required placeholder="Category">
             <input type="number"  id="quantity"   name="quantity"   required placeholder="Quantity" min="0">
-            <input type="number"  id="available"  name="available"  required placeholder="Available" min="0">
+            <input type="text"    id="contractor" name="contractor" required placeholder="Contractor">
             <input type="number"  id="price"      name="price"      required placeholder="Price" min="0">
             <input type="text"    id="info"       name="info"       required placeholder="Additional product info">
             <input type="text"    id="prodlinks"  name="prodlinks"  required placeholder="Product Links">
-            <label class="prodpicuploadbutton"><div id="prodpicuploadbuttontext">Choose product pictures</div><input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg, image/jpg"></label>
+            <label class="prodpicuploadbutton"><div id="prodpicuploadbuttontext">Choose product pictures</div><input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg, image/jpg" onchange="loadPreview(event)";></label>
+            <div><img id="prodpicpreview" /></div>
             <button class="addproductbutton" type="submit" id="addproduct" onclick="addProduct(); return false;">Add</button>
             <output class="new-product-results" id="newproductresults" style="text-align: center" name="newproductresults"></output>
           </form>
@@ -63,16 +65,18 @@
           </form>
           <output class="search-product-results" id="searchresults" style="text-align: center" name="searchresults">
             <form class="search-results-form" id="search-results-form" name="search-results-form" action="#" method="post">
-              <label id="searchlabelname">Name<input type="text"   id="search-results-name"      name="search-results-name"       required placeholder="Name" autofocus></label>
-              <label id="searchlabelnumber">SKU<input type="number" id="search-results-number"    name="search-results-number"     required placeholder="SKU" min="0"></label>
-              <label id="searchlabelcategory">Category<input type="text"   id="search-results-category"  name="search-results-category"   required placeholder="Category"></label>
-              <label id="searchlabelquantity">Quantity<input type="number" id="search-results-quantity"  name="search-results-quantity"   required placeholder="Quantity" min="0"></label>
-              <label id="searchlabelavailable">Available<input type="number" id="search-results-available" name="search-results-available"  required placeholder="Available" min="0"></label>
-              <label id="searchlabelprice">Price<input type="number" id="search-results-price"     name="search-results-price"      required placeholder="Price" min="0"></label>
-              <label id="searchlabelinfo">Additional product info<input type="text"   id="search-results-info"      name="search-results-info"       required placeholder="Additional product info"></label>
-              <label id="searchlabelprodlinks">Product Links<input type="text"   id="search-results-prodlinks" name="search-results-prodlinks"  required placeholder="Product Links"></label>
+              <table class="searchresultstable">
+                <tr><td id="searchlabelname">Name</td><td><input type="text"   id="search-results-name"      name="search-results-name"       required placeholder="Name" autofocus></td></tr>
+                <tr><td id="searchlabelnumber">SKU</td><td><input type="number" id="search-results-number"    name="search-results-number"     required placeholder="SKU" min="0"></td></tr>
+                <tr><td id="searchlabelcategory">Category</td><td><input type="text"   id="search-results-category"  name="search-results-category"   required placeholder="Category"></td></tr>
+                <tr><td id="searchlabelquantity">Quantity</td><td><input type="number" id="search-results-quantity"  name="search-results-quantity"   required placeholder="Quantity" min="0"></td></tr>
+                <tr><td id="searchlabelavailable">Contractor</td><td><input type="text" id="search-results-available" name="search-results-available"  required placeholder="Contractor"></td></tr>
+                <tr><td id="searchlabelprice">Price</td><td><input type="number" id="search-results-price"     name="search-results-price"      required placeholder="Price" min="0"></td></tr>
+                <tr><td id="searchlabelinfo">Additional product info</td><td><input type="text"   id="search-results-info"      name="search-results-info"       required placeholder="Additional product info"></td></tr>
+                <tr><td id="searchlabelprodlinks">Product Links</td><td><input type="text"   id="search-results-prodlinks" name="search-results-prodlinks"  required placeholder="Product Links"></td></tr>
+              </table>
+              <div id="prodpicture"></div>
             </form>
-            <div id="prodpicture"></div>
           </output>
         </div>
         
