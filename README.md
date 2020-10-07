@@ -28,3 +28,4 @@ TODO list:
 19. Automated competition intelligence (Also very important feature, it's mainly an item price comparison against other sites)
 20. ~~Restocking~~ and generating restock order feature - automatic ordering of low in stock products and updating quantities at their arrival
 21. Product label generator
+22. ~~Manual check if the item that'll be uploaded, is already in the database (less input fields that must be filled by hand)~~
