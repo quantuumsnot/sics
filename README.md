@@ -22,7 +22,7 @@ TODO list:
 13. ~~Customer banlist feature ... because those rats deserve it!~~
 14. Security and performance tests (y'all just buy faster computors)
 15. Sales report by the end of the day
-16. ~~Website localisation~~
+16. ~~Website localization~~
 17. Almost forgot about adding the feature for product updates like price, info, etc ... My bad
 18. Sales statistics (almost forgot this feature, it's very important according to traders)
 19. Automated competition intelligence (Also very important feature, it's mainly an item price comparison against other sites)
