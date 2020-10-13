@@ -6,7 +6,7 @@ console.clear();
 var lang = "BG";
 var obj = JSON.parse(translations);
 
-function switchLocalization() {
+function switchlang() {
   for (var elem in obj[lang]) {
     switch (obj[lang][elem].property) {
       case "innerHTML":   document.getElementById(obj[lang][elem].id).innerHTML   = obj[lang][elem].translation; break;
@@ -61,7 +61,7 @@ function addProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        if (localization === "BG") {
+        if (lang === "BG") {
           if (this.responseText.includes("added")) {
             document.getElementById("newproductresults").innerHTML = "Продуктът беше успешно добавен!";
             document.getElementById("newproductresults").style.backgroundColor = "green";
@@ -128,7 +128,7 @@ function checkProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        if (localization === "BG") {
+        if (lang === "BG") {
           if (this.responseText.includes("Already") || this.responseText.includes("Not")) {
             alert(this.responseText);
           }
@@ -239,7 +239,7 @@ function restockProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        if (localization === "BG") {
+        if (lang === "BG") {
           document.getElementById("restockproductresults").innerHTML = "Продуктовата наличност беше успешно обновена!";
         } else document.getElementById("restockproductresults").innerHTML = this.responseText;
       }
@@ -285,7 +285,7 @@ function sellProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        if (localization === "BG") {
+        if (lang === "BG") {
           document.getElementById("sellproductresults").innerHTML = "Продуктът беше успешно записан като продаден!";
         } else document.getElementById("sellproductresults").innerHTML = this.responseText;
       }
@@ -375,7 +375,7 @@ function banCustomer() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        if (localization === "BG") {
+        if (lang === "BG") {
           document.getElementById("bancustomerresults").innerHTML = "Клиентът беше успешно добавен в черния списък!";
         } else document.getElementById("bancustomerresults").innerHTML = this.responseText;
       }
@@ -430,7 +430,7 @@ function checkIssues() {
         var data = JSON.parse(this.responseText);
         
         var i, j, SKU, Name, Problem, From;
-        if (localization === "BG") {
+        if (lang === "BG") {
           SKU     = "Арт. номер";
           Name    = "Име на продукта";
           Problem = "Проблем";
@@ -445,7 +445,7 @@ function checkIssues() {
         
         j = `<table><tr><th>${SKU}</th><th>${Name}</th><th>${Problem}</th><th>${From}</th></tr>`;
         for (i of data) {
-          /*if (localization === "BG") {
+          /*if (lang === "BG") {
             if (i.includes("LESS THAN 2")) {
               itemproblem = `ПО-МАЛКО ОТ 2 БРОЙКИ В МАГАЗИНА (в момента ${i[length - 1]} бр)`;
             }
@@ -490,7 +490,7 @@ function checkMessages() {
         var data = JSON.parse(this.responseText);
         
         var i, j, Date, User, Message, Status;
-        if (localization === "BG") {
+        if (lang === "BG") {
           j = "<table><tr><th>Дата</th><th>Потребител</th><th>Съобщение</th><th>Статус</th></tr>";
         } else {
           j = "<table><tr><th>Date</th><th>User</th><th>Message</th><th>Status</th></tr>";
@@ -522,3 +522,5 @@ function checkMessages() {
 function sendMessage() {
   ;
 }
+
+switchlang();
