@@ -127,6 +127,7 @@ select {
   margin: 10px;
   width: 2em;
   height: 2em;
+  border-radius: 0.5em;
 }
 
 .notificationicons:hover {
@@ -168,6 +169,11 @@ select {
   background-size: cover;
 }
 
+.switchlocalization:hover {
+  color: black;
+  background-color: white;
+}
+
 #checkissuespopup {
   border: 2px solid #80ecff;
   border-radius: 1.5em;
@@ -183,7 +189,7 @@ select {
 }
 
 #checkproduct {
-  
+  ;
 }
 
 dialog::backdrop {
@@ -247,6 +253,7 @@ table, th, td {
   font-weight: bold;
   -webkit-transition: background ease 0.2s;
   transition: background ease 0.2s;
+  border-radius: 1.5em;
 }
 
 .tabs .tab {

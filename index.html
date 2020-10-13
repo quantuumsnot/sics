@@ -11,12 +11,13 @@
     <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
     <meta http-equiv="pragma" content="no-cache" />
     <title>Sales and Inventory Control System</title>
-    <link href="style.css" rel="stylesheet">
+    <link href="style.css?v=1.0" rel="stylesheet">
     <script>
       'use strict';
       var startTime = new Date().getTime();
     </script>
-    <script src="sics.js" defer></script>
+    <script src="translations.js?v=1.0" defer></script>
+    <script src="sics.js?v=1.0" defer></script>
   </head>
   <body>
     <header style="text-align: center">
@@ -28,6 +29,9 @@
         <div class="notificationicons usermessages" id="checkmessagesbutton" onclick="usermessagespopup.showModal(); checkMessages(); return false;" title="Show all events or messages">
           <div id="usermessages"></div>
         </div>
+        <div class="notificationicons switchlocalization" id="switchlocalization" onclick=" switchLocalization(); return false;" title="Switch language">
+          <div id="switchloctext">EN</div>
+        </div>
       </div>
     </header>
     
@@ -37,12 +41,12 @@
     <main>
       <div class="tabs">
         <input type="radio" name="tabs" id="tabone" checked="checked">
-        <label for="tabone">Add new product</label>
+        <label for="tabone" id="labelone">Add new product</label>
         <div class="tab">
           <form class="addproduct-form" id="addproduct-form" name="addproduct-form" action="#" method="post">
-            <input type="text"    id="name"       name="name"       required placeholder="Name" autofocus>
             <input type="number"  id="number"     name="number"     required placeholder="SKU" min="0">
             <button class="checkproductbutton" type="submit" id="checkproduct" onclick="checkProduct(); return false;">Check</button>
+            <input type="text"    id="name"       name="name"       required placeholder="Name" autofocus>
             <input type="text"    id="category"   name="category"   required placeholder="Category">
             <input type="number"  id="quantity"   name="quantity"   required placeholder="Quantity" min="0">
             <input type="text"    id="contractor" name="contractor" required placeholder="Contractor">
@@ -57,7 +61,7 @@
         </div>
         
         <input type="radio" name="tabs" id="tabtwo">
-        <label for="tabtwo">Product Search</label>
+        <label for="tabtwo" id="labeltwo">Product Search</label>
         <div class="tab">
           <form class="searchproduct-form" name="searchproduct-form" action="#" method="post">
             <input type="number" id="searchnumber" name="searchnumber" required placeholder="SKU" min="0" autofocus>
@@ -81,20 +85,20 @@
         </div>
         
         <input type="radio" name="tabs" id="tabthree">
-        <label for="tabthree">Sell</label>
+        <label for="tabthree" id="labelthree">Sell</label>
         <div class="tab">
           <form class="sellproduct-form" name="sellproduct-form" action="#" method="post">
             <input type="number" id="sellnumber"    name="sellnumber"   required placeholder="SKU" autofocus min="0">
             <input type="number" id="sellquantity"  name="sellquantity" required placeholder="Quantity" min="0">
             <select name="soldin" id="soldin" required>
-              <option value="a">-Choose where it was sold-</option>
-              <option value="store">STORE</option>
-              <option value="site">SITE</option>
-              <option value="fb">Facebook</option>
-              <option value="olx">OLX</option>
-              <option value="bazar">Bazar.bg</option>
-              <option value="phone">Telephone</option>
-              <option value="viber">Viber</option>
+              <option id="soldina"      value="a">-Choose where it was sold-</option>
+              <option id="soldinstore"  value="store">STORE</option>
+              <option id="soldinsite"   value="site">SITE</option>
+              <option id="soldinfb"     value="fb">Facebook</option>
+              <option id="soldinolx"    value="olx">OLX</option>
+              <option id="soldinbazar"  value="bazar">Bazar.bg</option>
+              <option id="soldinphone"  value="phone">Telephone</option>
+              <option id="soldinviber"  value="viber">Viber</option>
             </select>
             <button class="sellproductbutton" type="submit" id="sellproduct" onclick="sellProduct(); return false;">Sell</button>
             <output class="sell-product-results" id="sellproductresults" style="text-align: center" name="sellproductresults"></output>
@@ -102,39 +106,7 @@
         </div>
         
         <input type="radio" name="tabs" id="tabfour">
-        <label for="tabfour">Customer Banlist</label>
-        <div class="tab">
-          <form class="customerbanlist-form" name="customerbanlist-form" action="#" method="post">
-            <input type="number" id="customerphonenumber" name="customerphonenumber" required placeholder="Customer Phone Number" min="0">
-            <button class="customerbanlistbutton" type="submit" id="customerbanlist" onclick="searchCustomer(); return false;">Search</button>
-            <output class="customerbanlist-results" id="customerbanlistresults" style="text-align: center" name="customerbanlistresults"></output>
-          </form>
-        </div>
-        
-        <input type="radio" name="tabs" id="tabfive">
-        <label for="tabfive">Ban customer</label>
-        <div class="tab">
-          <form class="bancustomer-form" name="bancustomer-form" action="#" method="post">
-            <input type="text"    id="bancustomernames"       name="bancustomernames"       required placeholder="Customer names" autofocus>
-            <input type="number"  id="bancustomerphonenumber" name="bancustomerphonenumber" required placeholder="Customer Phone Number" min="0">
-            <input type="text"    id="bancustomeraddress"     name="bancustomeraddress"     required placeholder="Customer Address">
-            <input type="date"    id="bancustomerorderdate"   name="bancustomerorderdate"   required min="01-01-1970">
-            <select name="wherewasordered" id="wherewasordered" required>
-              <option value="a">-Choose where it was ordered-</option>
-              <option value="site">SITE</option>
-              <option value="fb">Facebook</option>
-              <option value="olx">OLX</option>
-              <option value="bazar">Bazar.bg</option>
-              <option value="phone">Telephone</option>
-              <option value="viber">Viber</option>
-            </select>
-            <button class="bancustomerbutton" type="submit" id="bancustomer" onclick="banCustomer(); return false;">Ban</button>
-            <output class="bancustomer-results" id="bancustomerresults" style="text-align: center" name="bancustomerresults"></output>
-          </form>
-        </div>
-        
-        <input type="radio" name="tabs" id="tabsix">
-        <label for="tabsix">Restock</label>
+        <label for="tabfour" id="labelfour">Restock</label>
         <div class="tab">
           <form class="restockproduct-form" name="restockproduct-form" action="#" method="post">
             <input type="number" id="restocknumber"    name="restocknumber"   required placeholder="SKU" autofocus min="0">
@@ -143,8 +115,39 @@
             <output class="restock-product-results" id="restockproductresults" style="text-align: center" name="restockproductresults"></output>
           </form>
         </div>
-      </div>
         
+        <input type="radio" name="tabs" id="tabfive">
+        <label for="tabfive" id="labelfive">Customer Banlist</label>
+        <div class="tab">
+          <form class="customerbanlist-form" name="customerbanlist-form" action="#" method="post">
+            <input type="number" id="customerphonenumber" name="customerphonenumber" required placeholder="Customer Phone Number" min="0">
+            <button class="customerbanlistbutton" type="submit" id="customerbanlist" onclick="searchCustomer(); return false;">Search</button>
+            <output class="customerbanlist-results" id="customerbanlistresults" style="text-align: center" name="customerbanlistresults"></output>
+          </form>
+        </div>
+        
+        <input type="radio" name="tabs" id="tabsix">
+        <label for="tabsix" id="labelsix">Ban customer</label>
+        <div class="tab">
+          <form class="bancustomer-form" name="bancustomer-form" action="#" method="post">
+            <input type="text"    id="bancustomernames"       name="bancustomernames"       required placeholder="Customer names" autofocus>
+            <input type="number"  id="bancustomerphonenumber" name="bancustomerphonenumber" required placeholder="Customer Phone Number" min="0">
+            <input type="text"    id="bancustomeraddress"     name="bancustomeraddress"     required placeholder="Customer Address">
+            <input type="date"    id="bancustomerorderdate"   name="bancustomerorderdate"   required min="01-01-1970">
+            <select name="wherewasordered" id="wherewasordered" required>
+              <option id="wherewasordereda" value="a">-Choose where it was ordered-</option>
+              <option id="wherewasorderedsite" value="site">SITE</option>
+              <option id="wherewasorderedfb" value="fb">Facebook</option>
+              <option id="wherewasorderedolx" value="olx">OLX</option>
+              <option id="wherewasorderedbazar" value="bazar">Bazar.bg</option>
+              <option id="wherewasorderedphone" value="phone">Telephone</option>
+              <option id="wherewasorderedviber" value="viber">Viber</option>
+            </select>
+            <button class="bancustomerbutton" type="submit" id="bancustomer" onclick="banCustomer(); return false;">Ban</button>
+            <output class="bancustomer-results" id="bancustomerresults" style="text-align: center" name="bancustomerresults"></output>
+          </form>
+        </div>
+      </div>
     </main>
     
     <footer>

@@ -2,103 +2,17 @@
 
 console.clear();
 
-var langs = ["EN", "BG", "RU", "FR", "DE"];
-//var localization = "EN";
-var localization = "BG";
+//var lang = "EN";
+var lang = "BG";
+var obj = JSON.parse(translations);
 
-function setLocalization() {
-  if (localization === "BG") {
-    var x = document.querySelectorAll("input");
-    var y = document.querySelectorAll("label");
-    
-    var i, j;
-    
-    // Localize software name in main h1 element
-    document.getElementById("softwarename").innerHTML = "Система за контрол на продажбите и наличностите";
-    
-    // Localize notification area buttons
-    document.getElementById("checkissuesbutton").title    = "Покажи всички продукти с проблеми";
-    document.getElementById("checkmessagesbutton").title  = "Покажи всички съобщения или събития";
-    
-    // Localize input fields for Add New Product tab
-    for (i of x) {
-      switch (i.placeholder) {
-        case "Name":                    i.placeholder = "Име на продукта"; break;
-        case "Category":                i.placeholder = "Категория"; break;
-        case "Additional product info": i.placeholder = "Информация за продукта"; break;
-        case "Product Links":           i.placeholder = "Линкове към продукта"; break;
-        case "SKU":                     i.placeholder = "Артикулен номер"; break;
-        case "Quantity":                i.placeholder = "Брой"; break;
-        case "Contractor":              i.placeholder = "Доставчик"; break;
-        case "Price":                   i.placeholder = "Цена"; break;
-        case "Customer names":          i.placeholder = "Имена на клиента"; break;
-        case "Customer Phone Number":   i.placeholder = "Телефонен номер на клиента"; break;
-        case "Customer Address":        i.placeholder = "Адрес на клиента"; break;
-      }
-    }
-    
-    // BUG 2: If enabled this leads to t Uncaught TypeError: Cannot set property 'value' of null at XMLHttpRequest.xhttp.onreadystatechange (sics.js:214)
-    // Localize labels for input fields in Product Search tab search results
-    /*document.getElementById("searchlabelname").textContent      = "Име на продукта";
-    document.getElementById("searchlabelnumber").textContent    = "Артикулен номер";
-    document.getElementById("searchlabelcategory").textContent  = "Категория";
-    document.getElementById("searchlabelquantity").textContent  = "Брой";
-    document.getElementById("searchlabelavailable").textContent = "Наличност в склада";
-    document.getElementById("searchlabelprice").textContent     = "Цена";
-    document.getElementById("searchlabelinfo").textContent      = "Информация за продукта";
-    document.getElementById("searchlabelprodlinks").textContent = "Линкове към продукта";*/
-    
-    // Localize upload picture button
-    document.getElementById("prodpicuploadbuttontext").textContent = "Добави снимка";
-    
-    // Localize labels
-    for (j of y) {
-      switch (j.getAttribute("for")) {
-        case "tabone":   j.innerHTML = "Добави продукт"; break;
-        case "tabtwo":   j.innerHTML = "Търсене"; break;
-        case "tabthree": j.innerHTML = "Продажби"; break;
-        case "tabfour":  j.innerHTML = "Некоректни"; break;
-        case "tabfive":  j.innerHTML = "Добави некоректен"; break;
-        case "tabsix":   j.innerHTML = "Зареждане"; break;
-      }
-    }
-    
-    // Localize action buttons
-    document.getElementById("addproduct").innerHTML       = "ЗАПИС";
-    document.getElementById("searchproduct").innerHTML    = "ТЪРСИ";
-    document.getElementById("sellproduct").innerHTML      = "ОТЧЕТИ ПРОДАЖБА";
-    document.getElementById("customerbanlist").innerHTML  = "ТЪРСИ";
-    document.getElementById("bancustomer").innerHTML      = "ЗАПИС";
-    document.getElementById("restockproduct").innerHTML   = "ЗАПИС";
-    
-    // Localize drop-down select button for Sell action
-    var soldinselect = document.getElementById("soldin").options;
-    for (let aaa of soldinselect) {
-      switch (aaa.value) {
-        case "a":     aaa.textContent = "Избери къде е продаден продукта"; break;
-        case "store": aaa.textContent = "МАГАЗИН"; break;
-        case "site":  aaa.textContent = "САЙТ"; break;
-        case "fb":    aaa.textContent = "Фейсбук"; break;
-        case "olx":   aaa.textContent = "ОЛХ"; break;
-        case "bazar": aaa.textContent = "Базар.БГ"; break;
-        case "phone": aaa.textContent = "ТЕЛЕФОН"; break;
-        case "viber": aaa.textContent = "Вайбър"; break;
-      }
-    }
-    
-    // Localize drop-down select button for Ban Customer action
-    var wherewasorderedselect = document.getElementById("wherewasordered").options;
-    for (let bbb of wherewasorderedselect) {
-      switch (bbb.value) {
-        case "a":     bbb.textContent = "Избери от къде е поръчан продукта"; break;
-        case "store": bbb.textContent = "МАГАЗИН"; break;
-        case "site":  bbb.textContent = "САЙТ"; break;
-        case "fb":    bbb.textContent = "Фейсбук"; break;
-        case "olx":   bbb.textContent = "ОЛХ"; break;
-        case "bazar": bbb.textContent = "Базар.БГ"; break;
-        case "phone": bbb.textContent = "ТЕЛЕФОН"; break;
-        case "viber": bbb.textContent = "Вайбър"; break;
-      }
+function switchLocalization() {
+  for (var elem in obj[lang]) {
+    switch (obj[lang][elem].property) {
+      case "innerHTML":   document.getElementById(obj[lang][elem].id).innerHTML   = obj[lang][elem].translation; break;
+      case "textContent": document.getElementById(obj[lang][elem].id).textContent = obj[lang][elem].translation; break;
+      case "placeholder": document.getElementById(obj[lang][elem].id).placeholder = obj[lang][elem].translation; break;
+      case "title":       document.getElementById(obj[lang][elem].id).title       = obj[lang][elem].translation; break;
     }
   }
 }
@@ -608,5 +522,3 @@ function checkMessages() {
 function sendMessage() {
   ;
 }
-
-setLocalization();
