@@ -6,7 +6,7 @@ console.clear();
 var lang = "BG";
 var obj = JSON.parse(translations);
 
-function switchlang() {
+function switchLang() {
   for (var elem in obj[lang]) {
     switch (obj[lang][elem].property) {
       case "innerHTML":   document.getElementById(obj[lang][elem].id).innerHTML   = obj[lang][elem].translation; break;
@@ -25,12 +25,12 @@ function loadPreview() {
 function addProduct() {
   var name        =  document.getElementById('name').value;
   var number      =  document.getElementById('number').value;
-  var category    =  document.getElementById('category').value;
+  //var category    =  document.getElementById('category').value;
   var quantity    =  document.getElementById('quantity').value;
   var contractor  =  document.getElementById('contractor').value;
   var price       =  document.getElementById('price').value;
-  var info        =  document.getElementById('info').value;
-  var prodlinks   =  document.getElementById('prodlinks').value;
+  //var info        =  document.getElementById('info').value;
+  //var prodlinks   =  document.getElementById('prodlinks').value;
   var pictures    =  document.getElementById('pictures');
   
   // Create a FormData object
@@ -45,12 +45,12 @@ function addProduct() {
   if (file.size > 0) {
     if (["image/jpg", "image/jpeg", "image/png"].includes(file.type)) {
       formData.append('pictures', file, file.name); // Add the file to the AJAX request
-      document.getElementById("prodpicuploadbuttontext").textContent = "Снимката беше добавена успешно";
-      document.getElementById("prodpicuploadbuttontext").style.backgroundColor = "green";
+      //document.getElementById("prodpicuploadbuttontext").textContent = "Снимката беше добавена успешно";
+      //document.getElementById("prodpicuploadbuttontext").style.backgroundColor = "green";
     } else {
       pictures.value = '';
-      document.getElementById("prodpicuploadbuttontext").textContent = "Добави снимка";
-      document.getElementById("prodpicuploadbuttontext").style.backgroundColor = "black";
+      document.getElementById("prodpicuploadbuttontext").textContent = "This picture format is not supported";
+      document.getElementById("prodpicuploadbuttontext").style.backgroundColor = "red";
       return false;
     }
   } else { pictures.value = ''; return false; }
@@ -82,35 +82,41 @@ function addProduct() {
   //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
   //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
   
-  if (name        !== '' && 
+  /*(name        !== '' && 
       number      !== '' && 
       category    !== '' && 
       quantity    !== '' && 
       contractor  !== '' && 
       price       !== '' && 
       info        !== '' && 
-      prodlinks   !== '') {
+      prodlinks   !== '')*/
+  
+  if (name        !== '' && 
+      number      !== '' && 
+      quantity    !== '' && 
+      contractor  !== '' && 
+      price       !== '') {
         formData.append('action', "new");
         formData.append('tName', "products");
         formData.append('name', name);
         formData.append('number', number);
-        formData.append('category', category);
+        //formData.append('category', category);
         formData.append('quantity', quantity);
         formData.append('contractor', contractor);
         formData.append('price', price);
-        formData.append('info', info);
-        formData.append('prodlinks', prodlinks);
+        //formData.append('info', info);
+        //formData.append('prodlinks', prodlinks);
         
         xhttp.send(formData);
         
         document.getElementById('name').value = '';
         document.getElementById('number').value = '';
-        document.getElementById('category').value = '';
+        //document.getElementById('category').value = '';
         document.getElementById('quantity').value = '';
         document.getElementById('contractor').value = '';
         document.getElementById('price').value = '';
-        document.getElementById('info').value = '';
-        document.getElementById('prodlinks').value = '';
+        //document.getElementById('info').value = '';
+        //document.getElementById('prodlinks').value = '';
   } else {
       alert("Error: Some fields are empty!");
   }
@@ -170,36 +176,43 @@ function searchProduct() {
     if (this.readyState == 4) {
       if (this.status == 200) {
         var data = JSON.parse(this.responseText);
-        //console.log(data);
         
-        var i, j;
-        /*j = `<table class="maintable">`;
-        for (i of data) {
-          if (Object.keys(i)[0] === "Picture") {
-            j += `<tr><td colspan="2">` + i[Object.keys(i)[0]] + `</tr>`;
-          } else {
-            j += `<tr><td>`+ Object.keys(i)[0] + `</td><td>` + i[Object.keys(i)[0]] + `</td></tr>`;
+        var i;
+        
+        // Check if returned data is "No product found!"
+        if (Object.keys(data).length == 1) {
+          document.getElementById("searchresultstable").style.visibility        = "collapse";
+          document.getElementById("search-results-form").style.backgroundColor  = "red";
+          document.getElementById("prodpicture").style.backgroundColor          = "red";
+          document.getElementById("prodpicture").textContent                    = data;
+        } else {
+          document.getElementById("prodpicture").style.backgroundColor          = "black";
+          document.getElementById("search-results-form").style.backgroundColor  = "black";
+          document.getElementById("prodpicture").style.backgroundColor          = "black";
+          document.getElementById("searchresultstable").style.visibility        = "visible";
+          for (i of data) {
+            switch (Object.keys(i)[0]) {
+              /*case "Name":                    document.getElementById("search-results-name").value      = i[Object.keys(i)[0]]; break;
+              case "Number":                  document.getElementById("search-results-number").value    = i[Object.keys(i)[0]]; break;
+              case "Category":                document.getElementById("search-results-category").value  = i[Object.keys(i)[0]]; break;
+              case "Quantity in shop":        document.getElementById("search-results-quantity").value  = i[Object.keys(i)[0]]; break;
+              case "Contractor":              document.getElementById("search-results-available").value = i[Object.keys(i)[0]]; break;
+              case "Price":                   document.getElementById("search-results-price").value     = i[Object.keys(i)[0]]; break;
+              case "Info":                    document.getElementById("search-results-info").value      = i[Object.keys(i)[0]]; break;
+              case "Product links":           document.getElementById("search-results-prodlinks").value = i[Object.keys(i)[0]]; break;
+              case "Picture":                 document.getElementById("prodpicture").innerHTML          = i[Object.keys(i)[0]]; break;*/
+              
+              case "Name":                    document.getElementById("search-results-name").value      = i[Object.keys(i)[0]]; break;
+              case "Number":                  document.getElementById("search-results-number").value    = i[Object.keys(i)[0]]; break;
+              case "Quantity in shop":        document.getElementById("search-results-quantity").value  = i[Object.keys(i)[0]]; break;
+              case "Contractor":              document.getElementById("search-results-available").value = i[Object.keys(i)[0]]; break;
+              case "Price":                   document.getElementById("search-results-price").value     = i[Object.keys(i)[0]]; break;
+              case "Picture":                 document.getElementById("prodpicture").innerHTML          = i[Object.keys(i)[0]]; break;
+            }
           }
         }
-        j += "</table>";*/
-        
-        for (i of data) {
-          switch (Object.keys(i)[0]) {
-            case "Name":                    document.getElementById("search-results-name").value      = i[Object.keys(i)[0]]; break;
-            case "Number":                  document.getElementById("search-results-number").value    = i[Object.keys(i)[0]]; break;
-            case "Category":                document.getElementById("search-results-category").value  = i[Object.keys(i)[0]]; break;
-            case "Quantity in shop":        document.getElementById("search-results-quantity").value  = i[Object.keys(i)[0]]; break;
-            case "Contractor":              document.getElementById("search-results-available").value = i[Object.keys(i)[0]]; break;
-            case "Price":                   document.getElementById("search-results-price").value     = i[Object.keys(i)[0]]; break;
-            case "Info":                    document.getElementById("search-results-info").value      = i[Object.keys(i)[0]]; break;
-            case "Product links":           document.getElementById("search-results-prodlinks").value = i[Object.keys(i)[0]]; break;
-            case "Picture":                 document.getElementById("prodpicture").innerHTML          = i[Object.keys(i)[0]]; break;
-          }
-        }
-        
-        document.getElementById("searchresults").style.display = 'flex';
-        document.getElementById("searchresults").classList.remove("testtest");
-        document.getElementById("searchresults").classList.add("testtest");
+        /*document.getElementById("searchresults").classList.remove("testtest");
+        document.getElementById("searchresults").classList.add("testtest");*/
       }
       else {
         alert("Error: returned status code " + this.status + " " + this.statusText);
@@ -441,26 +454,28 @@ function checkIssues() {
           Problem = "Problem";
           From    = "Contractor";
         }
-        var itemproblem = "";
+        //var itemproblem = "";
         
-        j = `<table><tr><th>${SKU}</th><th>${Name}</th><th>${Problem}</th><th>${From}</th></tr>`;
-        for (i of data) {
-          /*if (lang === "BG") {
-            if (i.includes("LESS THAN 2")) {
-              itemproblem = `ПО-МАЛКО ОТ 2 БРОЙКИ В МАГАЗИНА (в момента ${i[length - 1]} бр)`;
-            }
-            
-            if (i.includes("NOPICTURES")) {
-              itemproblem += " | ПРОДУКТА НЯМА СНИМКА";
-            }
-          }*/
-          j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td></tr>`;
-        }
-        j += "</table>";
-        document.getElementById("checkissuespopup").innerHTML = j;
-        
-        document.getElementById("productissues").innerHTML = data.length;
-        document.getElementById("productissues").classList.add("blink");
+        if (data !== 0) {
+          j = `<table><tr><th>${SKU}</th><th>${Name}</th><th>${Problem}</th><th>${From}</th></tr>`;
+          for (i of data) {
+            /*if (lang === "BG") {
+              if (i.includes("LESS THAN 2")) {
+                itemproblem = `ПО-МАЛКО ОТ 2 БРОЙКИ В МАГАЗИНА (в момента ${i[length - 1]} бр)`;
+              }
+              
+              if (i.includes("NOPICTURES")) {
+                itemproblem += " | ПРОДУКТА НЯМА СНИМКА";
+              }
+            }*/
+            j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td></tr>`;
+          }
+          j += "</table>";
+          document.getElementById("issuesresults").innerHTML = j;
+          
+          document.getElementById("productissues").innerHTML = data.length;
+          document.getElementById("productissues").classList.add("blink");
+        } else document.getElementById("issuesresults").innerHTML = "NO PROBLEMS FOUND!";
       }
       else {
         alert("Error: returned status code " + this.status + " " + this.statusText);
@@ -489,20 +504,22 @@ function checkMessages() {
       if (this.status == 200) {
         var data = JSON.parse(this.responseText);
         
-        var i, j, Date, User, Message, Status;
-        if (lang === "BG") {
-          j = "<table><tr><th>Дата</th><th>Потребител</th><th>Съобщение</th><th>Статус</th></tr>";
-        } else {
-          j = "<table><tr><th>Date</th><th>User</th><th>Message</th><th>Status</th></tr>";
-        }
-        for (i of data) {
-          j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td></tr>`;
-        }
-        j += "</table>";
-        document.getElementById("usermessagespopup").innerHTML = j;
-        
-        document.getElementById("usermessages").innerHTML = data.length;
-        document.getElementById("usermessages").classList.add("blink");
+        if (data !== 0) {
+          var i, j, Date, User, Message, Status;
+          if (lang === "BG") {
+            j = "<table><tr><th>Дата</th><th>Потребител</th><th>Съобщение</th><th>Статус</th></tr>";
+          } else {
+            j = "<table><tr><th>Date</th><th>User</th><th>Message</th><th>Status</th></tr>";
+          }
+          for (i of data) {
+            j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td></tr>`;
+          }
+          j += "</table>";
+          document.getElementById("usermessagesresults").innerHTML = j;
+          
+          document.getElementById("usermessages").innerHTML = data.length;
+          document.getElementById("usermessages").classList.add("blink");
+        } else document.getElementById("usermessagesresults").innerHTML = "NO NEW MESSAGES!";
       }
       else {
         alert("Error: returned status code " + this.status + " " + this.statusText);
@@ -523,4 +540,4 @@ function sendMessage() {
   ;
 }
 
-switchlang();
+switchLang();

@@ -7,12 +7,9 @@ var translations = `{
     {"id":"switchloctext",              "property":"title",       "translation":"Switch language"},
     {"id":"number",                     "property":"placeholder", "translation":"SKU"},
     {"id":"name",                       "property":"placeholder", "translation":"Name"},
-    {"id":"category",                   "property":"placeholder", "translation":"Category"},
     {"id":"quantity",                   "property":"placeholder", "translation":"Quantity"},
     {"id":"contractor",                 "property":"placeholder", "translation":"Contractor"},
     {"id":"price",                      "property":"placeholder", "translation":"Price"},
-    {"id":"info",                       "property":"placeholder", "translation":"Additional product info"},
-    {"id":"prodlinks",                  "property":"placeholder", "translation":"Product Links"},
     {"id":"bancustomernames",           "property":"placeholder", "translation":"Customer names"},
     {"id":"bancustomerphonenumber",     "property":"placeholder", "translation":"Customer Phone Number"},
     {"id":"bancustomeraddress",         "property":"placeholder", "translation":"Customer Address"},
@@ -55,12 +52,9 @@ var translations = `{
     {"id":"switchloctext",              "property":"title",       "translation":"Смяна език на интерфейса"},
     {"id":"number",                     "property":"placeholder", "translation":"Артикулен номер"},
     {"id":"name",                       "property":"placeholder", "translation":"Име на продукта"},
-    {"id":"category",                   "property":"placeholder", "translation":"Категория"},
     {"id":"quantity",                   "property":"placeholder", "translation":"Брой"},
     {"id":"contractor",                 "property":"placeholder", "translation":"Доставчик"},
     {"id":"price",                      "property":"placeholder", "translation":"Цена"},
-    {"id":"info",                       "property":"placeholder", "translation":"Информация за продукта"},
-    {"id":"prodlinks",                  "property":"placeholder", "translation":"Линкове към продукта"},
     {"id":"bancustomernames",           "property":"placeholder", "translation":"Имена на клиента"},
     {"id":"bancustomerphonenumber",     "property":"placeholder", "translation":"Телефонен номер на клиента"},
     {"id":"bancustomeraddress",         "property":"placeholder", "translation":"Адрес на клиента"},
@@ -96,3 +90,31 @@ var translations = `{
     {"id":"wherewasorderedviber",       "property":"textContent", "translation":"Вайбър"}
   ]
 }`;
+
+
+/*{"id":"number",                     "property":"placeholder", "translation":"SKU"},
+    {"id":"name",                       "property":"placeholder", "translation":"Name"},
+    {"id":"category",                   "property":"placeholder", "translation":"Category"},
+    {"id":"quantity",                   "property":"placeholder", "translation":"Quantity"},
+    {"id":"contractor",                 "property":"placeholder", "translation":"Contractor"},
+    {"id":"price",                      "property":"placeholder", "translation":"Price"},
+    {"id":"info",                       "property":"placeholder", "translation":"Additional product info"},
+    {"id":"prodlinks",                  "property":"placeholder", "translation":"Product Links"},
+    {"id":"bancustomernames",           "property":"placeholder", "translation":"Customer names"},
+    {"id":"bancustomerphonenumber",     "property":"placeholder", "translation":"Customer Phone Number"},
+    {"id":"bancustomeraddress",         "property":"placeholder", "translation":"Customer Address"},
+    {"id":"customerphonenumber",        "property":"placeholder", "translation":"Customer Phone Number"},
+    {"id":"prodpicuploadbuttontext",    "property":"textContent", "translation":"Choose product pictures"},*/
+    
+/*{"id":"number",                     "property":"placeholder", "translation":"Артикулен номер"},
+    {"id":"name",                       "property":"placeholder", "translation":"Име на продукта"},
+    {"id":"category",                   "property":"placeholder", "translation":"Категория"},
+    {"id":"quantity",                   "property":"placeholder", "translation":"Брой"},
+    {"id":"contractor",                 "property":"placeholder", "translation":"Доставчик"},
+    {"id":"price",                      "property":"placeholder", "translation":"Цена"},
+    {"id":"info",                       "property":"placeholder", "translation":"Информация за продукта"},
+    {"id":"prodlinks",                  "property":"placeholder", "translation":"Линкове към продукта"},
+    {"id":"bancustomernames",           "property":"placeholder", "translation":"Имена на клиента"},
+    {"id":"bancustomerphonenumber",     "property":"placeholder", "translation":"Телефонен номер на клиента"},
+    {"id":"bancustomeraddress",         "property":"placeholder", "translation":"Адрес на клиента"},
+    {"id":"customerphonenumber",        "property":"placeholder", "translation":"Телефонен номер на клиента"},*/

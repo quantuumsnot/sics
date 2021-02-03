@@ -29,14 +29,14 @@
         <div class="notificationicons usermessages" id="checkmessagesbutton" onclick="usermessagespopup.showModal(); checkMessages(); return false;" title="Show all events or messages">
           <div id="usermessages"></div>
         </div>
-        <div class="notificationicons switchlocalization" id="switchlocalization" onclick=" switchLocalization(); return false;" title="Switch language">
+        <div class="notificationicons switchlocalization" id="switchlocalization" onclick="switchLang(); return false;" title="Switch language">
           <div id="switchloctext">EN</div>
         </div>
       </div>
     </header>
     
-    <dialog id="checkissuespopup"></dialog>
-    <dialog id="usermessagespopup"></dialog>
+    <dialog id="checkissuespopup"><div id="checkissuespopupclose" onclick="checkissuespopup.close(); return false;">X</div><div id="issuesresults"></div></dialog>
+    <dialog id="usermessagespopup"><div id="usermessagespopupclose" onclick="usermessagespopup.close(); return false;">X</div><div id="usermessagesresults"></div></dialog>
 
     <main>
       <div class="tabs">
@@ -47,13 +47,16 @@
             <input type="number"  id="number"     name="number"     required placeholder="SKU" min="0">
             <button class="checkproductbutton" type="submit" id="checkproduct" onclick="checkProduct(); return false;">Check</button>
             <input type="text"    id="name"       name="name"       required placeholder="Name" autofocus>
-            <input type="text"    id="category"   name="category"   required placeholder="Category">
+            <!--<input type="text"    id="category"   name="category"   required placeholder="Category">-->
             <input type="number"  id="quantity"   name="quantity"   required placeholder="Quantity" min="0">
             <input type="text"    id="contractor" name="contractor" required placeholder="Contractor">
             <input type="number"  id="price"      name="price"      required placeholder="Price" min="0">
-            <input type="text"    id="info"       name="info"       required placeholder="Additional product info">
-            <input type="text"    id="prodlinks"  name="prodlinks"  required placeholder="Product Links">
-            <label class="prodpicuploadbutton"><div id="prodpicuploadbuttontext">Choose product pictures</div><input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg, image/jpg" onchange="loadPreview(event)";></label>
+            <!--<input type="text"    id="info"       name="info"       required placeholder="Additional product info">-->
+            <!--<input type="text"    id="prodlinks"  name="prodlinks"  required placeholder="Product Links">-->
+            <label class="prodpicuploadbutton">
+              <div id="prodpicuploadbuttontext">Choose product pictures</div>
+              <input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg, image/jpg" onchange="loadPreview(event);">
+            </label>
             <div><img id="prodpicpreview" /></div>
             <button class="addproductbutton" type="submit" id="addproduct" onclick="addProduct(); return false;">Add</button>
             <output class="new-product-results" id="newproductresults" style="text-align: center" name="newproductresults"></output>
@@ -69,15 +72,15 @@
           </form>
           <output class="search-product-results" id="searchresults" style="text-align: center" name="searchresults">
             <form class="search-results-form" id="search-results-form" name="search-results-form" action="#" method="post">
-              <table class="searchresultstable">
+              <table class="searchresultstable" id="searchresultstable">
                 <tr><td id="searchlabelname">Name</td><td><input type="text"   id="search-results-name"      name="search-results-name"       required placeholder="Name" autofocus></td></tr>
                 <tr><td id="searchlabelnumber">SKU</td><td><input type="number" id="search-results-number"    name="search-results-number"     required placeholder="SKU" min="0"></td></tr>
-                <tr><td id="searchlabelcategory">Category</td><td><input type="text"   id="search-results-category"  name="search-results-category"   required placeholder="Category"></td></tr>
+                <!--<tr><td id="searchlabelcategory">Category</td><td><input type="text"   id="search-results-category"  name="search-results-category"   required placeholder="Category"></td></tr>-->
                 <tr><td id="searchlabelquantity">Quantity</td><td><input type="number" id="search-results-quantity"  name="search-results-quantity"   required placeholder="Quantity" min="0"></td></tr>
                 <tr><td id="searchlabelavailable">Contractor</td><td><input type="text" id="search-results-available" name="search-results-available"  required placeholder="Contractor"></td></tr>
                 <tr><td id="searchlabelprice">Price</td><td><input type="number" id="search-results-price"     name="search-results-price"      required placeholder="Price" min="0"></td></tr>
-                <tr><td id="searchlabelinfo">Additional product info</td><td><input type="text"   id="search-results-info"      name="search-results-info"       required placeholder="Additional product info"></td></tr>
-                <tr><td id="searchlabelprodlinks">Product Links</td><td><input type="text"   id="search-results-prodlinks" name="search-results-prodlinks"  required placeholder="Product Links"></td></tr>
+                <!--<tr><td id="searchlabelinfo">Additional product info</td><td><input type="text"   id="search-results-info"      name="search-results-info"       required placeholder="Additional product info"></td></tr>-->
+                <!--<tr><td id="searchlabelprodlinks">Product Links</td><td><input type="text"   id="search-results-prodlinks" name="search-results-prodlinks"  required placeholder="Product Links"></td></tr>-->
               </table>
               <div id="prodpicture"></div>
             </form>

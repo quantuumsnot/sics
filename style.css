@@ -155,6 +155,21 @@ select {
   position: relative;
 }
 
+#checkissuespopupclose, #usermessagespopupclose {
+  text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black; /* text outlines */
+  color: yellow;
+  cursor: pointer;
+  position: absolute;
+  top: 0%;
+  right: 1%;
+  /*position: relative;*/
+}
+
+#checkissuespopupclose:hover, #usermessagespopupclose:hover {
+  color: black;
+  background-color: yellow;
+}
+
 .checkissues:hover {
   background: url("icons8-sugar-cubes-50-inverted.png");
   background-position: center;
@@ -176,14 +191,14 @@ select {
 
 #checkissuespopup {
   border: 2px solid #80ecff;
-  border-radius: 1.5em;
+  /*border-radius: 1.5em;*/
   height: 480px;
   overflow: auto;
 }
 
 #usermessagespopup {
   border: 2px solid #80ecff;
-  border-radius: 1.5em;
+  /*border-radius: 1.5em;*/
   height: 480px;
   overflow: auto;
 }
@@ -239,6 +254,12 @@ table, th, td {
   align-items: center;
   justify-content: center;
 }
+
+/* rendering optimisation, DO NOT use it for elements storing data because they must be visible in DOM */
+/*.tab {
+  contain-visibility: auto;
+  contain-intrinsic-size: 1px 5000px;
+}*/
 
 .tabs label {
   /*-webkit-box-ordinal-group: 2;
@@ -309,7 +330,7 @@ table, th, td {
 }
 
 .search-product-results {
-  display: none;
+  display: flex;
   flex-wrap: wrap;
   flex-direction: column;
   align-items: center;
@@ -317,7 +338,7 @@ table, th, td {
   padding: 0;
 }
 
-.searchresultstable { table-layout: fixed; width: 100%; }
+.searchresultstable { table-layout: fixed; width: 100%; visibility: collapse; }
 .searchresultstable input { width: 100%; }
 
 #prodpicture {
@@ -355,30 +376,10 @@ table, th, td {
 .fileuploadbutton {
   width: 0px;
   display: none;
-  background-color: transparent;
+  visibility: collapse;
 }
 
-.prodpicuploadbutton {
-  -webkit-appearance: button;
-  -moz-appearance: button;
-  appearance: button;
-
-  text-decoration: none;
-  color: white;
-  
-  border: 2px solid #80ecff;
-  border-radius: 1.5em;
-  cursor: pointer;
-}
-
-.prodpicuploadbutton:hover {
-  cursor: pointer;
-  box-shadow: 0 0 7px #0080ff;
-  background-color: #80ecff;
-  color: black;
-}
-
-.addproductbutton, .checkproductbutton, .searchproductbutton, .sellproductbutton, .customerbanlistbutton, .bancustomerbutton, .restockproductbutton {
+.addproductbutton, .prodpicuploadbutton, .checkproductbutton, .searchproductbutton, .sellproductbutton, .customerbanlistbutton, .bancustomerbutton, .restockproductbutton {
   -webkit-appearance: button;
   -moz-appearance: button;
   appearance: button;
@@ -399,7 +400,11 @@ table, th, td {
   padding: 1em 1em;
 }
 
-.addproductbutton:hover, .checkproductbutton:hover, .searchproductbutton:hover, .sellproductbutton:hover, .customerbanlistbutton:hover, .bancustomerbutton:hover, .restockproductbutton:hover {
+.prodpicuploadbutton {
+  margin: 0;
+}
+
+.addproductbutton:hover, .prodpicuploadbutton:hover, .checkproductbutton:hover, .searchproductbutton:hover, .sellproductbutton:hover, .customerbanlistbutton:hover, .bancustomerbutton:hover, .restockproductbutton:hover {
   cursor: pointer;
   box-shadow: 0 0 7px #0080ff;
   background-color: #80ecff;

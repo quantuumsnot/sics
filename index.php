@@ -26,9 +26,10 @@ $action = $_POST['action'];
 
 // Open database
 $productsColumns            = "name TEXT, number TEXT, category TEXT, quantity INTEGER, contractor TEXT, price REAL, info TEXT, prodlinks TEXT, pictures BLOB";
-$productsColumnsNoDataType  = "name, number, category, quantity, contractor, price, info, prodlinks, pictures";
-$salesColumns               = "date TEXT, number TEXT, quantity INTEGER, soldin TEXT";
-$salesColumnsNoDataType     = "date, number, quantity, soldin";
+//$productsColumnsNoDataType  = "name, number, category, quantity, contractor, price, info, prodlinks, pictures";
+$productsColumnsNoDataType  = "name, number, quantity, contractor, price, pictures";
+$salesColumns               = "date TEXT, number TEXT, itemdescription TEXT, quantity INTEGER, soldin TEXT";
+$salesColumnsNoDataType     = "date, number, itemdescription, quantity, soldin";
 $messagesColumns            = "date TEXT, user TEXT, message TEXT, status INTEGER";
 $messagesColumnsNoDataType  = "date, user, message, status";
 $banlistColumns             = "customernames TEXT, customerphonenumber TEXT, customeraddress TEXT, customerorderdate TEXT, wherewasordered TEXT";
@@ -69,24 +70,24 @@ function addProduct() {
       
       if (count($result->fetchAll(PDO::FETCH_ASSOC)) === 0) {
         $name       = $_POST['name'];
-        $category   = $_POST['category'];
+        //$category   = $_POST['category'];
         $quantity   = $_POST['quantity'];
         $contractor = $_POST['contractor'];
         $price      = $_POST['price'];
-        $info       = $_POST['info'];
-        $prodlinks  = $_POST['prodlinks'];
+        //$info       = $_POST['info'];
+        //$prodlinks  = $_POST['prodlinks'];
         $fhandler   = file_get_contents($_FILES['pictures']['tmp_name']);
              
-        $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$productsColumnsNoDataType}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$productsColumnsNoDataType}) VALUES (?, ?, ?, ?, ?, ?)");
         $result->bindValue(1, $name);
         $result->bindValue(2, $number);
-        $result->bindValue(3, $category);
-        $result->bindValue(4, $quantity);
-        $result->bindValue(5, $contractor);
-        $result->bindValue(6, $price);
-        $result->bindValue(7, $info);
-        $result->bindValue(8, $prodlinks);
-        $result->bindValue(9, $fhandler, PDO::PARAM_LOB);
+        //$result->bindValue(3, $category);
+        $result->bindValue(3, $quantity);
+        $result->bindValue(4, $contractor);
+        $result->bindValue(5, $price);
+        //$result->bindValue(7, $info);
+        //$result->bindValue(8, $prodlinks);
+        $result->bindValue(6, $fhandler, PDO::PARAM_LOB);
         $result->execute();
         
         echo "The product was succesfully added!";
@@ -124,33 +125,34 @@ function searchProduct() {
 
       $searchNumber = $_POST['searchnumber'];
       
-      $result = $db->prepare("SELECT name, number, category, quantity, contractor, info, prodlinks, price, pictures FROM {$_POST['tName']} WHERE number=?");
+      //$result = $db->prepare("SELECT name, number, category, quantity, contractor, info, prodlinks, price, pictures FROM {$_POST['tName']} WHERE number=?");
+      $result = $db->prepare("SELECT name, number, quantity, contractor, price, pictures FROM {$_POST['tName']} WHERE number=?");
       $result->execute(array($searchNumber));
       $result->bindColumn(1, $name);
       $result->bindColumn(2, $number);
-      $result->bindColumn(3, $category);
-      $result->bindColumn(4, $quantity);
-      $result->bindColumn(5, $contractor);
-      $result->bindColumn(6, $info);
-      $result->bindColumn(7, $prodlinks);
-      $result->bindColumn(8, $price);
-      $result->bindColumn(9, $lob);
+      //$result->bindColumn(3, $category);
+      $result->bindColumn(3, $quantity);
+      $result->bindColumn(4, $contractor);
+      //$result->bindColumn(6, $info);
+      //$result->bindColumn(7, $prodlinks);
+      $result->bindColumn(5, $price);
+      $result->bindColumn(6, $lob);
       
       $output = [];
       
       if (count($result->fetchAll(PDO::FETCH_ASSOC)) > 0) {
         $output [] = array("Name" => $name);
         $output [] = array("Number" => $number);
-        $output [] = array("Category" => $category);
+        //$output [] = array("Category" => $category);
         $output [] = array("Quantity in shop" => $quantity);
         $output [] = array("Contractor" => $contractor);
         $output [] = array("Price" => $price);
-        $output [] = array("Info" => $info);
-        $output [] = array("Product links" => $prodlinks);
+        //$output [] = array("Info" => $info);
+        //$output [] = array("Product links" => $prodlinks);
         $output [] = array("Picture" => '<img alt="" src="data:image/jpg;base64,'  . base64_encode($lob) . '" onerror="if (this.src != \'image-not-available.jpg\') this.src = \'image-not-available.jpg\';"/>');
         echo json_encode($output);
       } else {
-        echo "No product found!";
+        echo json_encode(array("No product found!"));
       }
     }
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
@@ -168,13 +170,39 @@ function sellProduct() {
       $result = $db->prepare("UPDATE products SET quantity=quantity-{$_POST['sellquantity']} WHERE number=?");
       $result->bindValue(1, $sellNumber);
       $result->execute();
+			
+			usleep(100);
+			
+			$result = $db->prepare("SELECT name FROM products WHERE number=?");
+      $result->execute(array($sellNumber)); //this line first or bindColumn won't work
+      $result->bindColumn(1, $name);
+      if (count($result->fetchAll(PDO::FETCH_ASSOC)) > 0) {
+        $itemName = $name;
+      }
       
-      $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$salesColumnsNoDataType}) VALUES (?, ?, ?, ?)");
-      $result->bindValue(1, date('d M Y H-i-s'));
+			usleep(100);
+      
+      $actionDate = date('d M Y H-i-s');
+			
+      $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$salesColumnsNoDataType}) VALUES (?, ?, ?, ?, ?)");
+      $result->bindValue(1, $actionDate);
       $result->bindValue(2, $sellNumber);
-      $result->bindValue(3, $sellQuantity);
-      $result->bindValue(4, $soldIn);
+			$result->bindValue(3, $itemName);
+      $result->bindValue(4, $sellQuantity);
+      $result->bindValue(5, $soldIn);
       $result->execute();
+      
+      $fileName = "/home/automd/sics/sales/" . date('d M Y') . ".txt";
+      if (!is_file($fileName)) {
+        $newFile = fopen($fileName, 'w');
+        fclose($newFile);
+        chown($fileName, 'automd');
+        chgrp($fileName, 'www-data');
+        //chmod($fileName, 0664);
+        chmod($fileName, 0777);
+      }
+      $fileLine = $actionDate . " | " . $sellNumber . " | " . $itemName . " | " . $sellQuantity . " | " . $soldIn . PHP_EOL;
+      file_put_contents($fileName, $fileLine, FILE_APPEND);
       
       echo "The given qty of a product was succesfully marked as sold!";
     }
@@ -285,7 +313,7 @@ function checkIssues() {
         //echo json_encode(count($result));
         echo json_encode($output);
       } else {
-        echo "";
+        echo json_encode(0);
       }
     }
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
@@ -310,7 +338,7 @@ function checkMessages() {
 
         echo json_encode($output);
       } else {
-        echo "";
+        echo json_encode(0);
       }
     }
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
