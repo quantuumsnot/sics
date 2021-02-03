@@ -192,7 +192,7 @@ function sellProduct() {
       $result->bindValue(5, $soldIn);
       $result->execute();
       
-      $fileName = "/home/automd/sics/sales/" . date('d M Y') . ".txt";
+      $fileName = "/home/sics/sales/" . date('d M Y') . ".txt";
       if (!is_file($fileName)) {
         $newFile = fopen($fileName, 'w');
         fclose($newFile);
