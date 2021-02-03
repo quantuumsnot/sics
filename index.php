@@ -196,7 +196,7 @@ function sellProduct() {
       if (!is_file($fileName)) {
         $newFile = fopen($fileName, 'w');
         fclose($newFile);
-        chown($fileName, 'automd');
+        chown($fileName, 'sics');
         chgrp($fileName, 'www-data');
         //chmod($fileName, 0664);
         chmod($fileName, 0777);
