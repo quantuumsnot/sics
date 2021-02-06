@@ -12,6 +12,11 @@
     <meta http-equiv="pragma" content="no-cache" />
     <title>Sales and Inventory Control System</title>
     <link href="style.css?v=1.0" rel="stylesheet">
+    <link rel="preload" as="image" "icons8-sugar-cubes-50.png">
+    <link rel="preload" as="image" "icons8-sugar-cubes-50-inverted.png">
+    <link rel="preload" as="image" "icons8-messaging-48.png">
+    <link rel="preload" as="image" "icons8-messaging-48-inverted.png">
+    <link rel="preload" as="image" "image-not-available.jpg">
     <script>
       'use strict';
       var startTime = new Date().getTime();
@@ -41,11 +46,11 @@
     <main>
       <div class="tabs">
         <input type="radio" name="tabs" id="tabone" checked="checked">
-        <label for="tabone" id="labelone">Add new product</label>
+        <label for="tabone" id="labelone">Products</label>
         <div class="tab">
           <form class="addproduct-form" id="addproduct-form" name="addproduct-form" action="#" method="post">
             <input type="number"  id="number"     name="number"     required placeholder="SKU" min="0">
-            <button class="checkproductbutton" type="submit" id="checkproduct" onclick="checkProduct(); return false;">Check</button>
+            <button class="checkproductbutton" type="submit" id="checkproduct" onclick="searchProduct(); return false;">Check</button>
             <input type="text"    id="name"       name="name"       required placeholder="Name" autofocus>
             <!--<input type="text"    id="category"   name="category"   required placeholder="Category">-->
             <input type="number"  id="quantity"   name="quantity"   required placeholder="Quantity" min="0">
@@ -57,38 +62,17 @@
               <div id="prodpicuploadbuttontext">Choose product pictures</div>
               <input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg, image/jpg" onchange="loadPreview(event);">
             </label>
-            <div><img id="prodpicpreview" /></div>
+            <!--<div><img alt="" id="prodpicture" onerror="if (this.src != \'image-not-available.jpg\') this.src = \'image-not-available.jpg\';" /></div>-->
+            <div><img alt="" id="prodpicture" onerror="imgNotAvail()" /></div>
             <button class="addproductbutton" type="submit" id="addproduct" onclick="addProduct(); return false;">Add</button>
             <output class="new-product-results" id="newproductresults" style="text-align: center" name="newproductresults"></output>
+          </form>
+          <form class="search-results-form" id="search-results-form" name="search-results-form" action="#" method="post">
           </form>
         </div>
         
         <input type="radio" name="tabs" id="tabtwo">
-        <label for="tabtwo" id="labeltwo">Product Search</label>
-        <div class="tab">
-          <form class="searchproduct-form" name="searchproduct-form" action="#" method="post">
-            <input type="number" id="searchnumber" name="searchnumber" required placeholder="SKU" min="0" autofocus>
-            <button class="searchproductbutton" type="submit" id="searchproduct" onclick="searchProduct(); return false;">Search</button>
-          </form>
-          <output class="search-product-results" id="searchresults" style="text-align: center" name="searchresults">
-            <form class="search-results-form" id="search-results-form" name="search-results-form" action="#" method="post">
-              <table class="searchresultstable" id="searchresultstable">
-                <tr><td id="searchlabelname">Name</td><td><input type="text"   id="search-results-name"      name="search-results-name"       required placeholder="Name" autofocus></td></tr>
-                <tr><td id="searchlabelnumber">SKU</td><td><input type="number" id="search-results-number"    name="search-results-number"     required placeholder="SKU" min="0"></td></tr>
-                <!--<tr><td id="searchlabelcategory">Category</td><td><input type="text"   id="search-results-category"  name="search-results-category"   required placeholder="Category"></td></tr>-->
-                <tr><td id="searchlabelquantity">Quantity</td><td><input type="number" id="search-results-quantity"  name="search-results-quantity"   required placeholder="Quantity" min="0"></td></tr>
-                <tr><td id="searchlabelavailable">Contractor</td><td><input type="text" id="search-results-available" name="search-results-available"  required placeholder="Contractor"></td></tr>
-                <tr><td id="searchlabelprice">Price</td><td><input type="number" id="search-results-price"     name="search-results-price"      required placeholder="Price" min="0"></td></tr>
-                <!--<tr><td id="searchlabelinfo">Additional product info</td><td><input type="text"   id="search-results-info"      name="search-results-info"       required placeholder="Additional product info"></td></tr>-->
-                <!--<tr><td id="searchlabelprodlinks">Product Links</td><td><input type="text"   id="search-results-prodlinks" name="search-results-prodlinks"  required placeholder="Product Links"></td></tr>-->
-              </table>
-              <div id="prodpicture"></div>
-            </form>
-          </output>
-        </div>
-        
-        <input type="radio" name="tabs" id="tabthree">
-        <label for="tabthree" id="labelthree">Sell</label>
+        <label for="tabtwo" id="labeltwo">Sell</label>
         <div class="tab">
           <form class="sellproduct-form" name="sellproduct-form" action="#" method="post">
             <input type="number" id="sellnumber"    name="sellnumber"   required placeholder="SKU" autofocus min="0">
@@ -105,11 +89,14 @@
             </select>
             <button class="sellproductbutton" type="submit" id="sellproduct" onclick="sellProduct(); return false;">Sell</button>
             <output class="sell-product-results" id="sellproductresults" style="text-align: center" name="sellproductresults"></output>
+            <input type="date"    id="soldproductsdate"   name="soldproductsdate"   required min="01-01-1970">
+            <button class="soldproductsbutton" type="submit" id="soldproducts" onclick="checkSales(); return false;">Show Sales</button>
+            <output class="sold-products-results" id="soldproductsresults" style="text-align: center" name="soldproductsresults"></output>
           </form>
         </div>
         
-        <input type="radio" name="tabs" id="tabfour">
-        <label for="tabfour" id="labelfour">Restock</label>
+        <input type="radio" name="tabs" id="tabthree">
+        <label for="tabthree" id="labelthree">Restock</label>
         <div class="tab">
           <form class="restockproduct-form" name="restockproduct-form" action="#" method="post">
             <input type="number" id="restocknumber"    name="restocknumber"   required placeholder="SKU" autofocus min="0">
@@ -119,8 +106,8 @@
           </form>
         </div>
         
-        <input type="radio" name="tabs" id="tabfive">
-        <label for="tabfive" id="labelfive">Customer Banlist</label>
+        <input type="radio" name="tabs" id="tabfour">
+        <label for="tabfour" id="labelfour">Customer Banlist</label>
         <div class="tab">
           <form class="customerbanlist-form" name="customerbanlist-form" action="#" method="post">
             <input type="number" id="customerphonenumber" name="customerphonenumber" required placeholder="Customer Phone Number" min="0">
@@ -129,8 +116,8 @@
           </form>
         </div>
         
-        <input type="radio" name="tabs" id="tabsix">
-        <label for="tabsix" id="labelsix">Ban customer</label>
+        <input type="radio" name="tabs" id="tabfive">
+        <label for="tabfive" id="labelfive">Ban customer</label>
         <div class="tab">
           <form class="bancustomer-form" name="bancustomer-form" action="#" method="post">
             <input type="text"    id="bancustomernames"       name="bancustomernames"       required placeholder="Customer names" autofocus>
@@ -184,7 +171,7 @@
     var totalTime = (endTime - startTime)/1000;
     if (document.getElementById("loadingTime"))
     {
-      document.getElementById("loadingTime").innerHTML = `Page loaded in ${totalTime} seconds<br /><h2>v0.4 codename "Falling teeth"</h2>`;
+      document.getElementById("loadingTime").innerHTML = `Page loaded in ${totalTime} seconds<br /><h2>v0.5 codename "1st grade"</h2>`;
     }
   </script>
 </html>

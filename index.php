@@ -30,6 +30,8 @@ $productsColumns            = "name TEXT, number TEXT, category TEXT, quantity I
 $productsColumnsNoDataType  = "name, number, quantity, contractor, price, pictures";
 $salesColumns               = "date TEXT, number TEXT, itemdescription TEXT, quantity INTEGER, soldin TEXT";
 $salesColumnsNoDataType     = "date, number, itemdescription, quantity, soldin";
+$restocksColumns            = "date TEXT, number TEXT, itemdescription TEXT, quantity INTEGER";
+$restocksColumnsNoDataType  = "date, number, itemdescription, quantity";
 $messagesColumns            = "date TEXT, user TEXT, message TEXT, status INTEGER";
 $messagesColumnsNoDataType  = "date, user, message, status";
 $banlistColumns             = "customernames TEXT, customerphonenumber TEXT, customeraddress TEXT, customerorderdate TEXT, wherewasordered TEXT";
@@ -43,6 +45,7 @@ $db->setAttribute(PDO::ATTR_PERSISTENT, false);
 $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false); //disable emulated prepares to prevent injection, see http://stackoverflow.com/a/12202218/1196983
 $db->exec("CREATE TABLE IF NOT EXISTS `products`({$productsColumns})");
 $db->exec("CREATE TABLE IF NOT EXISTS `sales`(${salesColumns})");
+$db->exec("CREATE TABLE IF NOT EXISTS `restocks`(${restocksColumns})");
 $db->exec("CREATE TABLE IF NOT EXISTS `messages`(${messagesColumns})");
 $db->exec("CREATE TABLE IF NOT EXISTS `customerbanlist`(${banlistColumns})");
 $db->exec("CREATE TABLE IF NOT EXISTS `users`(${usersColumns})");
@@ -98,32 +101,12 @@ function addProduct() {
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
 }
 
-function checkProduct() {
-  try {
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-      global $db;
-
-      $searchNumber = $_POST['number'];
-      
-      $result = $db->prepare("SELECT * FROM {$_POST['tName']} WHERE number=?");
-      $result->execute(array($searchNumber));
-      $result->bindColumn(1, $number);
-      
-      if (count($result->fetchAll(PDO::FETCH_ASSOC)) > 0) {
-        echo "Already saved";
-      } else {
-        echo "Not saved";
-      }
-    }
-  } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
-}
-
 function searchProduct() {
   try {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
       global $db;
 
-      $searchNumber = $_POST['searchnumber'];
+      $searchNumber = $_POST['number'];
       
       //$result = $db->prepare("SELECT name, number, category, quantity, contractor, info, prodlinks, price, pictures FROM {$_POST['tName']} WHERE number=?");
       $result = $db->prepare("SELECT name, number, quantity, contractor, price, pictures FROM {$_POST['tName']} WHERE number=?");
@@ -149,7 +132,7 @@ function searchProduct() {
         $output [] = array("Price" => $price);
         //$output [] = array("Info" => $info);
         //$output [] = array("Product links" => $prodlinks);
-        $output [] = array("Picture" => '<img alt="" src="data:image/jpg;base64,'  . base64_encode($lob) . '" onerror="if (this.src != \'image-not-available.jpg\') this.src = \'image-not-available.jpg\';"/>');
+        $output [] = array("Picture" => "data:image/jpg;base64,"  . base64_encode($lob));
         echo json_encode($output);
       } else {
         echo json_encode(array("No product found!"));
@@ -192,11 +175,11 @@ function sellProduct() {
       $result->bindValue(5, $soldIn);
       $result->execute();
       
-      $fileName = "/home/sics/sales/" . date('d M Y') . ".txt";
+      $fileName = $_SERVER['DOCUMENT_ROOT'] . "/" . date('d M Y') . ".txt";
       if (!is_file($fileName)) {
         $newFile = fopen($fileName, 'w');
         fclose($newFile);
-        chown($fileName, 'sics');
+        chown($fileName, 'automd');
         chgrp($fileName, 'www-data');
         //chmod($fileName, 0664);
         chmod($fileName, 0777);
@@ -209,18 +192,63 @@ function sellProduct() {
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
 }
 
-function restockProduct() {
+function checkSales() {
   try {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
       global $db;
+      
+      $date = "'%" . date("d M Y", strtotime($_POST['soldproductsdate'])) . "%'";
+
+			$result = $db->prepare("SELECT number, itemdescription, quantity, soldin FROM sales WHERE date LIKE " . $date);
+      $result->execute();
+      $result = $result->fetchAll(PDO::FETCH_ASSOC);
+      
+      if (count($result) > 0) {
+        $output = [];
+        $i = 0;
+        foreach ($result as $product) {
+          $output[$i] = array($product['number'], $product['itemdescription'], $product['quantity'], $product['soldin']);
+          $i++;
+        }
+        //echo json_encode(count($result));
+        echo json_encode($output);
+      } else {
+        echo json_encode(0);
+      }
+
+      //echo "The given qty of a product was succesfully marked as sold!";
+    }
+  } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
+}
+
+function restockProduct() {
+  try {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+      global $db, $restocksColumnsNoDataType;
 
       $restockNumber    = $_POST['restocknumber'];
       $restockQuantity  = $_POST['restockquantity'];
+      
+      $result = $db->prepare("SELECT name FROM products WHERE number=?");
+      $result->execute(array($restockNumber)); //this line first or bindColumn won't work
+      $result->bindColumn(1, $name);
+      if (count($result->fetchAll(PDO::FETCH_ASSOC)) > 0) {
+        $itemName = $name;
+      }
       
       $result = $db->prepare("UPDATE products SET quantity=quantity+{$_POST['restockquantity']} WHERE number=?");
       $result->bindValue(1, $restockNumber);
       //$result->bindValue(1, date('d M Y H-i-s'));
       
+      $result->execute();
+      
+      $actionDate = date('d M Y H-i-s');
+			
+      $result = $db->prepare("INSERT INTO restocks ({$restocksColumnsNoDataType}) VALUES (?, ?, ?, ?)");
+      $result->bindValue(1, $actionDate);
+      $result->bindValue(2, $restockNumber);
+			$result->bindValue(3, $itemName);
+      $result->bindValue(4, $restockQuantity);
       $result->execute();
       
       echo "The product's quantity was succesfully updated!";
@@ -354,6 +382,7 @@ switch ($_POST['action']) {
   case "check"          : checkProduct();   break; // Check if an item is in the database
   case "search"         : searchProduct();  break; // Search for item in the database
   case "sell"           : sellProduct();    break; // Sell an item and exclude it from the database
+  case "sales"          : checkSales();   break; // Show sales per a given date
   case "restock"        : restockProduct(); break; // Restock an item
   case "searchcustomer" : searchCustomer(); break; // Check if the customer is marked as dishonest ie not picking their order, not paying the shipping fee for returning or breaking the products
   case "bancustomer"    : banCustomer();    break; // Ban the customer if not picking their order, not paying the shipping fee for returning or breaking the products

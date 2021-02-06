@@ -311,7 +311,7 @@ table, th, td {
 }
 
 /* This fixes the nasty bug of clicking in the middle of the viewport that opens the last tab */
-#tabone, #tabtwo, #tabthree, #tabfour, #tabfive, #tabsix {
+#tabone, #tabtwo, #tabthree, #tabfour, #tabfive {
   pointer-events: none;
 }
 
@@ -338,26 +338,20 @@ table, th, td {
   padding: 0;
 }
 
-.searchresultstable { table-layout: fixed; width: 100%; visibility: collapse; }
-.searchresultstable input { width: 100%; }
+/*.searchresultstable { table-layout: fixed; width: 100%; visibility: collapse; }
+.searchresultstable input { width: 100%; }*/
 
 #prodpicture {
   overflow: hidden;
+  width: 50%;
 }
 
 #prodpicture img {
   overflow: hidden;
   height: 100%;
-  width: 50%;
+  /*width: 100%;*/
   object-fit: scale-down;
   margin-top: 1rem;
-}
-
-#prodpicpreview {
-  overflow: hidden;
-  height: 100%;
-  width: 50%;
-  object-fit: scale-down;
 }
 
 /*.fileuploadbutton {
@@ -379,7 +373,7 @@ table, th, td {
   visibility: collapse;
 }
 
-.addproductbutton, .prodpicuploadbutton, .checkproductbutton, .searchproductbutton, .sellproductbutton, .customerbanlistbutton, .bancustomerbutton, .restockproductbutton {
+.addproductbutton, .prodpicuploadbutton, .checkproductbutton, .searchproductbutton, .sellproductbutton, .soldproductsbutton, .customerbanlistbutton, .bancustomerbutton, .restockproductbutton {
   -webkit-appearance: button;
   -moz-appearance: button;
   appearance: button;
@@ -404,14 +398,14 @@ table, th, td {
   margin: 0;
 }
 
-.addproductbutton:hover, .prodpicuploadbutton:hover, .checkproductbutton:hover, .searchproductbutton:hover, .sellproductbutton:hover, .customerbanlistbutton:hover, .bancustomerbutton:hover, .restockproductbutton:hover {
+.addproductbutton:hover, .prodpicuploadbutton:hover, .checkproductbutton:hover, .searchproductbutton:hover, .sellproductbutton:hover, .soldproductsbutton:hover, .customerbanlistbutton:hover, .bancustomerbutton:hover, .restockproductbutton:hover {
   cursor: pointer;
   box-shadow: 0 0 7px #0080ff;
   background-color: #80ecff;
   color: black;
 }
 
-.new-product-results, .search-product-results, .sell-product-results, .customerbanlist-results, .bancustomer-results, .restock-product-results {
+.new-product-results, .search-product-results, .sell-product-results, .sold-products-results, .customerbanlist-results, .bancustomer-results, .restock-product-results {
   border: 2px solid #bfdfff;
   border-radius: 1.5em;
   padding: 0 1em;

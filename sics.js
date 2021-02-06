@@ -18,8 +18,15 @@ function switchLang() {
 }
 
 function loadPreview() {
-  var image = document.getElementById('prodpicpreview');
+  var image = document.getElementById('prodpicture');
 	image.src = URL.createObjectURL(event.target.files[0]);
+}
+
+function imgNotAvail() {
+  var image = document.getElementById('prodpicture');
+  if (image.src != 'image-not-available.jpg') {
+    image.src = 'image-not-available.jpg';
+  }
 }
 
 function addProduct() {
@@ -65,9 +72,11 @@ function addProduct() {
           if (this.responseText.includes("added")) {
             document.getElementById("newproductresults").innerHTML = "Продуктът беше успешно добавен!";
             document.getElementById("newproductresults").style.backgroundColor = "green";
+            document.getElementById('prodpicture').src = '';
           } else {
               document.getElementById("newproductresults").innerHTML = "Продукт със същия арт. номер е вече качен!";
               document.getElementById("newproductresults").style.backgroundColor = "red";
+              document.getElementById('prodpicture').src = '';
             }
         } else document.getElementById("newproductresults").innerHTML = this.responseText;
       }
@@ -122,49 +131,10 @@ function addProduct() {
   }
 }
 
-function checkProduct() {
-  var number      =  document.getElementById('number').value;
-  
-  // Create a FormData object
-  var formData = new FormData();
-
-  // Make a request to add the product
-  var xhttp = new XMLHttpRequest();
-  
-  xhttp.onreadystatechange = function() {
-    if (this.readyState == 4) {
-      if (this.status == 200) {
-        if (lang === "BG") {
-          if (this.responseText.includes("Already") || this.responseText.includes("Not")) {
-            alert(this.responseText);
-          }
-        } else alert(this.responseText);
-      }
-      else {
-        alert("Error: returned status code " + this.status + " " + this.statusText);
-      }
-    }
-  };
-    
-  xhttp.open("POST", "index.php", true);
-  
-  //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
-  
-  if (number      !== '') {
-        formData.append('action', "check");
-        formData.append('tName', "products");
-        formData.append('number', number);
-        
-        xhttp.send(formData);
-  } else {
-      alert("Error: Some fields are empty!");
-  }
-}
-
 // Search for a product in the database
 function searchProduct() {
-  var searchNumber = document.getElementById('searchnumber').value;
+  //var searchNumber = document.getElementById('searchnumber').value;
+  var searchNumber = document.getElementById('number').value;
 
   // Create a FormData object
   var formData = new FormData();
@@ -181,33 +151,26 @@ function searchProduct() {
         
         // Check if returned data is "No product found!"
         if (Object.keys(data).length == 1) {
-          document.getElementById("searchresultstable").style.visibility        = "collapse";
-          document.getElementById("search-results-form").style.backgroundColor  = "red";
-          document.getElementById("prodpicture").style.backgroundColor          = "red";
-          document.getElementById("prodpicture").textContent                    = data;
+          document.getElementById("newproductresults").innerHTML              = data;
+          document.getElementById("newproductresults").style.backgroundColor  = "red";
+          document.getElementById("prodpicture").src                          = '';
+          document.getElementById("name").value                               = '';
+          document.getElementById("quantity").value                           = '';
+          document.getElementById("contractor").value                         = '';
+          document.getElementById("price").value                              = '';
         } else {
+          document.getElementById("newproductresults").innerHTML                = '';
+          document.getElementById("newproductresults").style.backgroundColor    = 'transparent';
+          document.getElementById("prodpicture").src                            = '';
           document.getElementById("prodpicture").style.backgroundColor          = "black";
           document.getElementById("search-results-form").style.backgroundColor  = "black";
-          document.getElementById("prodpicture").style.backgroundColor          = "black";
-          document.getElementById("searchresultstable").style.visibility        = "visible";
           for (i of data) {
             switch (Object.keys(i)[0]) {
-              /*case "Name":                    document.getElementById("search-results-name").value      = i[Object.keys(i)[0]]; break;
-              case "Number":                  document.getElementById("search-results-number").value    = i[Object.keys(i)[0]]; break;
-              case "Category":                document.getElementById("search-results-category").value  = i[Object.keys(i)[0]]; break;
-              case "Quantity in shop":        document.getElementById("search-results-quantity").value  = i[Object.keys(i)[0]]; break;
-              case "Contractor":              document.getElementById("search-results-available").value = i[Object.keys(i)[0]]; break;
-              case "Price":                   document.getElementById("search-results-price").value     = i[Object.keys(i)[0]]; break;
-              case "Info":                    document.getElementById("search-results-info").value      = i[Object.keys(i)[0]]; break;
-              case "Product links":           document.getElementById("search-results-prodlinks").value = i[Object.keys(i)[0]]; break;
-              case "Picture":                 document.getElementById("prodpicture").innerHTML          = i[Object.keys(i)[0]]; break;*/
-              
-              case "Name":                    document.getElementById("search-results-name").value      = i[Object.keys(i)[0]]; break;
-              case "Number":                  document.getElementById("search-results-number").value    = i[Object.keys(i)[0]]; break;
-              case "Quantity in shop":        document.getElementById("search-results-quantity").value  = i[Object.keys(i)[0]]; break;
-              case "Contractor":              document.getElementById("search-results-available").value = i[Object.keys(i)[0]]; break;
-              case "Price":                   document.getElementById("search-results-price").value     = i[Object.keys(i)[0]]; break;
-              case "Picture":                 document.getElementById("prodpicture").innerHTML          = i[Object.keys(i)[0]]; break;
+              case "Name":                    document.getElementById("name").value             = i[Object.keys(i)[0]]; break;
+              case "Quantity in shop":        document.getElementById("quantity").value         = i[Object.keys(i)[0]]; break;
+              case "Contractor":              document.getElementById("contractor").value       = i[Object.keys(i)[0]]; break;
+              case "Price":                   document.getElementById("price").value            = i[Object.keys(i)[0]]; break;
+              case "Picture":                 document.getElementById("prodpicture").src        = i[Object.keys(i)[0]]; break;
             }
           }
         }
@@ -228,11 +191,11 @@ function searchProduct() {
   if (searchNumber !== '') {
         formData.append('action', "search");
         formData.append('tName', "products");
-        formData.append('searchnumber', searchNumber);
+        formData.append('number', searchNumber);
         
         xhttp.send(formData);
         
-        document.getElementById('searchnumber').value = '';
+        //document.getElementById('number').value = '';
   } else {
       alert("Error: Some fields are empty!");
   }
@@ -327,6 +290,78 @@ function sellProduct() {
         document.getElementById('sellnumber').value   = '';
         document.getElementById('sellquantity').value = '';
         document.getElementById('soldin').value = '';
+  } else {
+      alert("Error: Some fields are empty!");
+  }
+}
+
+// Show sales per a given date
+function checkSales() {
+  document.getElementById("soldproductsresults").innerHTML = '';
+  
+  var soldproductsdate    = document.getElementById('soldproductsdate').value;
+  
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to add the product
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        var data = JSON.parse(this.responseText);
+        
+        var i, j, SKU, ItemDescription, Quantity, SoldIn;
+        if (lang === "BG") {
+          SKU             = "Арт. номер";
+          ItemDescription = "Описание на продукта";
+          Quantity        = "Брой";
+          SoldIn          = "Продадено в";
+        } else {
+          SKU             = "SKU";
+          ItemDescription = "Item description";
+          Quantity        = "Quantity";
+          SoldIn          = "Sold in";
+        }
+      
+        if (data !== 0) {
+          j = `<table><tr><th>${SKU}</th><th>${ItemDescription}</th><th>${Quantity}</th><th>${SoldIn}</th></tr>`;
+          for (i of data) {
+            /*if (lang === "BG") {
+              if (i.includes("LESS THAN 2")) {
+                itemproblem = `ПО-МАЛКО ОТ 2 БРОЙКИ В МАГАЗИНА (в момента ${i[length - 1]} бр)`;
+              }
+              
+              if (i.includes("NOPICTURES")) {
+                itemproblem += " | ПРОДУКТА НЯМА СНИМКА";
+              }
+            }*/
+            j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td></tr>`;
+          }
+          j += "</table>";
+          document.getElementById("soldproductsresults").innerHTML = j;
+        } else document.getElementById("soldproductsresults").innerHTML = "No sales are recorded at this date!";
+      }
+      else {
+        alert("Error: returned status code " + this.status + " " + this.statusText);
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
+  
+  if (soldproductsdate !== '') {
+        formData.append('action', "sales");
+        formData.append('tName', "sales");
+        formData.append('soldproductsdate', soldproductsdate);
+        
+        xhttp.send(formData);
+
+        document.getElementById('soldproductsdate').value = '';
   } else {
       alert("Error: Some fields are empty!");
   }
