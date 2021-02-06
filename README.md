@@ -21,7 +21,7 @@ TODO list:
 12. Integration with the popular online shopping platforms (this is huge, think I probably can't handle at least half of that)
 13. ~~Customer banlist feature ... because those rats deserve it!~~
 14. Security and performance tests (y'all just buy faster computors)
-15. Sales report by the end of the day
+15. ~~Sales report by the end of the day~~
 16. ~~Website localization~~
 17. Almost forgot about adding the feature for product updates like price, info, etc ... My bad
 18. Sales statistics (almost forgot this feature, it's very important according to traders)
@@ -29,3 +29,4 @@ TODO list:
 20. ~~Restocking~~ and generating restock order feature - automatic ordering of low in stock products and updating quantities at their arrival
 21. Product label generator
 22. ~~Manual check if the item that'll be uploaded, is already in the database (less input fields that must be filled by hand)~~
+23. At product upload automatically save (and web optimize) the picture(s) in 'productpics' dir using SKU number as filename  (while backing up the original file)
