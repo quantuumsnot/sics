@@ -171,14 +171,16 @@ select {
 }
 
 .checkissues:hover {
-  background: url("icons8-sugar-cubes-50-inverted.png");
+  /*background: url("icons8-sugar-cubes-50-inverted.png");*/
+  filter: invert(1);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
 }
 
 .usermessages:hover {
-  background: url("icons8-messaging-48-inverted.png");
+  /*background: url("icons8-messaging-48-inverted.png");*/
+  filter: invert(1);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;

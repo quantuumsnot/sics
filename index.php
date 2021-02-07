@@ -25,17 +25,17 @@ $phpVersionType   = PHP_INT_SIZE * 8 . "bit";
 $action = $_POST['action'];
 
 // Open database
-$productsColumns            = "name TEXT, number TEXT, category TEXT, quantity INTEGER, contractor TEXT, price REAL, info TEXT, prodlinks TEXT, pictures BLOB";
-//$productsColumnsNoDataType  = "name, number, category, quantity, contractor, price, info, prodlinks, pictures";
-$productsColumnsNoDataType  = "name, number, quantity, contractor, price, pictures";
+$productsColumns            = "number TEXT, name TEXT, category TEXT, quantity INTEGER, contractor TEXT, price REAL, info TEXT, prodlinks TEXT, pictures BLOB";
+//$productsColumnsNoDataType  = "number, name, category, quantity, contractor, price, info, prodlinks, pictures";
+$productsColumnsNoDataType  = "number, name, quantity, contractor, price, pictures";
 $salesColumns               = "date TEXT, number TEXT, itemdescription TEXT, quantity INTEGER, soldin TEXT";
 $salesColumnsNoDataType     = "date, number, itemdescription, quantity, soldin";
 $restocksColumns            = "date TEXT, number TEXT, itemdescription TEXT, quantity INTEGER";
 $restocksColumnsNoDataType  = "date, number, itemdescription, quantity";
 $messagesColumns            = "date TEXT, user TEXT, message TEXT, status INTEGER";
 $messagesColumnsNoDataType  = "date, user, message, status";
-$banlistColumns             = "customernames TEXT, customerphonenumber TEXT, customeraddress TEXT, customerorderdate TEXT, wherewasordered TEXT";
-$banlistNoDataType          = "customernames, customerphonenumber, customeraddress, customerorderdate, wherewasordered";
+$banlistColumns             = "customerphonenumber TEXT, customernames TEXT, customeraddress TEXT, trackingnumber TEXT, orderdate TEXT, wherewasordered TEXT";
+$banlistNoDataType          = "customerphonenumber, customernames, customeraddress, trackingnumber, orderdate, wherewasordered";
 $usersColumns               = "username TEXT, password TEXT";
 $usersNoDataType            = "username, password";
 $db = new PDO('sqlite:sics.db');
@@ -60,6 +60,16 @@ function getMemoryUsageUnits($bytes) {
   } else return 0;
 }
 
+// atm log only UPDATE and INSERT queries
+function logQuery($queryforsave) {
+  $fileName = "logs/" . date('d M Y') . ".txt";
+  if (!is_file($fileName)) {
+    $newFile = fopen($fileName, 'w');
+    fclose($newFile);
+  }
+  file_put_contents($fileName, $queryforsave, FILE_APPEND);
+}
+
 function addProduct() {
   try {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -67,7 +77,7 @@ function addProduct() {
 
       $number     = $_POST['number'];
       
-      $result = $db->prepare("SELECT * FROM {$_POST['tName']} WHERE number=?");
+      $result = $db->prepare("SELECT * FROM products WHERE number=?");
       $result->execute(array($number));
       $result->bindColumn(1, $number);
       
@@ -81,9 +91,9 @@ function addProduct() {
         //$prodlinks  = $_POST['prodlinks'];
         $fhandler   = file_get_contents($_FILES['pictures']['tmp_name']);
              
-        $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$productsColumnsNoDataType}) VALUES (?, ?, ?, ?, ?, ?)");
-        $result->bindValue(1, $name);
-        $result->bindValue(2, $number);
+        $result = $db->prepare("INSERT INTO products ({$productsColumnsNoDataType}) VALUES (?, ?, ?, ?, ?, ?)");
+        $result->bindValue(1, $number);
+        $result->bindValue(2, $name);
         //$result->bindValue(3, $category);
         $result->bindValue(3, $quantity);
         $result->bindValue(4, $contractor);
@@ -92,6 +102,25 @@ function addProduct() {
         //$result->bindValue(8, $prodlinks);
         $result->bindValue(6, $fhandler, PDO::PARAM_LOB);
         $result->execute();
+        
+        // Start logging the query
+        $queryforsave = "INSERT INTO products ({$productsColumnsNoDataType}) VALUES ('{$number}', '{$name}', '{$quantity}', '{$contractor}', '{$price}', NULL)" . PHP_EOL;
+        logQuery($queryforsave);
+        // End logging the query
+        
+        // Save the picture in the productpics folder as a future-proof backup
+        $imageFileType = strtolower(pathinfo(basename($_FILES['pictures']['name']), PATHINFO_EXTENSION));
+        $target_file = "productpics/" . $number . "." . $imageFileType;
+
+        if (getimagesize($_FILES["pictures"]["tmp_name"]) !== false) {
+          if (!file_exists($target_file)) {
+            if ($_FILES["pictures"]["size"] > 1) {
+              if (in_array($imageFileType, array("jpg", "jpeg", "png", "gif"))) {
+                move_uploaded_file($_FILES["pictures"]["tmp_name"], $target_file);
+              }
+            }
+          }
+        }
         
         echo "The product was succesfully added!";
       } else {
@@ -108,11 +137,11 @@ function searchProduct() {
 
       $searchNumber = $_POST['number'];
       
-      //$result = $db->prepare("SELECT name, number, category, quantity, contractor, info, prodlinks, price, pictures FROM {$_POST['tName']} WHERE number=?");
-      $result = $db->prepare("SELECT name, number, quantity, contractor, price, pictures FROM {$_POST['tName']} WHERE number=?");
+      //$result = $db->prepare("SELECT number, name, category, quantity, contractor, info, prodlinks, price, pictures FROM products WHERE number=?");
+      $result = $db->prepare("SELECT number, name, quantity, contractor, price, pictures FROM products WHERE number=?");
       $result->execute(array($searchNumber));
-      $result->bindColumn(1, $name);
-      $result->bindColumn(2, $number);
+      $result->bindColumn(1, $number);
+      $result->bindColumn(2, $name);
       //$result->bindColumn(3, $category);
       $result->bindColumn(3, $quantity);
       $result->bindColumn(4, $contractor);
@@ -154,7 +183,10 @@ function sellProduct() {
       $result->bindValue(1, $sellNumber);
       $result->execute();
 			
-			usleep(100);
+			// Start logging the query
+      $queryforsave = "UPDATE products SET quantity=quantity-{$_POST['sellquantity']} WHERE number={$sellNumber}" . PHP_EOL;
+      logQuery($queryforsave);
+      // End logging the query
 			
 			$result = $db->prepare("SELECT name FROM products WHERE number=?");
       $result->execute(array($sellNumber)); //this line first or bindColumn won't work
@@ -163,17 +195,20 @@ function sellProduct() {
         $itemName = $name;
       }
       
-			usleep(100);
-      
       $actionDate = date('d M Y H-i-s');
 			
-      $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$salesColumnsNoDataType}) VALUES (?, ?, ?, ?, ?)");
+      $result = $db->prepare("INSERT INTO sales ({$salesColumnsNoDataType}) VALUES (?, ?, ?, ?, ?)");
       $result->bindValue(1, $actionDate);
       $result->bindValue(2, $sellNumber);
 			$result->bindValue(3, $itemName);
       $result->bindValue(4, $sellQuantity);
       $result->bindValue(5, $soldIn);
       $result->execute();
+      
+      // Start logging the query
+      $queryforsave = "INSERT INTO sales ({$salesColumnsNoDataType}) VALUES ('{$actionDate}', '{$sellNumber}', '{$itemName}', '{$sellQuantity}', '{$soldIn}')" . PHP_EOL;
+      logQuery($queryforsave);
+      // End logging the query
       
       $fileName = $_SERVER['DOCUMENT_ROOT'] . "/" . date('d M Y') . ".txt";
       if (!is_file($fileName)) {
@@ -239,8 +274,13 @@ function restockProduct() {
       $result = $db->prepare("UPDATE products SET quantity=quantity+{$_POST['restockquantity']} WHERE number=?");
       $result->bindValue(1, $restockNumber);
       //$result->bindValue(1, date('d M Y H-i-s'));
-      
       $result->execute();
+      
+      // Start logging the query
+      $queryforsave = "UPDATE products SET quantity=quantity+{$_POST['restockquantity']} WHERE number={$restockNumber}" . PHP_EOL;
+      logQuery($queryforsave);
+      // End logging the query
+      
       
       $actionDate = date('d M Y H-i-s');
 			
@@ -250,6 +290,11 @@ function restockProduct() {
 			$result->bindValue(3, $itemName);
       $result->bindValue(4, $restockQuantity);
       $result->execute();
+      
+      // Start logging the query
+      $queryforsave = "INSERT INTO restocks ({$restocksColumnsNoDataType}) VALUES ('{$actionDate}', '{$restockNumber}', '{$itemName}', '{$restockQuantity}')" . PHP_EOL;
+      logQuery($queryforsave);
+      // End logging the query
       
       echo "The product's quantity was succesfully updated!";
     }
@@ -263,19 +308,21 @@ function searchCustomer() {
 
       $customerphonenumber = $_POST['customerphonenumber'];
       
-      $result = $db->prepare("SELECT customernames, customerphonenumber, customeraddress, customerorderdate, wherewasordered FROM {$_POST['tName']} WHERE customerphonenumber=?");
+      $result = $db->prepare("SELECT customerphonenumber, customernames, customeraddress, trackingnumber, orderdate, wherewasordered FROM customerbanlist WHERE customerphonenumber=?");
       $result->execute(array($customerphonenumber));
-      $result->bindColumn(1, $customernames);
-      $result->bindColumn(2, $customerphonenumber);
+      $result->bindColumn(1, $phonenumber);
+      $result->bindColumn(2, $customernames);
       $result->bindColumn(3, $customeraddress);
-      $result->bindColumn(4, $customerorderdate);
-      $result->bindColumn(5, $wherewasordered);
+      $result->bindColumn(4, $trackingnumber);
+      $result->bindColumn(5, $orderdate);
+      $result->bindColumn(6, $wherewasordered);
       
       if (count($result->fetchAll(PDO::FETCH_ASSOC)) > 0) {
+        echo "Phone number: " . $phonenumber . "<br />";
         echo "Names: " . $customernames . "<br />";
-        echo "Phone number: " . $customerphonenumber . "<br />";
         echo "Address: " . $customeraddress . "<br />";
-        echo "Order date: " . $customerorderdate . "<hr />";
+        echo "Tracking Number: " . $trackingnumber . "<br />";
+        echo "Order date: " . $orderdate . "<hr />";
         echo "Where was ordered: " . $wherewasordered . "<hr />";
       } else {
         echo "The customer was not found in the banlist!";
@@ -289,19 +336,26 @@ function banCustomer() {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
       global $db, $banlistNoDataType;
 
-      $customernames        = $_POST['bancustomernames'];
-      $customerphonenumber  = $_POST['bancustomerphonenumber'];
-      $customeraddress      = $_POST['bancustomeraddress'];
-      $customerorderdate    = date("d M Y", strtotime($_POST['bancustomerorderdate']));
+      $customerphonenumber  = $_POST['customerphonenumber'];
+      $customernames        = $_POST['customernames'];
+      $customeraddress      = $_POST['customeraddress'];
+      $trackingnumber       = $_POST['trackingnumber'];
+      $orderdate            = date("d M Y", strtotime($_POST['orderdate']));
       $wherewasordered      = $_POST['wherewasordered'];
       
-      $result = $db->prepare("INSERT INTO {$_POST['tName']} ({$banlistNoDataType}) VALUES (?, ?, ?, ?, ?)");
-      $result->bindValue(1, $customernames);
-      $result->bindValue(2, $customerphonenumber);
+      $result = $db->prepare("INSERT INTO customerbanlist ({$banlistNoDataType}) VALUES (?, ?, ?, ?, ?, ?)");
+      $result->bindValue(1, $customerphonenumber);
+      $result->bindValue(2, $customernames);
       $result->bindValue(3, $customeraddress);
-      $result->bindValue(4, $customerorderdate);
-      $result->bindValue(5, $wherewasordered);
+      $result->bindValue(4, $trackingnumber);
+      $result->bindValue(5, $orderdate);
+      $result->bindValue(6, $wherewasordered);
       $result->execute();
+      
+      // Start logging the query
+      $queryforsave = "INSERT INTO customerbanlist ({$banlistNoDataType}) VALUES ('{$customerphonenumber}', '{$customernames}', '{$customeraddress}', '{$trackingnumber}', '{$orderdate}', '{$wherewasordered}')" . PHP_EOL;
+      logQuery($queryforsave);
+      // End logging the query
       
       echo "The customer was succesfully added to banlist!";
     }
@@ -313,7 +367,7 @@ function checkIssues() {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
       global $db;
       
-      $result = $db->prepare("SELECT * FROM {$_POST['tName']} WHERE quantity < 2 OR info IS NULL OR pictures IS NULL");
+      $result = $db->prepare("SELECT * FROM products WHERE quantity < 2 OR info IS NULL OR pictures IS NULL");
       $result->execute();
       $result = $result->fetchAll(PDO::FETCH_ASSOC);
 
@@ -352,7 +406,7 @@ function checkMessages() {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
       global $db;
       
-      $result = $db->prepare("SELECT * FROM {$_POST['tName']} WHERE status == 0");
+      $result = $db->prepare("SELECT * FROM messages WHERE status == 0");
       $result->execute();
       $result = $result->fetchAll(PDO::FETCH_ASSOC);
 

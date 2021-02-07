@@ -408,10 +408,11 @@ function searchCustomer() {
 
 // Ban the customer if not picking their order, not paying the shipping fee for returning or breaking the products
 function banCustomer() {
-  var bancustomernames        = document.getElementById('bancustomernames').value;
-  var bancustomerphonenumber  = document.getElementById('bancustomerphonenumber').value;
-  var bancustomeraddress      = document.getElementById('bancustomeraddress').value;
-  var bancustomerorderdate    = document.getElementById('bancustomerorderdate').value;
+  var customernames           = document.getElementById('customernames').value;
+  var customerphonenumber     = document.getElementById('customerphonenumber').value;
+  var customeraddress         = document.getElementById('customeraddress').value;
+  var trackingnumber          = document.getElementById('trackingnumber').value;
+  var orderdate               = document.getElementById('orderdate').value;
   var wherewasordered         = document.getElementById('wherewasordered').value;
 
   // Create a FormData object
@@ -438,25 +439,27 @@ function banCustomer() {
   //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
   //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
   
-  if (bancustomernames        !== '' && 
-      bancustomerphonenumber  !== '' && 
-      bancustomeraddress      !== '' && 
-      bancustomerorderdate    !== '' && 
+  if (customerphonenumber     !== '' && 
+      customernames           !== '' && 
+      customeraddress         !== '' && 
+      orderdate               !== '' && 
       wherewasordered         !== '') {
         formData.append('action', "bancustomer");
         formData.append('tName', "customerbanlist");
-        formData.append('bancustomernames', bancustomernames);
-        formData.append('bancustomerphonenumber', bancustomerphonenumber);
-        formData.append('bancustomeraddress', bancustomeraddress);
-        formData.append('bancustomerorderdate', bancustomerorderdate);
+        formData.append('customerphonenumber', customerphonenumber);
+        formData.append('customernames', customernames);
+        formData.append('customeraddress', customeraddress);
+        formData.append('trackingnumber', trackingnumber);
+        formData.append('orderdate', orderdate);
         formData.append('wherewasordered', wherewasordered);
 
         xhttp.send(formData);
         
-        document.getElementById('bancustomernames').value   = '';
-        document.getElementById('bancustomerphonenumber').value = '';
-        document.getElementById('bancustomeraddress').value = '';
-        document.getElementById('bancustomerorderdate').value = '';
+        document.getElementById('customerphonenumber').value = '';
+        document.getElementById('customernames').value   = '';
+        document.getElementById('customeraddress').value = '';
+        document.getElementById('trackingnumber').value = '';
+        document.getElementById('orderdate').value = '';
         document.getElementById('wherewasordered').value = '';
         
   } else {

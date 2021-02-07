@@ -105,25 +105,17 @@
             <output class="restock-product-results" id="restockproductresults" style="text-align: center" name="restockproductresults"></output>
           </form>
         </div>
-        
+
         <input type="radio" name="tabs" id="tabfour">
         <label for="tabfour" id="labelfour">Customer Banlist</label>
         <div class="tab">
-          <form class="customerbanlist-form" name="customerbanlist-form" action="#" method="post">
+          <form class="bancustomer-form" name="bancustomer-form" action="#" method="post">
             <input type="number" id="customerphonenumber" name="customerphonenumber" required placeholder="Customer Phone Number" min="0">
             <button class="customerbanlistbutton" type="submit" id="customerbanlist" onclick="searchCustomer(); return false;">Search</button>
-            <output class="customerbanlist-results" id="customerbanlistresults" style="text-align: center" name="customerbanlistresults"></output>
-          </form>
-        </div>
-        
-        <input type="radio" name="tabs" id="tabfive">
-        <label for="tabfive" id="labelfive">Ban customer</label>
-        <div class="tab">
-          <form class="bancustomer-form" name="bancustomer-form" action="#" method="post">
-            <input type="text"    id="bancustomernames"       name="bancustomernames"       required placeholder="Customer names" autofocus>
-            <input type="number"  id="bancustomerphonenumber" name="bancustomerphonenumber" required placeholder="Customer Phone Number" min="0">
-            <input type="text"    id="bancustomeraddress"     name="bancustomeraddress"     required placeholder="Customer Address">
-            <input type="date"    id="bancustomerorderdate"   name="bancustomerorderdate"   required min="01-01-1970">
+            <input type="text"    id="customernames"       name="customernames"       required placeholder="Customer names" autofocus>
+            <input type="text"    id="customeraddress"     name="customeraddress"     required placeholder="Customer Address">
+            <input type="number"    id="trackingnumber"     name="trackingnumber"     required placeholder="Tracking Number" min="0">
+            <input type="date"    id="orderdate"   name="customerorderdate"   required min="01-01-1970">
             <select name="wherewasordered" id="wherewasordered" required>
               <option id="wherewasordereda" value="a">-Choose where it was ordered-</option>
               <option id="wherewasorderedsite" value="site">SITE</option>
@@ -135,6 +127,7 @@
             </select>
             <button class="bancustomerbutton" type="submit" id="bancustomer" onclick="banCustomer(); return false;">Ban</button>
             <output class="bancustomer-results" id="bancustomerresults" style="text-align: center" name="bancustomerresults"></output>
+            <output class="customerbanlist-results" id="customerbanlistresults" style="text-align: center" name="customerbanlistresults"></output>
           </form>
         </div>
       </div>
