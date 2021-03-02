@@ -1,5 +1,5 @@
 # sics
-Sales and Inventory Control System v0.4 codename "Falling teeth"
+Sales and Inventory Control System v0.6 codename "Falling teeth"
 
 
 This web-based system works and locally using PHP's built-in server (started in project's directory):
@@ -30,3 +30,4 @@ TODO list:
 21. Product label generator
 22. ~~Manual check if the item that'll be uploaded, is already in the database (less input fields that must be filled by hand)~~
 23. At product upload automatically save (and web optimize) the picture(s) in 'productpics' dir using SKU number as filename  (while backing up the original file)
+24. Add feature allowing to restock product which is already sold but RMA'ed for one or another reason (buyer not picking it, changed for a different product, etc)
