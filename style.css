@@ -1,15 +1,8 @@
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 @media (min-width: 600px) {
-  main {
-    flex-wrap: nowrap;
-  }
-
-  div {
-    flex-basis: 100%;
-  }
+  main { flex-wrap: nowrap; }
+  div { flex-basis: 100%; }
 }
 
 @media (max-width: 45em) {
@@ -20,15 +13,9 @@
     order: initial;
   }
   
-  .tabs input[type="radio"]:checked + label + .tab {
-    order: 0;
-  }
+  .tabs input[type="radio"]:checked + label + .tab { order: 0; }
 
-  .tabs label {
-    width: 100%;
-    margin-right: 0;
-    margin-top: 0.2rem;
-  }
+  .tabs label { width: 100%; margin-right: 0; margin-top: 0.2rem; }
 }
 
 html {
@@ -51,10 +38,11 @@ html {
 
 body {
   min-height: 100vh;
-	padding-top: 10vh;
+	/*padding-top: 10vh;*/
+  padding-top: 1vh;
   font-weight: 300;
   line-height: 1.5;
-  max-width: 60rem;
+  max-width: 60rem; /* if you set it 100% there will be horizontal scrollbars */
   margin: 0 auto;
   font-size: 112%;
 }
@@ -70,33 +58,17 @@ main {
   padding: 1em 0.5em;
 }
 
-hr {
-  width: 100%;
-}
+hr { width: 100%; } /* set width of horizontal line to be 100% of the container */
 
-.blink {
-  animation: blink 1s infinite;
-}
+.blink { animation: blink 1s infinite; }
 
 @keyframes blink {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
-/*textarea {
-  resize: none;
-}*/
-
-input {
-  text-align: center;
-}
+input { text-align: center; }
 
 input[type=number]::-webkit-inner-spin-button, 
 input[type=number]::-webkit-outer-spin-button { 
@@ -104,13 +76,9 @@ input[type=number]::-webkit-outer-spin-button {
   margin: 0;
 }
 
-input[type=number], input[type=text] {
-  font-size: 1em;
-}
+input[type=number], input[type=text] { font-size: 1em; }
 
-select {
-  font-size: 1em;
-}
+select { font-size: 1em; }
 
 .notificationarea {
   display: flex;
@@ -130,55 +98,67 @@ select {
   border-radius: 0.5em;
 }
 
-.notificationicons:hover {
-  border-bottom: 2px solid #80ecff;
-  cursor: pointer;
-}
+.notificationicons:hover { border-bottom: 2px solid #80ecff; cursor: pointer; }
 
-.checkissues {
-  background: url("icons8-sugar-cubes-50.png");
+.checkissues { background: url("icons8-sugar-cubes-50.png"); } /* First load the image then set its properties */
+.usermessages { background: url("icons8-messaging-48.png"); }
+
+.checkissues, .usermessages {
   background-position: center; /* Center the image */
   background-repeat: no-repeat; /* Do not repeat the image */
   background-size: cover; /* Resize the background image to cover the entire container */
-}
-
-.usermessages {
-  background: url("icons8-messaging-48.png");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-.checkissues, .usermessages {
   text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black; /* text outlines */
   color: yellow;
   position: relative;
 }
 
+.notificationicons img, .checkissues img, .usermessages img { max-width: 100%; }
+
+.appversion > div {
+  font-size: 0.9rem;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 2;
+}
+
+.loadingTime > div {
+  font-size: 0.6rem;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 3;
+}
+
+.licensearea { width: auto; }
+#licenseimg { border-width: 0; height: auto; width: 100%; } /* Lighthouse audit fix */
+
+#productissues, #usermessages {
+  position: absolute;
+  top: -40%;
+  right: -20%;
+}
+
 #checkissuespopupclose, #usermessagespopupclose {
+  cursor: pointer;
   text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black; /* text outlines */
   color: yellow;
-  cursor: pointer;
-  position: absolute;
-  top: 0%;
+  background-color: black;
+  border: 1px solid black;
+  border-radius: 1.5em;
+  position: sticky; /* this sticks the close button */
+  top: 0;
   right: 1%;
-  /*position: relative;*/
+  left: 99%;
+  width: 50px;
 }
 
 #checkissuespopupclose:hover, #usermessagespopupclose:hover {
   color: black;
   background-color: yellow;
+  border: 1px solid black;
 }
 
-.checkissues:hover {
+.checkissues:hover, .usermessages:hover {
   /*background: url("icons8-sugar-cubes-50-inverted.png");*/
-  filter: invert(1);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-.usermessages:hover {
   /*background: url("icons8-messaging-48-inverted.png");*/
   filter: invert(1);
   background-position: center;
@@ -186,30 +166,132 @@ select {
   background-size: cover;
 }
 
-.switchlocalization:hover {
+.switchlocalization:hover, .appversion:hover, .loadingTime:hover { color: black; background-color: white; }
+
+.licensearea:hover { filter: invert(1); }
+
+#checkissuespopup, #usermessagespopup {
+  border: 2px solid #80ecff;
+  /*border-radius: 1.5em;*/
+  height: 480px;
+  overflow: auto;
+}
+
+.marketsarea {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+}
+
+.marketsicons {
+  border-bottom: 2px solid #bfdfff;
+  flex: 0 1 auto;
+  margin: 10px;
+  width: auto;
+  height: auto;
+  border-radius: 0.5em;
+}
+
+.marketsicons:hover {
+  border-bottom: 2px solid #80ecff;
+  cursor: pointer;
   color: black;
   background-color: white;
 }
 
-#checkissuespopup {
-  border: 2px solid #80ecff;
+.todaySales {
+  font-weight: bold;
+  color: black;
+  border-top: 2px solid #bfdfff;
+  background-color: white;
+}
+
+.todaySales:hover { color: black; background-color: #bfdfff; border-color: #ff0000;}
+
+#issuesresults table {
+  border-collapse: collapse;
+  border: 1px solid black;
+  table-layout: fixed;
+  border-spacing: 0;
+  padding: 0;
+  word-break: break-word;
+}
+
+#issuesresults td, tr, th { border: 1px solid black; border-spacing: 0; padding: 0; }
+
+#addtable {
+  border-collapse: collapse;
+  border: none;
+  table-layout: fixed;
+  max-width: 600px;
+  max-height: 600px;
+  border-spacing: 0;
+  padding: 0;
+}
+
+#addtable th, #addtable tr, #addtable td { border: none; }
+
+.xxx > *, .xxx > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+}
+.xxx > * { flex-direction: row; }
+.xxx > div { flex-direction: column; }
+
+.xxx > button { margin: 0 auto; }
+
+.visuallyhidden { /* Lighthouse audit fix taken from https://www.w3.org/WAI/tutorials/forms/labels/#note-on-hiding-elements */
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+#hiddenaddinput, #addproduct, #setmonitoring { visibility: hidden; }
+
+.setmonitoringbutton {
+  -webkit-appearance: button;
+  -moz-appearance: button;
+  appearance: button;
+  outline: none;
+  text-decoration: none;
+  /*color: white;*/
+  /*border: 2px solid #80ecff;*/
   /*border-radius: 1.5em;*/
-  height: 480px;
-  overflow: auto;
+  border: none;
+  cursor: pointer;
+  background: url("image-not-available.jpg");
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Do not repeat the image */
+  background-size: cover; /* Resize the background image to cover the entire container */
+  background-color: #80ecff;
+  /*font-weight: bold;*/
+  margin: 1em 0;
+  padding: 1em 1em;
 }
 
-#usermessagespopup {
-  border: 2px solid #80ecff;
-  /*border-radius: 1.5em;*/
-  height: 480px;
-  overflow: auto;
+.setmonitoringbutton:hover { cursor: pointer; box-shadow: 0 0 7px #0080ff; }
+
+.productmonitoringenabled { background: url("monitored_48.png"); background-color: #80ecff; } /* First load the image then set its properties */
+.productmonitoringdisabled { background: url("notmonitored_48.png"); background-color: #ff0000; }
+
+.productmonitoringenabled, .productmonitoringdisabled {
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Do not repeat the image */
+  background-size: cover; /* Resize the background image to cover the entire container */
 }
 
-#checkproduct {
-  ;
-}
-
-dialog::backdrop {
+dialog::backdrop { /* Carbon effect on foreground */
   background: repeating-linear-gradient(
     45deg,
     rgba(0, 0, 0, 0.2),
@@ -218,31 +300,6 @@ dialog::backdrop {
     rgba(0, 0, 0, 0.3) 20px
   );
   backdrop-filter: blur(3px);
-}
-
-table {
-  border-collapse: collapse;
-}
-
-table, th, td {
-  border: 1px solid black;
-}
-
-.maintable {
-  border-collapse: collapse;
-  width: auto !important;
-  table-layout: fixed;
-  word-break: break-word;
-}
-
-.maintable > th, td {
-  border: 1px solid white;
-}
-
-#productissues, #usermessages {
-  position: absolute;
-  top: -40%;
-  right: -20%;
 }
 
 .tabs {
@@ -257,17 +314,13 @@ table, th, td {
   justify-content: center;
 }
 
-/* rendering optimisation, DO NOT use it for elements storing data because they must be visible in DOM */
+/* this is a rendering optimisation, DO NOT use it for elements that store data because they must be visible in DOM */
 /*.tab {
   contain-visibility: auto;
   contain-intrinsic-size: 1px 5000px;
 }*/
 
 .tabs label {
-  /*-webkit-box-ordinal-group: 2;
-  -webkit-order: 1;
-  -ms-flex-order: 1;
-  order: 1;*/
   display: block;
   padding: 1rem 1rem;
   margin-right: 0.2rem;
@@ -293,10 +346,7 @@ table, th, td {
   padding: 1rem;
 }
 
-.tabs input[type="radio"] {
-  position: absolute;
-  opacity: 0;
-}
+.tabs input[type="radio"] { position: absolute; opacity: 0; }
 
 .tabs input[type="radio"]:hover + label { background: yellow; color: black; border-radius: 1.5em; }
 
@@ -304,7 +354,7 @@ table, th, td {
 
 .tabs input[type="radio"]:checked + label + .tab { display: block; }
 
-.addproduct-form, .searchproduct-form, .sellproduct-form, .customerbanlist-form, .bancustomer-form, .restockproduct-form {
+.addproduct-form, .sellproduct-form, .customerbanlist-form, .bancustomer-form, .restockproduct-form {
   display: flex;
   flex-wrap: wrap;
   flex-direction: column;
@@ -313,92 +363,33 @@ table, th, td {
 }
 
 /* This fixes the nasty bug of clicking in the middle of the viewport that opens the last tab */
-#tabone, #tabtwo, #tabthree, #tabfour, #tabfive {
-  pointer-events: none;
-}
+#tabone, #tabtwo, #tabthree, #tabfour { pointer-events: none; }
 
-.search-product-results > * {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-flex-wrap: wrap;
-  -ms-flex-wrap: wrap;
-  flex-wrap: wrap;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
+#prodpicture { overflow: hidden; height: auto; width: 75%; object-fit: scale-down; }
 
-.search-product-results {
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: column;
-  align-items: center;
-  overflow: hidden;
-  padding: 0;
-}
+.fileuploadbutton { width: 0px; display: none; visibility: collapse; }
 
-/*.searchresultstable { table-layout: fixed; width: 100%; visibility: collapse; }
-.searchresultstable input { width: 100%; }*/
-
-#prodpicture {
-  overflow: hidden;
-  width: 50%;
-}
-
-#prodpicture img {
-  overflow: hidden;
-  height: 100%;
-  /*width: 100%;*/
-  object-fit: scale-down;
-  margin-top: 1rem;
-}
-
-/*.fileuploadbutton {
-  border: 2px solid #bfdfff;
-  border-radius: 1.5em;
-  cursor: pointer;
-}
-
-.fileuploadbutton:hover {
-  cursor: pointer;
-  box-shadow: 0 0 7px #0080ff;
-  border-color: #80ecff;
-  color: #80ecff;
-}*/
-
-.fileuploadbutton {
-  width: 0px;
-  display: none;
-  visibility: collapse;
-}
+#number, #customerphonenumber { height: 48px; margin: 0 0 8px 0; } /* Lighthouse audit fix */
 
 .addproductbutton, .prodpicuploadbutton, .checkproductbutton, .searchproductbutton, .sellproductbutton, .soldproductsbutton, .customerbanlistbutton, .bancustomerbutton, .restockproductbutton {
   -webkit-appearance: button;
   -moz-appearance: button;
   appearance: button;
-  
   outline: none;
-
   text-decoration: none;
   color: white;
-  
   border: 2px solid #80ecff;
   border-radius: 1.5em;
   cursor: pointer;
-  
   background-color: #000000;
   font-weight: bold;
-  
   margin: 1em 0;
   padding: 1em 1em;
 }
 
-.prodpicuploadbutton {
-  margin: 0;
-}
+#checkproduct { height: 48px; margin: 0 0 8px 25%; } /* Lighthouse audit fix */
+
+.prodpicuploadbutton { margin: 0; padding: 0; }
 
 .addproductbutton:hover, .prodpicuploadbutton:hover, .checkproductbutton:hover, .searchproductbutton:hover, .sellproductbutton:hover, .soldproductsbutton:hover, .customerbanlistbutton:hover, .bancustomerbutton:hover, .restockproductbutton:hover {
   cursor: pointer;
@@ -407,27 +398,29 @@ table, th, td {
   color: black;
 }
 
-.new-product-results, .search-product-results, .sell-product-results, .sold-products-results, .customerbanlist-results, .bancustomer-results, .restock-product-results {
+/*.new-product-results, .search-product-results, .sell-product-results, .sold-products-results, .customerbanlist-results, .bancustomer-results, .restock-product-results {
   border: 2px solid #bfdfff;
   border-radius: 1.5em;
   padding: 0 1em;
+}*/
+
+.sold-products-results { height: 240px; overflow-y: scroll; display: none; }
+
+#soldproductsresults table {
+  border-collapse: collapse;
+  border: 1px solid white;
+  table-layout: fixed;
+  border-spacing: 0;
+  padding: 0;
+  word-break: break-word;
 }
 
-#loadingTime, #licensearea {
-  justify-content: center;
-  align-content: center;
-  align-items: center;
-  line-height: 1.2;
-  padding-left: 0.5em;
-  padding-right: 0.5em;
-  border: 2px solid #bfdfff;
-  border-radius: 1.5em;
-  background-color: rgba(0, 0, 0, 0.90);
-}
+#soldproductsresults th, tr, td { border: 1px solid white; border-spacing: 0; padding: 0; }
 
-#loadingTime:hover, #licensearea:hover {
-  cursor: pointer;
-  box-shadow: 0 0 7px #0080ff;
-  border-color: #80ecff;
-  color: #80ecff;
-}
+.divtable { display: table; width: 100%; }
+.divrow { display: table-row; }
+/*.divheader { display: table-header-group; font-weight: bold; background-color: #EEE; }*/
+.divtableheadcell { font-weight: bold; background-color: #EEE; }
+.divtablecell, .divtableheadcell { display: table-cell; border: 1px solid #999999; padding: 3px 10px; }
+.divtablefoot { display: table-footer-group; }
+.divtablebody { display: table-row-group; }

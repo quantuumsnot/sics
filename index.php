@@ -22,12 +22,10 @@ header("Content-type: text/plain");
 $phpVersionNumber = PHP_VERSION_ID;
 $phpVersionType   = PHP_INT_SIZE * 8 . "bit";
 
-$action = $_POST['action'];
-
 // Open database
-$productsColumns            = "number TEXT, name TEXT, category TEXT, quantity INTEGER, contractor TEXT, price REAL, info TEXT, prodlinks TEXT, pictures BLOB";
-//$productsColumnsNoDataType  = "number, name, category, quantity, contractor, price, info, prodlinks, pictures";
-$productsColumnsNoDataType  = "number, name, quantity, contractor, price, pictures";
+$productsColumns            = "number TEXT, name TEXT, category TEXT, quantity INTEGER, contractor TEXT, price REAL, weight REAL, info TEXT, prodlinks TEXT, monitored INTEGER, pictures BLOB";
+//$productsColumnsNoDataType  = "number, name, category, quantity, contractor, price, weight, info, prodlinks, monitored, pictures";
+$productsColumnsNoDataType  = "number, name, quantity, contractor, price, monitored, pictures";
 $salesColumns               = "date TEXT, number TEXT, itemdescription TEXT, quantity INTEGER, soldin TEXT";
 $salesColumnsNoDataType     = "date, number, itemdescription, quantity, soldin";
 $restocksColumns            = "date TEXT, number TEXT, itemdescription TEXT, quantity INTEGER";
@@ -91,31 +89,41 @@ function addProduct() {
         //$prodlinks  = $_POST['prodlinks'];
         $fhandler   = file_get_contents($_FILES['pictures']['tmp_name']);
              
-        $result = $db->prepare("INSERT INTO products ({$productsColumnsNoDataType}) VALUES (?, ?, ?, ?, ?, ?)");
+        $result = $db->prepare("INSERT INTO products ({$productsColumnsNoDataType}) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $result->bindValue(1, $number);
         $result->bindValue(2, $name);
         //$result->bindValue(3, $category);
         $result->bindValue(3, $quantity);
         $result->bindValue(4, $contractor);
         $result->bindValue(5, $price);
+        //$result->bindValue(6, $weight);
         //$result->bindValue(7, $info);
         //$result->bindValue(8, $prodlinks);
-        $result->bindValue(6, $fhandler, PDO::PARAM_LOB);
+        $result->bindValue(6, 1); // automatically set monitored state to ON
+        $result->bindValue(7, $fhandler, PDO::PARAM_LOB);
         $result->execute();
         
         // Start logging the query
-        $queryforsave = "INSERT INTO products ({$productsColumnsNoDataType}) VALUES ('{$number}', '{$name}', '{$quantity}', '{$contractor}', '{$price}', NULL)" . PHP_EOL;
+        $queryforsave = "INSERT INTO products ({$productsColumnsNoDataType}) VALUES ('{$number}', '{$name}', '{$quantity}', '{$contractor}', '{$price}', 1, NULL)" . PHP_EOL;
         logQuery($queryforsave);
         // End logging the query
         
         // Save the picture in the productpics folder as a future-proof backup
         $imageFileType = strtolower(pathinfo(basename($_FILES['pictures']['name']), PATHINFO_EXTENSION));
         $target_file = "productpics/" . $number . "." . $imageFileType;
+        
+        // Check if the image file already exists then make a backup copy with the current datetime
+        if (file_exists($target_file)) {
+          //rename($target_file, "productpics/" . $number . "_" . date('Y M D H-i-s') . "." . $imageFileType); // not safe when there are no rights to write files
+          copy($target_file, "productpics/" . $number . "_bak_" . date('Y M D H-i-s') . "." . $imageFileType);
+          unlink($target_file);
+        }
 
+        // Save the image file to directory as another level of backup
         if (getimagesize($_FILES["pictures"]["tmp_name"]) !== false) {
           if (!file_exists($target_file)) {
             if ($_FILES["pictures"]["size"] > 1) {
-              if (in_array($imageFileType, array("jpg", "jpeg", "png", "gif"))) {
+              if (in_array($imageFileType, array("jpg", "jpeg", "png", "gif", "bmp", "webp"))) {
                 move_uploaded_file($_FILES["pictures"]["tmp_name"], $target_file);
               }
             }
@@ -137,18 +145,20 @@ function searchProduct() {
 
       $searchNumber = $_POST['number'];
       
-      //$result = $db->prepare("SELECT number, name, category, quantity, contractor, info, prodlinks, price, pictures FROM products WHERE number=?");
-      $result = $db->prepare("SELECT number, name, quantity, contractor, price, pictures FROM products WHERE number=?");
+      //$result = $db->prepare("SELECT number, name, category, quantity, contractor, price, weight, info, prodlinks, monitored, pictures FROM products WHERE number=?");
+      $result = $db->prepare("SELECT number, name, quantity, contractor, price, monitored, pictures FROM products WHERE number=?");
       $result->execute(array($searchNumber));
       $result->bindColumn(1, $number);
       $result->bindColumn(2, $name);
       //$result->bindColumn(3, $category);
       $result->bindColumn(3, $quantity);
       $result->bindColumn(4, $contractor);
-      //$result->bindColumn(6, $info);
-      //$result->bindColumn(7, $prodlinks);
       $result->bindColumn(5, $price);
-      $result->bindColumn(6, $lob);
+      //$result->bindColumn(6, $weight);
+      //$result->bindColumn(7, $info);
+      //$result->bindColumn(8, $prodlinks);
+      $result->bindColumn(6, $monitored);
+      $result->bindColumn(7, $lob);
       
       $output = [];
       
@@ -159,13 +169,42 @@ function searchProduct() {
         $output [] = array("Quantity in shop" => $quantity);
         $output [] = array("Contractor" => $contractor);
         $output [] = array("Price" => $price);
+        //$output [] = array("Weight" => $weight);
         //$output [] = array("Info" => $info);
         //$output [] = array("Product links" => $prodlinks);
-        $output [] = array("Picture" => "data:image/jpg;base64,"  . base64_encode($lob));
+        $output [] = array("Monitored" => $monitored);
+        // Detect image filetype and send it properly to the browser
+        $finfo    = new finfo(FILEINFO_MIME);
+        $mimeType = $finfo->buffer($lob);
+        $mimeType = substr($mimeType, 0, strpos($mimeType, ";"));
+        $output [] = array("Picture" => "data:" . $mimeType . ";base64,"  . base64_encode($lob));
+        //$output [] = array("Picture" => "data:" . $imgType . ";base64,"  . base64_encode($lob));
         echo json_encode($output);
       } else {
         echo json_encode(array("No product found!"));
       }
+    }
+  } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result, $finfo, $mimeType); /*and close database handler*/ }
+}
+
+function setProductMonitoring() {
+  try {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+      global $db;
+
+      $prodNumber = $_POST['number'];
+      $Monitored  = $_POST['Monitored'];
+      
+      $result = $db->prepare("UPDATE products SET monitored={$Monitored} WHERE number=?");
+      $result->bindValue(1, $prodNumber);
+      $result->execute();
+  
+      // Start logging the query
+      $queryforsave = "UPDATE products SET monitored={$Monitored} WHERE number={$prodNumber}" . PHP_EOL;
+      logQuery($queryforsave);
+      // End logging the query
+      
+      echo $Monitored;
     }
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
 }
@@ -178,51 +217,55 @@ function sellProduct() {
       $sellNumber = $_POST['sellnumber'];
       $sellQuantity = $_POST['sellquantity'];
       $soldIn = $_POST['soldin'];
-      
-      $result = $db->prepare("UPDATE products SET quantity=quantity-{$_POST['sellquantity']} WHERE number=?");
-      $result->bindValue(1, $sellNumber);
-      $result->execute();
-			
-			// Start logging the query
-      $queryforsave = "UPDATE products SET quantity=quantity-{$_POST['sellquantity']} WHERE number={$sellNumber}" . PHP_EOL;
-      logQuery($queryforsave);
-      // End logging the query
 			
 			$result = $db->prepare("SELECT name FROM products WHERE number=?");
       $result->execute(array($sellNumber)); //this line first or bindColumn won't work
       $result->bindColumn(1, $name);
-      if (count($result->fetchAll(PDO::FETCH_ASSOC)) > 0) {
+      $result = $result->fetchAll(PDO::FETCH_ASSOC);
+      if (count($result) > 0) {
+        $result = $db->prepare("UPDATE products SET quantity=quantity-{$_POST['sellquantity']} WHERE number=?");
+        $result->bindValue(1, $sellNumber);
+        $result->execute();
+        
+        // Start logging the query
+        $queryforsave = "UPDATE products SET quantity=quantity-{$_POST['sellquantity']} WHERE number={$sellNumber}" . PHP_EOL;
+        logQuery($queryforsave);
+        // End logging the query
+        
         $itemName = $name;
+        
+        //$actionDate = date('d M Y H-i-s');
+        $actionDate = date('Y-m-d'); //ISO-8601 format for SQLite without Hours Mins Secs
+        
+        $result = $db->prepare("INSERT INTO sales ({$salesColumnsNoDataType}) VALUES (?, ?, ?, ?, ?)");
+        $result->bindValue(1, $actionDate);
+        $result->bindValue(2, $sellNumber);
+        $result->bindValue(3, $itemName);
+        $result->bindValue(4, $sellQuantity);
+        $result->bindValue(5, $soldIn);
+        $result->execute();
+        
+        // Start logging the query
+        $queryforsave = "INSERT INTO sales ({$salesColumnsNoDataType}) VALUES ('{$actionDate}', '{$sellNumber}', '{$itemName}', '{$sellQuantity}', '{$soldIn}')" . PHP_EOL;
+        logQuery($queryforsave);
+        // End logging the query
+        
+        $fileName = $_SERVER['DOCUMENT_ROOT'] . "/sales/" . date('d M Y') . ".txt";
+        if (!is_file($fileName)) {
+          $newFile = fopen($fileName, 'w');
+          fclose($newFile);
+          chown($fileName, 'automd');
+          chgrp($fileName, 'www-data');
+          //chmod($fileName, 0664);
+          chmod($fileName, 0777);
+        }
+        $fileLine = $actionDate . " | " . $sellNumber . " | " . $itemName . " | " . $sellQuantity . " | " . $soldIn . PHP_EOL;
+        file_put_contents($fileName, $fileLine, FILE_APPEND);
+        
+        echo "The product was succesfully marked as sold!";
+      } else {
+        echo "The product wasn't found in the database!";
       }
-      
-      $actionDate = date('d M Y H-i-s');
-			
-      $result = $db->prepare("INSERT INTO sales ({$salesColumnsNoDataType}) VALUES (?, ?, ?, ?, ?)");
-      $result->bindValue(1, $actionDate);
-      $result->bindValue(2, $sellNumber);
-			$result->bindValue(3, $itemName);
-      $result->bindValue(4, $sellQuantity);
-      $result->bindValue(5, $soldIn);
-      $result->execute();
-      
-      // Start logging the query
-      $queryforsave = "INSERT INTO sales ({$salesColumnsNoDataType}) VALUES ('{$actionDate}', '{$sellNumber}', '{$itemName}', '{$sellQuantity}', '{$soldIn}')" . PHP_EOL;
-      logQuery($queryforsave);
-      // End logging the query
-      
-      $fileName = $_SERVER['DOCUMENT_ROOT'] . "/" . date('d M Y') . ".txt";
-      if (!is_file($fileName)) {
-        $newFile = fopen($fileName, 'w');
-        fclose($newFile);
-        chown($fileName, 'automd');
-        chgrp($fileName, 'www-data');
-        //chmod($fileName, 0664);
-        chmod($fileName, 0777);
-      }
-      $fileLine = $actionDate . " | " . $sellNumber . " | " . $itemName . " | " . $sellQuantity . " | " . $soldIn . PHP_EOL;
-      file_put_contents($fileName, $fileLine, FILE_APPEND);
-      
-      echo "The given qty of a product was succesfully marked as sold!";
     }
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
 }
@@ -232,9 +275,18 @@ function checkSales() {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
       global $db;
       
-      $date = "'%" . date("d M Y", strtotime($_POST['soldproductsdate'])) . "%'";
+      //$date = "'%" . date("d M Y", strtotime($_POST['soldproductsdate'])) . "%'";
+      $dateFrom = date("Y-m-d", strtotime($_POST['soldproductsfrom'])); //ISO-8601 format for SQLite without Hours Mins Secs 
+      $dateTo   = date("Y-m-d", strtotime($_POST['soldproductsto'])); //ISO-8601 format for SQLite without Hours Mins Secs
+      $market   = $_POST['market'];
+      
+      if ($market === "all" || $market === "today") {
+        $market = '';
+      } else {
+        $market = "soldin=('{$market}') AND ";
+      }
 
-			$result = $db->prepare("SELECT number, itemdescription, quantity, soldin FROM sales WHERE date LIKE " . $date);
+      $result = $db->prepare("SELECT date, number, itemdescription, quantity, soldin FROM sales WHERE " . $market . "date BETWEEN date('{$dateFrom}') AND date('{$dateTo}')");
       $result->execute();
       $result = $result->fetchAll(PDO::FETCH_ASSOC);
       
@@ -242,7 +294,7 @@ function checkSales() {
         $output = [];
         $i = 0;
         foreach ($result as $product) {
-          $output[$i] = array($product['number'], $product['itemdescription'], $product['quantity'], $product['soldin']);
+          $output[$i] = array(date("d M Y", strtotime($product['date'])), $product['number'], $product['itemdescription'], $product['quantity'], $product['soldin']);
           $i++;
         }
         //echo json_encode(count($result));
@@ -267,36 +319,39 @@ function restockProduct() {
       $result = $db->prepare("SELECT name FROM products WHERE number=?");
       $result->execute(array($restockNumber)); //this line first or bindColumn won't work
       $result->bindColumn(1, $name);
-      if (count($result->fetchAll(PDO::FETCH_ASSOC)) > 0) {
+      $result = $result->fetchAll(PDO::FETCH_ASSOC);
+      if (count($result) > 0) {
         $itemName = $name;
+        
+        $result = $db->prepare("UPDATE products SET quantity=quantity+{$_POST['restockquantity']} WHERE number=?");
+        $result->bindValue(1, $restockNumber);
+        $result->execute();
+        
+        // Start logging the query
+        $queryforsave = "UPDATE products SET quantity=quantity+{$_POST['restockquantity']} WHERE number={$restockNumber}" . PHP_EOL;
+        logQuery($queryforsave);
+        // End logging the query
+        
+        
+        //$actionDate = date('d M Y H-i-s');
+        $actionDate = date('Y-m-d'); //ISO-8601 format for SQLite without Hours Mins Secs
+        
+        $result = $db->prepare("INSERT INTO restocks ({$restocksColumnsNoDataType}) VALUES (?, ?, ?, ?)");
+        $result->bindValue(1, $actionDate);
+        $result->bindValue(2, $restockNumber);
+        $result->bindValue(3, $itemName);
+        $result->bindValue(4, $restockQuantity);
+        $result->execute();
+        
+        // Start logging the query
+        $queryforsave = "INSERT INTO restocks ({$restocksColumnsNoDataType}) VALUES ('{$actionDate}', '{$restockNumber}', '{$itemName}', '{$restockQuantity}')" . PHP_EOL;
+        logQuery($queryforsave);
+        // End logging the query
+        
+        echo "The product's quantity was succesfully updated!";
+      } else {
+        echo "The product wasn't found in the database!";
       }
-      
-      $result = $db->prepare("UPDATE products SET quantity=quantity+{$_POST['restockquantity']} WHERE number=?");
-      $result->bindValue(1, $restockNumber);
-      //$result->bindValue(1, date('d M Y H-i-s'));
-      $result->execute();
-      
-      // Start logging the query
-      $queryforsave = "UPDATE products SET quantity=quantity+{$_POST['restockquantity']} WHERE number={$restockNumber}" . PHP_EOL;
-      logQuery($queryforsave);
-      // End logging the query
-      
-      
-      $actionDate = date('d M Y H-i-s');
-			
-      $result = $db->prepare("INSERT INTO restocks ({$restocksColumnsNoDataType}) VALUES (?, ?, ?, ?)");
-      $result->bindValue(1, $actionDate);
-      $result->bindValue(2, $restockNumber);
-			$result->bindValue(3, $itemName);
-      $result->bindValue(4, $restockQuantity);
-      $result->execute();
-      
-      // Start logging the query
-      $queryforsave = "INSERT INTO restocks ({$restocksColumnsNoDataType}) VALUES ('{$actionDate}', '{$restockNumber}', '{$itemName}', '{$restockQuantity}')" . PHP_EOL;
-      logQuery($queryforsave);
-      // End logging the query
-      
-      echo "The product's quantity was succesfully updated!";
     }
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
 }
@@ -318,12 +373,12 @@ function searchCustomer() {
       $result->bindColumn(6, $wherewasordered);
       
       if (count($result->fetchAll(PDO::FETCH_ASSOC)) > 0) {
-        echo "Phone number: " . $phonenumber . "<br />";
-        echo "Names: " . $customernames . "<br />";
-        echo "Address: " . $customeraddress . "<br />";
-        echo "Tracking Number: " . $trackingnumber . "<br />";
-        echo "Order date: " . $orderdate . "<hr />";
-        echo "Where was ordered: " . $wherewasordered . "<hr />";
+        echo "Phone number: "       . $phonenumber      . "<br />" . 
+             "Names: "              . $customernames    . "<br />" . 
+             "Address: "            . $customeraddress  . "<br />" . 
+             "Tracking Number: "    . $trackingnumber   . "<br />" . 
+             "Order date: "         . $orderdate        . "<hr />" . 
+             "Where was ordered: "  . $wherewasordered  . "<hr />";
       } else {
         echo "The customer was not found in the banlist!";
       }
@@ -367,7 +422,7 @@ function checkIssues() {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
       global $db;
       
-      $result = $db->prepare("SELECT * FROM products WHERE quantity < 2 OR info IS NULL OR pictures IS NULL");
+      $result = $db->prepare("SELECT * FROM products WHERE monitored = 1 AND quantity < 2");
       $result->execute();
       $result = $result->fetchAll(PDO::FETCH_ASSOC);
 
@@ -376,19 +431,31 @@ function checkIssues() {
         $output = [];
         $i = 0;
         foreach ($result as $product) {
-          $output[$i] = array($product['number'], $product['name'], null, $product['contractor']);
+          $output[$i] = array($product['number'], $product['name'], null, $product['contractor'], $product['monitored']);
           
           if ($product['quantity'] < 2) {
-            $output[$i][2] = "_LESS THAN 2 (currently {$product['quantity']} qty)";
+            $output[$i][2] = "_LESS THAN 2 (currently {$product['quantity']} qty)" . "<br />"; //check product's current qty
           }
           
-          if ($product['info'] === null) {
-            $output[$i][2] .= "_NOINFO";
-          }
+          /*if ($product['contractor'] === null || $product['contractor'] === "") { //check if product has contractor
+            $output[$i][2] .= "_NOCONTRACTOR" . "<br />";
+          }*/
           
-          if ($product['pictures'] === null) {
-            $output[$i][2] .= "_NOPICTURES";
-          }
+          /*if ($product['prodlinks'] === null || $product['prodlinks'] === "") { //check if product has additional links
+            $output[$i][2] .= "_NOLINKS" . "<br />";
+          }*/
+          
+          /*if ($product['weight'] === null || $product['weight'] === "") { //check if product has weight
+            $output[$i][2] .= "_NOWEIGHT" . "<br />";
+          }*/
+          
+          /*if ($product['info'] === null || $product['info'] === "") { //check if product has info
+            $output[$i][2] .= "_NOINFO" . "<br />";
+          }*/
+          
+          /*if ($product['pictures'] === null || $product['pictures'] === "") { //check if product has picture
+            $output[$i][2] .= "_NOPICTURES" . "<br />";
+          }*/
           
           $i++;
         }
@@ -432,17 +499,17 @@ function sendMessage() {
 
 // Our main loop
 switch ($_POST['action']) {
-  case "new"            : addProduct();     break; // Add item to database
-  case "check"          : checkProduct();   break; // Check if an item is in the database
-  case "search"         : searchProduct();  break; // Search for item in the database
-  case "sell"           : sellProduct();    break; // Sell an item and exclude it from the database
-  case "sales"          : checkSales();   break; // Show sales per a given date
-  case "restock"        : restockProduct(); break; // Restock an item
-  case "searchcustomer" : searchCustomer(); break; // Check if the customer is marked as dishonest ie not picking their order, not paying the shipping fee for returning or breaking the products
-  case "bancustomer"    : banCustomer();    break; // Ban the customer if not picking their order, not paying the shipping fee for returning or breaking the products
-  case "checkissues"    : checkIssues();    break; // Check for product issues
-  case "checkmessages"  : checkMessages();  break; // Check for important messages or tasks
-  case "sendmessage"    : sendMessage();    break; // Send important message or task
+  case "new"            : addProduct();             break; // Add item to database
+  case "search"         : searchProduct();          break; // Search for item in the database
+  case "setmonitoring"  : setProductMonitoring();   break; // Search for item in the database
+  case "sell"           : sellProduct();            break; // Sell an item and exclude it from the database
+  case "sales"          : checkSales();             break; // Show sales per a given date
+  case "restock"        : restockProduct();         break; // Restock an item
+  case "searchcustomer" : searchCustomer();         break; // Check if the customer is marked as dishonest ie not picking their order, not paying the shipping fee for returning or breaking the products
+  case "bancustomer"    : banCustomer();            break; // Ban the customer if not picking their order, not paying the shipping fee for returning or breaking the products
+  case "checkissues"    : checkIssues();            break; // Check for product issues
+  case "checkmessages"  : checkMessages();          break; // Check for important messages or tasks
+  case "sendmessage"    : sendMessage();            break; // Send important message or task
 }
 
 // Some script performance metrics

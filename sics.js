@@ -5,6 +5,29 @@ console.clear();
 //var lang = "EN";
 var lang = "BG";
 var obj = JSON.parse(translations);
+var success = new Audio('success.mp3');
+var failure = new Audio('failure.mp3');
+var message = new Audio('message.mp3');
+var Monitored = null;
+//var productsMonState = [];
+
+function playSuccess() {
+  success.pause();
+  success.currentTime = 0;
+  success.play();
+}
+
+function playFailure() {
+  failure.pause();
+  failure.currentTime = 0;
+  failure.play();
+}
+
+function playMessage() {
+  message.pause();
+  message.currentTime = 0;
+  message.play();
+}
 
 function switchLang() {
   for (var elem in obj[lang]) {
@@ -15,6 +38,8 @@ function switchLang() {
       case "title":       document.getElementById(obj[lang][elem].id).title       = obj[lang][elem].translation; break;
     }
   }
+  //playSuccess();
+  //playFailure();
 }
 
 function loadPreview() {
@@ -29,9 +54,32 @@ function imgNotAvail() {
   }
 }
 
+function classSwitch(state) {
+  Monitored = state;
+  
+  if (state === "1") {
+    if (document.getElementById("setmonitoring").classList.contains("productmonitoringdisabled")) {
+      document.getElementById("setmonitoring").classList.remove("productmonitoringdisabled");
+    }
+    document.getElementById("setmonitoring").classList.add("productmonitoringenabled");
+  }
+  
+  if (state === "0")  {
+    if (document.getElementById("setmonitoring").classList.contains("productmonitoringenabled")) {
+      document.getElementById("setmonitoring").classList.remove("productmonitoringenabled");
+    }
+    document.getElementById("setmonitoring").classList.add("productmonitoringdisabled");
+  }
+}
+
 function addProduct() {
-  var name        =  document.getElementById('name').value;
   var number      =  document.getElementById('number').value;
+  if (number.length > 7) {
+    alert("Maximum allowed number of symbols is 7!");
+    playFailure();
+    return;
+  }
+  var name        =  document.getElementById('name').value;
   //var category    =  document.getElementById('category').value;
   var quantity    =  document.getElementById('quantity').value;
   var contractor  =  document.getElementById('contractor').value;
@@ -50,17 +98,16 @@ function addProduct() {
   var file = files[0];
  
   if (file.size > 0) {
-    if (["image/jpg", "image/jpeg", "image/png"].includes(file.type)) {
+    if (["image/jpg", "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp"].includes(file.type)) {
       formData.append('pictures', file, file.name); // Add the file to the AJAX request
-      //document.getElementById("prodpicuploadbuttontext").textContent = "Снимката беше добавена успешно";
-      //document.getElementById("prodpicuploadbuttontext").style.backgroundColor = "green";
     } else {
       pictures.value = '';
       document.getElementById("prodpicuploadbuttontext").textContent = "This picture format is not supported";
       document.getElementById("prodpicuploadbuttontext").style.backgroundColor = "red";
+      playFailure();
       return false;
     }
-  } else { pictures.value = ''; return false; }
+  } else { pictures.value = ''; playFailure(); return false; }
   
   // Make a request to add the product
   var xhttp = new XMLHttpRequest();
@@ -68,19 +115,26 @@ function addProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        if (lang === "BG") {
-          if (this.responseText.includes("added")) {
+        if (this.responseText.includes("added")) {
+          if (lang === "BG") {
             document.getElementById("newproductresults").innerHTML = "Продуктът беше успешно добавен!";
-            document.getElementById("newproductresults").style.backgroundColor = "green";
-            document.getElementById('prodpicture').src = '';
-          } else {
-              document.getElementById("newproductresults").innerHTML = "Продукт със същия арт. номер е вече качен!";
-              document.getElementById("newproductresults").style.backgroundColor = "red";
-              document.getElementById('prodpicture').src = '';
-            }
-        } else document.getElementById("newproductresults").innerHTML = this.responseText;
-      }
-      else {
+          } else document.getElementById("newproductresults").innerHTML = this.responseText;
+          document.getElementById("newproductresults").style.backgroundColor = "green";
+          document.getElementById('prodpicture').src = '';
+          document.getElementById('pictures').value = '';
+          playSuccess();
+        }
+        if (this.responseText.includes("already")) {
+          if (lang === "BG") {
+            document.getElementById("newproductresults").innerHTML = "Продукт със същия арт. номер е вече качен!";
+          } else document.getElementById("newproductresults").innerHTML = this.responseText;
+          document.getElementById("newproductresults").style.backgroundColor = "red";
+          document.getElementById('prodpicture').src = '';
+          document.getElementById('pictures').value = '';
+          playFailure();
+        }
+      } else {
+        playFailure();
         alert("Error: returned status code " + this.status + " " + this.statusText);
       }
     }
@@ -106,7 +160,6 @@ function addProduct() {
       contractor  !== '' && 
       price       !== '') {
         formData.append('action', "new");
-        formData.append('tName', "products");
         formData.append('name', name);
         formData.append('number', number);
         //formData.append('category', category);
@@ -126,6 +179,7 @@ function addProduct() {
         document.getElementById('price').value = '';
         //document.getElementById('info').value = '';
         //document.getElementById('prodlinks').value = '';
+        document.getElementById('pictures').value = '';
   } else {
       alert("Error: Some fields are empty!");
   }
@@ -133,9 +187,13 @@ function addProduct() {
 
 // Search for a product in the database
 function searchProduct() {
-  //var searchNumber = document.getElementById('searchnumber').value;
   var searchNumber = document.getElementById('number').value;
-
+  if (searchNumber.length > 7) {
+    playFailure();
+    alert("Maximum allowed number of symbols is 7!");
+    return;
+  }
+  
   // Create a FormData object
   var formData = new FormData();
 
@@ -158,26 +216,35 @@ function searchProduct() {
           document.getElementById("quantity").value                           = '';
           document.getElementById("contractor").value                         = '';
           document.getElementById("price").value                              = '';
+          document.getElementById("hiddenaddinput").style.visibility          = "visible"; // show input fields
+          document.getElementById("addproduct").style.visibility              = "visible"; // show 'Add product' button when product isn't found
+          document.getElementById("prodpicuploadbutton").style.visibility     = "visible"; // show 'Choose product pictures' button when product isn't found
+          document.getElementById("setmonitoring").style.visibility           = "hidden"; // hide 'Monitor' button when product isn't found, it will be automatically enabled in the database
+          playFailure();
         } else {
-          document.getElementById("newproductresults").innerHTML                = '';
-          document.getElementById("newproductresults").style.backgroundColor    = 'transparent';
-          document.getElementById("prodpicture").src                            = '';
-          document.getElementById("prodpicture").style.backgroundColor          = "black";
-          document.getElementById("search-results-form").style.backgroundColor  = "black";
+          document.getElementById("hiddenaddinput").style.visibility          = "visible"; // show input fields
+          document.getElementById("addproduct").style.visibility              = "hidden"; // hide 'Add product' button when product is found
+          document.getElementById("prodpicuploadbutton").style.visibility     = "hidden"; // hide 'Choose product pictures' button when product is found
+          document.getElementById("setmonitoring").style.visibility           = "visible"; // show 'Monitor' button when product is found, so the user can set the option
+          document.getElementById("newproductresults").innerHTML              = '';
+          document.getElementById("newproductresults").style.backgroundColor  = 'transparent';
+          document.getElementById("prodpicture").src                          = '';
+          document.getElementById("prodpicture").style.backgroundColor        = "black";
+          playSuccess();
           for (i of data) {
             switch (Object.keys(i)[0]) {
               case "Name":                    document.getElementById("name").value             = i[Object.keys(i)[0]]; break;
               case "Quantity in shop":        document.getElementById("quantity").value         = i[Object.keys(i)[0]]; break;
               case "Contractor":              document.getElementById("contractor").value       = i[Object.keys(i)[0]]; break;
               case "Price":                   document.getElementById("price").value            = i[Object.keys(i)[0]]; break;
+              case "Monitored":               classSwitch(i[Object.keys(i)[0]]);                                        break;
               case "Picture":                 document.getElementById("prodpicture").src        = i[Object.keys(i)[0]]; break;
             }
           }
         }
-        /*document.getElementById("searchresults").classList.remove("testtest");
-        document.getElementById("searchresults").classList.add("testtest");*/
       }
       else {
+        playFailure();
         alert("Error: returned status code " + this.status + " " + this.statusText);
       }
     }
@@ -190,20 +257,76 @@ function searchProduct() {
   
   if (searchNumber !== '') {
         formData.append('action', "search");
-        formData.append('tName', "products");
         formData.append('number', searchNumber);
         
         xhttp.send(formData);
         
         //document.getElementById('number').value = '';
   } else {
-      alert("Error: Some fields are empty!");
+    playFailure();
+    alert("Error: Some fields are empty!");
+  }
+}
+
+// Set the product to be monitored or not for problems
+function setProductMonitoring() {
+  var prodNumber = document.getElementById('number').value;
+  if (prodNumber.length > 7) {
+    playFailure();
+    alert("Maximum allowed number of symbols is 7!");
+    return;
+  }
+  
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to add the product
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        //var data = JSON.parse(this.responseText);
+        var data = this.responseText;
+      
+        // Check if there is some data returned
+        if (data) {
+          playSuccess();
+          classSwitch(data);
+        } else {
+          playFailure();
+          alert("Error: returned status code " + this.status + " " + this.statusText);
+        }
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  if (prodNumber !== '') {
+    switch (Monitored) {
+      case "1": Monitored = "0"; break;
+      case "0": Monitored = "1"; break;
+    }
+    formData.append('action', "setmonitoring");
+    formData.append('number', prodNumber);
+    formData.append('Monitored', Monitored);
+    
+    xhttp.send(formData);
+  } else {
+    playFailure();
+    alert("Error: Some fields are empty!");
   }
 }
 
 // Restock a product and update the quantity left in the database
 function restockProduct() {
   var restockNumber    = document.getElementById('restocknumber').value;
+  if (restockNumber.length > 7) {
+    playFailure();
+    alert("Maximum allowed number of symbols is 7!");
+    return;
+  }
   var restockQuantity  = document.getElementById('restockquantity').value;
 
   // Create a FormData object
@@ -215,11 +338,22 @@ function restockProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        if (lang === "BG") {
-          document.getElementById("restockproductresults").innerHTML = "Продуктовата наличност беше успешно обновена!";
-        } else document.getElementById("restockproductresults").innerHTML = this.responseText;
+        if (this.responseText.includes("wasn't")) {
+          if (lang === "BG") {
+            document.getElementById("restockproductresults").innerHTML = "Продуктът не беше открит в базата данни!";
+          } else document.getElementById("restockproductresults").innerHTML = this.responseText;
+          document.getElementById("restockproductresults").style.backgroundColor = "red";
+          playFailure();
+        } else {
+          if (lang === "BG") {
+            document.getElementById("restockproductresults").innerHTML = "Продуктовата наличност беше успешно обновена!";
+          } else document.getElementById("restockproductresults").innerHTML = this.responseText;
+          document.getElementById("restockproductresults").style.backgroundColor = "green";
+          playSuccess();
+        }
       }
       else {
+        playFailure();
         alert("Error: returned status code " + this.status + " " + this.statusText);
       }
     }
@@ -233,7 +367,6 @@ function restockProduct() {
   if (restockNumber    !== '' &&
       restockQuantity  !== '') {
         formData.append('action', "restock");
-        formData.append('tName', "products");
         formData.append('restocknumber', restockNumber);
         formData.append('restockquantity', restockQuantity);
         
@@ -242,6 +375,7 @@ function restockProduct() {
         document.getElementById('restocknumber').value   = '';
         document.getElementById('restockquantity').value = '';
   } else {
+      playFailure();
       alert("Error: Some fields are empty!");
   }
 }
@@ -249,6 +383,11 @@ function restockProduct() {
 // Sell a product and update the quantity left in the database
 function sellProduct() {
   var sellNumber    = document.getElementById('sellnumber').value;
+  if (sellNumber.length > 7) {
+    playFailure();
+    alert("Maximum allowed number of symbols is 7!");
+    return;
+  }
   var sellquantity  = document.getElementById('sellquantity').value;
   var soldin  = document.getElementById('soldin').value;
 
@@ -261,11 +400,22 @@ function sellProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        if (lang === "BG") {
-          document.getElementById("sellproductresults").innerHTML = "Продуктът беше успешно записан като продаден!";
-        } else document.getElementById("sellproductresults").innerHTML = this.responseText;
+        if (this.responseText.includes("wasn't")) {
+          if (lang === "BG") {
+            document.getElementById("sellproductresults").innerHTML = "Продуктът не беше открит в базата данни!";
+          } else document.getElementById("sellproductresults").innerHTML = this.responseText;
+          document.getElementById("sellproductresults").style.backgroundColor = "red";
+          playFailure();
+        } else {
+          if (lang === "BG") {
+            document.getElementById("sellproductresults").innerHTML = "Продуктът беше успешно записан като продаден!";
+          } else document.getElementById("sellproductresults").innerHTML = this.responseText;
+          document.getElementById("sellproductresults").style.backgroundColor = "red";
+          playSuccess();
+        }
       }
       else {
+        playFailure();
         alert("Error: returned status code " + this.status + " " + this.statusText);
       }
     }
@@ -280,7 +430,6 @@ function sellProduct() {
       sellquantity  !== '' &&
       soldin        !== '') {
         formData.append('action', "sell");
-        formData.append('tName', "sales");
         formData.append('sellnumber', sellNumber);
         formData.append('sellquantity', sellquantity);
         formData.append('soldin', soldin);
@@ -289,17 +438,19 @@ function sellProduct() {
         
         document.getElementById('sellnumber').value   = '';
         document.getElementById('sellquantity').value = '';
-        document.getElementById('soldin').value = '';
+        document.getElementById('soldin').value = 'a';
   } else {
+      playFailure();
       alert("Error: Some fields are empty!");
   }
 }
 
 // Show sales per a given date
-function checkSales() {
+function checkSales(market) {
   document.getElementById("soldproductsresults").innerHTML = '';
   
-  var soldproductsdate    = document.getElementById('soldproductsdate').value;
+  var soldproductsfrom    = document.getElementById('soldproductsfrom').value;
+  var soldproductsto      = document.getElementById('soldproductsto').value;
   
   // Create a FormData object
   var formData = new FormData();
@@ -312,13 +463,15 @@ function checkSales() {
       if (this.status == 200) {
         var data = JSON.parse(this.responseText);
         
-        var i, j, SKU, ItemDescription, Quantity, SoldIn;
+        var i, j, SaleDate, SKU, ItemDescription, Quantity, SoldIn;
         if (lang === "BG") {
+          SaleDate        = "Дата";
           SKU             = "Арт. номер";
           ItemDescription = "Описание на продукта";
           Quantity        = "Брой";
           SoldIn          = "Продадено в";
         } else {
+          SaleDate        = "Date";
           SKU             = "SKU";
           ItemDescription = "Item description";
           Quantity        = "Quantity";
@@ -326,24 +479,21 @@ function checkSales() {
         }
       
         if (data !== 0) {
-          j = `<table><tr><th>${SKU}</th><th>${ItemDescription}</th><th>${Quantity}</th><th>${SoldIn}</th></tr>`;
+          j = `<table><tr><th>${SaleDate}</th><th>${SKU}</th><th>${ItemDescription}</th><th>${Quantity}</th><th>${SoldIn}</th></tr>`;
           for (i of data) {
-            /*if (lang === "BG") {
-              if (i.includes("LESS THAN 2")) {
-                itemproblem = `ПО-МАЛКО ОТ 2 БРОЙКИ В МАГАЗИНА (в момента ${i[length - 1]} бр)`;
-              }
-              
-              if (i.includes("NOPICTURES")) {
-                itemproblem += " | ПРОДУКТА НЯМА СНИМКА";
-              }
-            }*/
-            j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td></tr>`;
+            j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td><td>${i[4]}</td></tr>`;
           }
           j += "</table>";
           document.getElementById("soldproductsresults").innerHTML = j;
-        } else document.getElementById("soldproductsresults").innerHTML = "No sales are recorded at this date!";
+          playSuccess();
+        } else {
+          document.getElementById("soldproductsresults").innerHTML = "No sales are recorded at this date!";
+          playSuccess();
+        }
+        document.getElementById("soldproductsresults").style.display = "inline"; //compress the results visual zone a bit
       }
       else {
+        playFailure();
         alert("Error: returned status code " + this.status + " " + this.statusText);
       }
     }
@@ -354,15 +504,36 @@ function checkSales() {
   //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
   //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
   
-  if (soldproductsdate !== '') {
+  if (market === 'today') {
+    var currDate = new Date();
+    var currYear      = currDate.getFullYear();
+    var currMonth     = currDate.getMonth();
+    var currDay       = currDate.getDate();
+    
+    currMonth += 1;
+    if (currMonth < 10) {
+      currMonth = "0" + currMonth;
+    }
+    
+    if (currDay < 10) {
+      currDay = "0" + currDay;
+    }
+    
+    soldproductsfrom  = soldproductsto = currYear + "-" + currMonth + "-" + currDay;
+  }
+  
+  if (soldproductsfrom !== '' && soldproductsto !== '') {
         formData.append('action', "sales");
-        formData.append('tName', "sales");
-        formData.append('soldproductsdate', soldproductsdate);
+        formData.append('soldproductsfrom', soldproductsfrom);
+        formData.append('soldproductsto', soldproductsto);
+        formData.append('market', market);
         
         xhttp.send(formData);
 
-        document.getElementById('soldproductsdate').value = '';
+        document.getElementById('soldproductsfrom').value = '';
+        document.getElementById('soldproductsto').value   = '';
   } else {
+      playFailure();
       alert("Error: Some fields are empty!");
   }
 }
@@ -381,8 +552,10 @@ function searchCustomer() {
     if (this.readyState == 4) {
       if (this.status == 200) {
         document.getElementById("customerbanlistresults").innerHTML = this.responseText;
+        playSuccess();
       }
       else {
+        playFailure();
         alert("Error: returned status code " + this.status + " " + this.statusText);
       }
     }
@@ -395,13 +568,11 @@ function searchCustomer() {
   
   if (searchNumber !== '') {
         formData.append('action', "searchcustomer");
-        formData.append('tName', "customerbanlist");
         formData.append('customerphonenumber', searchNumber);
         
         xhttp.send(formData);
-        
-        document.getElementById('customerphonenumber').value = '';
   } else {
+      playFailure();
       alert("Error: Some fields are empty!");
   }
 }
@@ -427,8 +598,10 @@ function banCustomer() {
         if (lang === "BG") {
           document.getElementById("bancustomerresults").innerHTML = "Клиентът беше успешно добавен в черния списък!";
         } else document.getElementById("bancustomerresults").innerHTML = this.responseText;
+        playSuccess();
       }
       else {
+        playFailure();
         alert("Error: returned status code " + this.status + " " + this.statusText);
       }
     }
@@ -445,7 +618,6 @@ function banCustomer() {
       orderdate               !== '' && 
       wherewasordered         !== '') {
         formData.append('action', "bancustomer");
-        formData.append('tName', "customerbanlist");
         formData.append('customerphonenumber', customerphonenumber);
         formData.append('customernames', customernames);
         formData.append('customeraddress', customeraddress);
@@ -460,15 +632,21 @@ function banCustomer() {
         document.getElementById('customeraddress').value = '';
         document.getElementById('trackingnumber').value = '';
         document.getElementById('orderdate').value = '';
-        document.getElementById('wherewasordered').value = '';
+        document.getElementById('wherewasordered').value = 'a';
         
   } else {
+      playFailure();
       alert("Error: Some fields are empty!");
   }
 }
 
 // Check for product issues
 function checkIssues() {
+  // Check if the array is created or populated
+  /*if (!productsMonState || productsMonState.length == 0) {
+    productsMonState = [];
+  }*/
+  
   // Create a FormData object
   var formData = new FormData();
 
@@ -480,42 +658,66 @@ function checkIssues() {
       if (this.status == 200) {
         var data = JSON.parse(this.responseText);
         
-        var i, j, SKU, Name, Problem, From;
+        var i, j, SKU, Name, Problem, From, Monitored;
         if (lang === "BG") {
-          SKU     = "Арт. номер";
-          Name    = "Име на продукта";
-          Problem = "Проблем";
-          From    = "Доставчик";
+          SKU       = "Арт. номер";
+          Name      = "Име на продукта";
+          Problem   = "Проблем";
+          From      = "Доставчик";
+          Monitored = "Наблюдаван";
         } else {
-          SKU     = "SKU";
-          Name    = "Name";
-          Problem = "Problem";
-          From    = "Contractor";
+          SKU       = "SKU";
+          Name      = "Name";
+          Problem   = "Problem";
+          From      = "Contractor";
+          Monitored = "Monitored";
         }
         //var itemproblem = "";
         
         if (data !== 0) {
-          j = `<table><tr><th>${SKU}</th><th>${Name}</th><th>${Problem}</th><th>${From}</th></tr>`;
+          //j = `<table><tr><th>${SKU}</th><th>${Name}</th><th>${Problem}</th><th>${From}</th></tr>`;
+          //for (i of data) {
+            //j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td></tr>`;
+          //}
+          //j += "</table>"
+          j = `<div class="divtable">
+                <div class="divtablebody">
+                  <div class="divrow">
+                    <div class="divtableheadcell">${SKU}</div>
+                    <div class="divtableheadcell">${Name}</div>
+                    <div class="divtableheadcell">${Problem}</div>
+                    <div class="divtableheadcell">${From}</div>
+                    <div class="divtableheadcell">${Monitored}</div>
+                  </div>`;
           for (i of data) {
-            /*if (lang === "BG") {
-              if (i.includes("LESS THAN 2")) {
-                itemproblem = `ПО-МАЛКО ОТ 2 БРОЙКИ В МАГАЗИНА (в момента ${i[length - 1]} бр)`;
-              }
-              
-              if (i.includes("NOPICTURES")) {
-                itemproblem += " | ПРОДУКТА НЯМА СНИМКА";
-              }
-            }*/
-            j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td></tr>`;
+            //var itemsku = `${i[0]}`;
+            //productsMonState[itemsku] = i[4];
+            j += `<div class="divrow">
+                    <div class="divtablecell">${i[0]}</div>
+                    <div class="divtablecell">${i[1]}</div>
+                    <div class="divtablecell">${i[2]}</div>
+                    <div class="divtablecell">${i[3]}</div>
+                    <div class="divtablecell">${i[4]}</div>
+                  </div>`;
           }
-          j += "</table>";
+          j += "</div></div>";
+          var el = document.getElementById("issuesresults");
+          el.querySelectorAll("*").forEach(el => el.remove());
           document.getElementById("issuesresults").innerHTML = j;
           
           document.getElementById("productissues").innerHTML = data.length;
           document.getElementById("productissues").classList.add("blink");
-        } else document.getElementById("issuesresults").innerHTML = "NO PROBLEMS FOUND!";
+          playSuccess();
+        } else {
+          if (document.getElementById("productissues").classList.contains("blink")) {
+            document.getElementById("productissues").classList.remove("blink"); // disable blinking when no problems found
+          }
+          document.getElementById("productissues").innerHTML = ''; // remove counter when no problems found
+          document.getElementById("issuesresults").innerHTML = "NO PROBLEMS FOUND!";
+        }
       }
       else {
+        playFailure();
         alert("Error: returned status code " + this.status + " " + this.statusText);
       }
     }
@@ -557,9 +759,17 @@ function checkMessages() {
           
           document.getElementById("usermessages").innerHTML = data.length;
           document.getElementById("usermessages").classList.add("blink");
-        } else document.getElementById("usermessagesresults").innerHTML = "NO NEW MESSAGES!";
+          playMessage();
+        } else {
+            if (document.getElementById("usermessagesresults").classList.contains("blink")) {
+              document.getElementById("usermessagesresults").classList.remove("blink"); // disable blinking when no messages found
+            }
+            document.getElementById("usermessagesresults").innerHTML = ''; // remove counter when no messages found
+            document.getElementById("usermessagesresults").innerHTML = "NO NEW MESSAGES!";
+        }
       }
       else {
+        playFailure();
         alert("Error: returned status code " + this.status + " " + this.statusText);
       }
     }
@@ -575,7 +785,12 @@ function checkMessages() {
 
 // Send user message
 function sendMessage() {
-  ;
+  //playSuccess();
+  //playFailure();
 }
 
 switchLang();
+setInterval(function () {
+  checkIssues();
+  checkMessages();
+}, 30 * 60 * 1000); // first 30 is for 30min

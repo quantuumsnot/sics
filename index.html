@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en"> <!-- Lighthouse audit fix -->
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -10,13 +10,20 @@
     <meta http-equiv="expires" content="0" />
     <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
     <meta http-equiv="pragma" content="no-cache" />
+    <meta name="description" content="Storage and Inventory Control System, for more info visit https://github.com/quantuumsnot/sics">
     <title>Sales and Inventory Control System</title>
-    <link href="style.css?v=1.0" rel="stylesheet">
-    <link rel="preload" as="image" "icons8-sugar-cubes-50.png">
-    <link rel="preload" as="image" "icons8-sugar-cubes-50-inverted.png">
-    <link rel="preload" as="image" "icons8-messaging-48.png">
-    <link rel="preload" as="image" "icons8-messaging-48-inverted.png">
-    <link rel="preload" as="image" "image-not-available.jpg">
+    <link rel="stylesheet"              href="normalize.css?v=1.0">
+    <link rel="stylesheet"              href="style.css?v=1.0">
+    <link rel="preload" as="image"      href="icons8-sugar-cubes-50.png">
+    <link rel="preload" as="image"      href="icons8-sugar-cubes-50-inverted.png">
+    <link rel="preload" as="image"      href="icons8-messaging-48.png">
+    <link rel="preload" as="image"      href="icons8-messaging-48-inverted.png">
+    <link rel="preload" as="image"      href="image-not-available.jpg">
+    <link rel="preload" as="image"      href="monitored_48.png">
+    <link rel="preload" as="image"      href="notmonitored_48.png">
+    <link rel="preload" as="audio"      href="success.mp3">
+    <link rel="preload" as="audio"      href="failure.mp3">
+    <link rel="preload" as="audio"      href="message.mp3">
     <script>
       'use strict';
       var startTime = new Date().getTime();
@@ -37,6 +44,19 @@
         <div class="notificationicons switchlocalization" id="switchlocalization" onclick="switchLang(); return false;" title="Switch language">
           <div id="switchloctext">EN</div>
         </div>
+        <div class="notificationicons appversion" id="appversion" title="version codename 'School Bullies'">
+          <div id="appversiontext">v0.6</div>
+        </div>
+        <div class="notificationicons loadingTime" id="loadingTime" title="page loading time">
+          <div id="pageloadtime"></div>
+        </div>
+        <div class="notificationicons licensearea" id="licensearea" title="This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License">
+          <div id="licensetext">
+            <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
+              <img loading="lazy" id="licenseimg" alt="Creative Commons License" width="88" height="49" src="cc-by-nc-sa.png" />
+            </a>
+          </div>
+        </div>
       </div>
     </header>
     
@@ -49,25 +69,38 @@
         <label for="tabone" id="labelone">Products</label>
         <div class="tab">
           <form class="addproduct-form" id="addproduct-form" name="addproduct-form" action="#" method="post">
-            <input type="number"  id="number"     name="number"     required placeholder="SKU" min="0">
-            <button class="checkproductbutton" type="submit" id="checkproduct" onclick="searchProduct(); return false;">Check</button>
-            <input type="text"    id="name"       name="name"       required placeholder="Name" autofocus>
-            <!--<input type="text"    id="category"   name="category"   required placeholder="Category">-->
-            <input type="number"  id="quantity"   name="quantity"   required placeholder="Quantity" min="0">
-            <input type="text"    id="contractor" name="contractor" required placeholder="Contractor">
-            <input type="number"  id="price"      name="price"      required placeholder="Price" min="0">
-            <!--<input type="text"    id="info"       name="info"       required placeholder="Additional product info">-->
-            <!--<input type="text"    id="prodlinks"  name="prodlinks"  required placeholder="Product Links">-->
-            <label class="prodpicuploadbutton">
-              <div id="prodpicuploadbuttontext">Choose product pictures</div>
-              <input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg, image/jpg" onchange="loadPreview(event);">
-            </label>
-            <!--<div><img alt="" id="prodpicture" onerror="if (this.src != \'image-not-available.jpg\') this.src = \'image-not-available.jpg\';" /></div>-->
-            <div><img alt="" id="prodpicture" onerror="imgNotAvail()" /></div>
-            <button class="addproductbutton" type="submit" id="addproduct" onclick="addProduct(); return false;">Add</button>
-            <output class="new-product-results" id="newproductresults" style="text-align: center" name="newproductresults"></output>
-          </form>
-          <form class="search-results-form" id="search-results-form" name="search-results-form" action="#" method="post">
+              <table id="addtable">
+                <tr>
+                  <td class="xxx">
+                    <label for="number" class="visuallyhidden">.</label>
+                    <input type="number"  id="number"     name="number"     required placeholder="SKU" autofocus min="0"><!-- label is Lighthouse audit fix -->
+                    <button class="checkproductbutton" type="submit" id="checkproduct" onclick="searchProduct(); return false;">Check</button>
+                    <div id="hiddenaddinput">
+                      <input type="text"    id="name"       name="name"       required placeholder="Name">
+                      <!--<input type="text"    id="category"   name="category"   required placeholder="Category">-->
+                      <input type="number"  id="quantity"   name="quantity"   required placeholder="Quantity" min="0">
+                      <input type="text"    id="contractor" name="contractor" required placeholder="Contractor">
+                      <input type="number"  id="price"      name="price"      required placeholder="Price" min="0">
+                      <!--<input type="text"    id="info"       name="info"       required placeholder="Additional product info">-->
+                      <!--<input type="text"    id="prodlinks"  name="prodlinks"  required placeholder="Product Links">-->
+                      <button class="setmonitoringbutton" type="submit" id="setmonitoring" onclick="setProductMonitoring(); return false;" title="Enable/Disable product monitoring"></button>
+                      <label class="prodpicuploadbutton" id="prodpicuploadbutton">
+                        <div id="prodpicuploadbuttontext">Choose product pictures</div>
+                        <input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg, image/jpg" onchange="loadPreview(event);">
+                      </label>
+                    </div>
+                  </td>
+                  <td class="xxx">
+                    <img loading="lazy" src="image-not-available.jpg" alt="" id="prodpicture" width="400" height="225" onerror="imgNotAvail()" />
+                  </td>
+                </tr>
+                <tr>
+                  <td class="xxx" colspan="2">
+                    <button class="addproductbutton" type="submit" id="addproduct" onclick="addProduct(); return false;">Add</button>
+                    <output class="new-product-results" id="newproductresults" style="text-align: center" name="newproductresults"></output>
+                  </td>
+                </tr>
+              </table>
           </form>
         </div>
         
@@ -75,22 +108,35 @@
         <label for="tabtwo" id="labeltwo">Sell</label>
         <div class="tab">
           <form class="sellproduct-form" name="sellproduct-form" action="#" method="post">
-            <input type="number" id="sellnumber"    name="sellnumber"   required placeholder="SKU" autofocus min="0">
+            <input type="number" id="sellnumber"    name="sellnumber"   required placeholder="SKU" min="0">
             <input type="number" id="sellquantity"  name="sellquantity" required placeholder="Quantity" min="0">
             <select name="soldin" id="soldin" required>
-              <option id="soldina"      value="a">-Choose where it was sold-</option>
+              <option id="soldina"      value="">-Choose where it was sold-</option>
               <option id="soldinstore"  value="store">STORE</option>
               <option id="soldinsite"   value="site">SITE</option>
               <option id="soldinfb"     value="fb">Facebook</option>
               <option id="soldinolx"    value="olx">OLX</option>
-              <option id="soldinbazar"  value="bazar">Bazar.bg</option>
+              <option id="soldinbazar"  value="bazar">Bazar.BG</option>
               <option id="soldinphone"  value="phone">Telephone</option>
               <option id="soldinviber"  value="viber">Viber</option>
             </select>
             <button class="sellproductbutton" type="submit" id="sellproduct" onclick="sellProduct(); return false;">Sell</button>
             <output class="sell-product-results" id="sellproductresults" style="text-align: center" name="sellproductresults"></output>
-            <input type="date"    id="soldproductsdate"   name="soldproductsdate"   required min="01-01-1970">
-            <button class="soldproductsbutton" type="submit" id="soldproducts" onclick="checkSales(); return false;">Show Sales</button>
+            <hr style="height:2px ; border-width:0; color: blue; background-color: blue" />
+            <input type="date"  id="soldproductsfrom"   name="soldproductsfrom"   required min="1970-01-01">
+            <input type="date"  id="soldproductsto"     name="soldproductsto"     required min="1970-01-01">
+            <div class="marketsarea">
+              <div class="marketsicons" onclick="checkSales('store'); return false;" title="STORE">STORE</div>
+              <div class="marketsicons" onclick="checkSales('site'); return false;" title="SITE">SITE</div>
+              <div class="marketsicons" onclick="checkSales('fb'); return false;" title="Facebook">Facebook</div>
+              <div class="marketsicons" onclick="checkSales('olx'); return false;" title="OLX">OLX</div>
+              <div class="marketsicons" onclick="checkSales('bazar'); return false;" title="Bazar.BG">Bazar.BG</div>
+              <div class="marketsicons" onclick="checkSales('phone'); return false;" title="Phone">Phone</div>
+              <div class="marketsicons" onclick="checkSales('viber'); return false;" title="Viber">Viber</div>
+              <div class="marketsicons" onclick="checkSales('all'); return false;" title="All">All</div>
+              <div class="marketsicons todaySales" onclick="checkSales('today'); return false;" title="TODAY">TODAY</div>
+            </div>
+            <!--<button class="soldproductsbutton" type="submit" id="soldproducts" onclick="checkSales(); return false;">Show Sales</button>-->
             <output class="sold-products-results" id="soldproductsresults" style="text-align: center" name="soldproductsresults"></output>
           </form>
         </div>
@@ -99,7 +145,7 @@
         <label for="tabthree" id="labelthree">Restock</label>
         <div class="tab">
           <form class="restockproduct-form" name="restockproduct-form" action="#" method="post">
-            <input type="number" id="restocknumber"    name="restocknumber"   required placeholder="SKU" autofocus min="0">
+            <input type="number" id="restocknumber"    name="restocknumber"   required placeholder="SKU" min="0">
             <input type="number" id="restockquantity"  name="restockquantity" required placeholder="Quantity" min="0">
             <button class="restockproductbutton" type="submit" id="restockproduct" onclick="restockProduct(); return false;">Restock</button>
             <output class="restock-product-results" id="restockproductresults" style="text-align: center" name="restockproductresults"></output>
@@ -112,15 +158,15 @@
           <form class="bancustomer-form" name="bancustomer-form" action="#" method="post">
             <input type="number" id="customerphonenumber" name="customerphonenumber" required placeholder="Customer Phone Number" min="0">
             <button class="customerbanlistbutton" type="submit" id="customerbanlist" onclick="searchCustomer(); return false;">Search</button>
-            <input type="text"    id="customernames"       name="customernames"       required placeholder="Customer names" autofocus>
+            <input type="text"    id="customernames"       name="customernames"       required placeholder="Customer names">
             <input type="text"    id="customeraddress"     name="customeraddress"     required placeholder="Customer Address">
-            <input type="number"    id="trackingnumber"     name="trackingnumber"     required placeholder="Tracking Number" min="0">
-            <input type="date"    id="orderdate"   name="customerorderdate"   required min="01-01-1970">
+            <input type="number"  id="trackingnumber"      name="trackingnumber"      required placeholder="Tracking Number" min="0">
+            <input type="date"    id="orderdate"   name="customerorderdate"   required min="1970-01-01">
             <select name="wherewasordered" id="wherewasordered" required>
-              <option id="wherewasordereda" value="a">-Choose where it was ordered-</option>
-              <option id="wherewasorderedsite" value="site">SITE</option>
-              <option id="wherewasorderedfb" value="fb">Facebook</option>
-              <option id="wherewasorderedolx" value="olx">OLX</option>
+              <option id="wherewasordereda"     value="">-Choose where it was ordered-</option>
+              <option id="wherewasorderedsite"  value="site">SITE</option>
+              <option id="wherewasorderedfb"    value="fb">Facebook</option>
+              <option id="wherewasorderedolx"   value="olx">OLX</option>
               <option id="wherewasorderedbazar" value="bazar">Bazar.bg</option>
               <option id="wherewasorderedphone" value="phone">Telephone</option>
               <option id="wherewasorderedviber" value="viber">Viber</option>
@@ -134,37 +180,26 @@
     </main>
     
     <footer>
-      <h4 id='loadingTime'></h4>
-      
-			<div id='licensearea' style="text-align: center">
-				<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
-					<img alt="Creative Commons License" style="border-width:0" src="cc-by-nc-sa.png" />
-				</a>
-				<br />This work is licensed under a 
-				<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
-					Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License
-				</a>
-			</div>
     </footer>
-  </body>
-  <script>
-    'use strict';
+    <script>
+      'use strict';
 
-    /*document.body.onload = function () {
-      document.addEventListener('click', function(event) {
-        if (event.target.tagName === 'A') {
-          event.preventDefault(); event.stopPropagation();
-          open(event.target.href).blur(); //disabling focus on the freshly opened tab is not working
-          //event.target.dispatchEvent(new MouseEvent('click', {ctrlKey: true, cancelable: true})); //simulation of CTRL+click is not working
-        }
-      }, false);
-    };*/
-      
-    var endTime = new Date().getTime();
-    var totalTime = (endTime - startTime)/1000;
-    if (document.getElementById("loadingTime"))
-    {
-      document.getElementById("loadingTime").innerHTML = `Page loaded in ${totalTime} seconds<br /><h2>v0.5 codename "1st grade"</h2>`;
-    }
-  </script>
+      /*document.body.onload = function () {
+        document.addEventListener('click', function(event) {
+          if (event.target.tagName === 'A') {
+            event.preventDefault(); event.stopPropagation();
+            open(event.target.href).blur(); //disabling focus on the freshly opened tab is not working
+            //event.target.dispatchEvent(new MouseEvent('click', {ctrlKey: true, cancelable: true})); //simulation of CTRL+click is not working
+          }
+        }, false);
+      };*/
+        
+      var endTime = new Date().getTime();
+      var totalTime = (endTime - startTime)/1000;
+      if (document.getElementById("pageloadtime"))
+      {
+        document.getElementById("pageloadtime").innerHTML = `${totalTime}s`;
+      }
+    </script>
+  </body>
 </html>
