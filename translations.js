@@ -1,12 +1,11 @@
 var translations = `{
   "EN": [
-    {"id":"switchloctext",              "property":"innerHTML",   "translation":"EN"},
+    {"id":"switchlocalization",         "property":"innerHTML",   "translation":"EN"},
     {"id":"softwarename",               "property":"innerHTML",   "translation":"Sales and Inventory Control System"},
     {"id":"checkissuesbutton",          "property":"title",       "translation":"Show all products with issues"},
     {"id":"checkmessagesbutton",        "property":"title",       "translation":"Show all events or messages"},
-    {"id":"switchloctext",              "property":"title",       "translation":"Switch language"},
-    {"id":"appversiontext",             "property":"title",       "translation":"Current software version - codename 'School Bullies'"},
-    {"id":"pageloadtime",               "property":"title",       "translation":"Page loading time"},
+    {"id":"switchlocalization",         "property":"title",       "translation":"Switch language"},
+    {"id":"sysinfo",                    "property":"title",       "translation":"System Info and Settings"},
     {"id":"licensetext",                "property":"title",       "translation":"This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License"},
     {"id":"setmonitoring",              "property":"title",       "translation":"Enable/Disable product monitoring"},
     {"id":"number",                     "property":"placeholder", "translation":"SKU"},
@@ -37,6 +36,7 @@ var translations = `{
     {"id":"soldinbazar",                "property":"textContent", "translation":"Bazar.BG"},
     {"id":"soldinphone",                "property":"textContent", "translation":"Telephone"},
     {"id":"soldinviber",                "property":"textContent", "translation":"Viber"},
+    {"id":"datesinfo",                  "property":"textContent", "translation":"Choose a sales period or directly click for the daily ones"},
     {"id":"wherewasordereda",           "property":"textContent", "translation":"-Choose where it was ordered-"},
     {"id":"wherewasorderedsite",        "property":"textContent", "translation":"SITE"},
     {"id":"wherewasorderedfb",          "property":"textContent", "translation":"Facebook"},
@@ -46,13 +46,12 @@ var translations = `{
     {"id":"wherewasorderedviber",       "property":"textContent", "translation":"Viber"}
   ],
   "BG": [
-    {"id":"switchloctext",              "property":"innerHTML",   "translation":"BG"},
+    {"id":"switchlocalization",         "property":"innerHTML",   "translation":"BG"},
     {"id":"softwarename",               "property":"innerHTML",   "translation":"Система за контрол на продажбите и наличностите"},
     {"id":"checkissuesbutton",          "property":"title",       "translation":"Покажи всички продукти с проблеми"},
     {"id":"checkmessagesbutton",        "property":"title",       "translation":"Покажи всички съобщения или събития"},
-    {"id":"switchloctext",              "property":"title",       "translation":"Смяна език на интерфейса"},
-    {"id":"appversiontext",             "property":"title",       "translation":"Настояща версия на софтуера - кодово име 'Училищни побойници'"},
-    {"id":"pageloadtime",               "property":"title",       "translation":"Време за зареждане на страницата"},
+    {"id":"switchlocalization",         "property":"title",       "translation":"Смяна език на интерфейса"},
+    {"id":"sysinfo",                    "property":"title",       "translation":"Системна информация и настройки"},
     {"id":"licensetext",                "property":"title",       "translation":"Този софтуер се разпространява под CC BY-NC-SA 4.0 лицензно споразумение"},
     {"id":"setmonitoring",              "property":"title",       "translation":"Добави/Премахни продукта от списъка с наблюдавани"},
     {"id":"number",                     "property":"placeholder", "translation":"Артикулен номер"},
@@ -83,6 +82,7 @@ var translations = `{
     {"id":"soldinbazar",                "property":"textContent", "translation":"Базар.БГ"},
     {"id":"soldinphone",                "property":"textContent", "translation":"ТЕЛЕФОН"},
     {"id":"soldinviber",                "property":"textContent", "translation":"Вайбър"},
+    {"id":"datesinfo",                  "property":"textContent", "translation":"Изберете период или натиснете директно някой от бутоните за дневните продажби"},
     {"id":"wherewasordereda",           "property":"textContent", "translation":"-Избери от къде е поръчан продукта-"},
     {"id":"wherewasorderedsite",        "property":"textContent", "translation":"САЙТ"},
     {"id":"wherewasorderedfb",          "property":"textContent", "translation":"Фейсбук"},
@@ -92,3 +92,40 @@ var translations = `{
     {"id":"wherewasorderedviber",       "property":"textContent", "translation":"Вайбър"}
   ]
 }`;
+
+/*---*/
+
+var systemErrors = [];
+systemErrors['EN'] = [];
+systemErrors['BG'] = [];
+systemErrors['EN']['addprod']     = [];
+systemErrors['EN']['searchprod']  = [];
+systemErrors['EN']['sellprod']    = [];
+systemErrors['EN']['restock']     = [];
+systemErrors['EN']['issues']      = [];
+systemErrors['BG']['addprod']     = [];
+systemErrors['BG']['searchprod']  = [];
+systemErrors['BG']['sellprod']    = [];
+systemErrors['BG']['restock']     = [];
+systemErrors['BG']['issues']      = [];
+/*---*/
+systemErrors['EN']['addprod'][0]    = "This product is already in the database!";
+systemErrors['EN']['addprod'][1]    = "The product was succesfully added!";
+systemErrors['EN']['searchprod'][0] = "The product wasn't found in the database!";
+systemErrors['EN']['sellprod'][0]   = "The product wasn't found in the database!";
+systemErrors['EN']['sellprod'][1]   = "The product was succesfully marked as sold!";
+systemErrors['EN']['restock'][0]    = "The product wasn't found in the database!";
+systemErrors['EN']['restock'][1]    = "The product's quantity was succesfully updated!";
+systemErrors['EN']['issues'][0]     = "No products with low qty or missing info were found!";
+systemErrors['BG']['addprod'][0]    = "Продукт със същия арт. номер е вече качен!";
+systemErrors['BG']['addprod'][1]    = "Продуктът беше успешно добавен!";
+systemErrors['BG']['searchprod'][0] = "Продуктът не беше открит в базата данни!";
+systemErrors['BG']['sellprod'][0]   = "Продуктът не беше открит в базата данни!";
+systemErrors['BG']['sellprod'][1]   = "Продуктът беше успешно записан като продаден!";
+systemErrors['BG']['restock'][0]    = "Продуктът не беше открит в базата данни!";
+systemErrors['BG']['restock'][1]    = "Продуктовата наличност беше успешно обновена!";
+systemErrors['BG']['issues'][0]     = "Не бяха открити продукти с намалено количество или липсваща информация!";
+/*---*/
+var warehouseChat = [];
+warehouseChat['EN'] = "If there are any of these left - N qty";
+warehouseChat['BG'] = "Ако има останали от тези - ";

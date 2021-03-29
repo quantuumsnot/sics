@@ -7,27 +7,26 @@
     <meta http-equiv="cache-control" content="max-age=0" />
     <meta http-equiv="cache-control" content="no-cache" />
     <meta http-equiv="cache-control" content="must-revalidate" />
+    <meta http-equiv="cache-control" content="no-store" />
     <meta http-equiv="expires" content="0" />
     <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
     <meta http-equiv="pragma" content="no-cache" />
     <meta name="description" content="Storage and Inventory Control System, for more info visit https://github.com/quantuumsnot/sics">
     <title>Sales and Inventory Control System</title>
+    <link rel="preload" as="script"     href="translations.js?v=1.0">
+    <link rel="preload" as="script"     href="sics.js?v=1.0">
     <link rel="stylesheet"              href="normalize.css?v=1.0">
     <link rel="stylesheet"              href="style.css?v=1.0">
-    <link rel="preload" as="image"      href="icons8-sugar-cubes-50.png">
-    <link rel="preload" as="image"      href="icons8-sugar-cubes-50-inverted.png">
-    <link rel="preload" as="image"      href="icons8-messaging-48.png">
-    <link rel="preload" as="image"      href="icons8-messaging-48-inverted.png">
+    <link rel="preload" as="image"      href="cubes_48.png">
+    <link rel="preload" as="image"      href="messages_48.png">
+    <link rel="preload" as="image"      href="settings_48.png">
+    <link rel="preload" as="image"      href="settings_48.png">
     <link rel="preload" as="image"      href="image-not-available.jpg">
     <link rel="preload" as="image"      href="monitored_48.png">
     <link rel="preload" as="image"      href="notmonitored_48.png">
     <link rel="preload" as="audio"      href="success.mp3">
     <link rel="preload" as="audio"      href="failure.mp3">
     <link rel="preload" as="audio"      href="message.mp3">
-    <script>
-      'use strict';
-      var startTime = new Date().getTime();
-    </script>
     <script src="translations.js?v=1.0" defer></script>
     <script src="sics.js?v=1.0" defer></script>
   </head>
@@ -35,24 +34,21 @@
     <header style="text-align: center">
       <h1 id="softwarename">Sales and Inventory Control System</h1>
       <div class="notificationarea">
-        <div class="notificationicons checkissues" id="checkissuesbutton" onclick="checkissuespopup.showModal(); checkIssues(); return false;" title="Show all products with issues">
+        <div class="notificationicons checkissues" id="checkissuesbutton" onclick="checkissuespopupshowModal(); checkIssues(); return false;" title="Show all products with issues">
           <div id="productissues"></div>
         </div>
-        <div class="notificationicons usermessages" id="checkmessagesbutton" onclick="usermessagespopup.showModal(); checkMessages(); return false;" title="Show all events or messages">
+        <div class="notificationicons usermessages" id="checkmessagesbutton" onclick="usermessagespopupshowModal(); checkMessages(); return false;" title="Show all events or messages">
           <div id="usermessages"></div>
         </div>
         <div class="notificationicons switchlocalization" id="switchlocalization" onclick="switchLang(); return false;" title="Switch language">
-          <div id="switchloctext">EN</div>
+          EN
         </div>
-        <div class="notificationicons appversion" id="appversion" title="version codename 'School Bullies'">
-          <div id="appversiontext">v0.6</div>
-        </div>
-        <div class="notificationicons loadingTime" id="loadingTime" title="page loading time">
-          <div id="pageloadtime"></div>
+        <div class="notificationicons sysinfo" id="sysinfo" onclick="sysInfo(); return false;" title="System Info and Settings">
+          <div id="sysinfodata"></div>
         </div>
         <div class="notificationicons licensearea" id="licensearea" title="This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License">
           <div id="licensetext">
-            <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
+            <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"> <!-- target="_blank" rel="noopener noreferrer" gives Lighthouse error -->
               <img loading="lazy" id="licenseimg" alt="Creative Commons License" width="88" height="49" src="cc-by-nc-sa.png" />
             </a>
           </div>
@@ -60,8 +56,12 @@
       </div>
     </header>
     
-    <dialog id="checkissuespopup"><div id="checkissuespopupclose" onclick="checkissuespopup.close(); return false;">X</div><div id="issuesresults"></div></dialog>
-    <dialog id="usermessagespopup"><div id="usermessagespopupclose" onclick="usermessagespopup.close(); return false;">X</div><div id="usermessagesresults"></div></dialog>
+    <div id="overlayissues">
+      <div id="checkissuespopup"><div id="checkissuespopupclose" onclick="checkissuespopupclose(); return false;">X</div><div id="issuesresults"></div></div>
+    </div>
+    <div id="overlaymessages">
+      <div id="usermessagespopup"><div id="usermessagespopupclose" onclick="usermessagespopupclose(); return false;">X</div><div id="usermessagesresults"></div></div>
+    </div>
 
     <main>
       <div class="tabs">
@@ -72,8 +72,8 @@
               <table id="addtable">
                 <tr>
                   <td class="xxx">
-                    <label for="number" class="visuallyhidden">.</label>
-                    <input type="number"  id="number"     name="number"     required placeholder="SKU" autofocus min="0"><!-- label is Lighthouse audit fix -->
+                    <label for="number" class="visuallyhidden">.</label><!-- label is Lighthouse audit fix -->
+                    <input type="number"  id="number"     name="number"     required placeholder="SKU" autofocus min="0">
                     <button class="checkproductbutton" type="submit" id="checkproduct" onclick="searchProduct(); return false;">Check</button>
                     <div id="hiddenaddinput">
                       <input type="text"    id="name"       name="name"       required placeholder="Name">
@@ -123,6 +123,7 @@
             <button class="sellproductbutton" type="submit" id="sellproduct" onclick="sellProduct(); return false;">Sell</button>
             <output class="sell-product-results" id="sellproductresults" style="text-align: center" name="sellproductresults"></output>
             <hr style="height:2px ; border-width:0; color: blue; background-color: blue" />
+            <em id="datesinfo">Choose a sales period or directly click for the daily ones</em>
             <input type="date"  id="soldproductsfrom"   name="soldproductsfrom"   required min="1970-01-01">
             <input type="date"  id="soldproductsto"     name="soldproductsto"     required min="1970-01-01">
             <div class="marketsarea">
@@ -133,10 +134,8 @@
               <div class="marketsicons" onclick="checkSales('bazar'); return false;" title="Bazar.BG">Bazar.BG</div>
               <div class="marketsicons" onclick="checkSales('phone'); return false;" title="Phone">Phone</div>
               <div class="marketsicons" onclick="checkSales('viber'); return false;" title="Viber">Viber</div>
-              <div class="marketsicons" onclick="checkSales('all'); return false;" title="All">All</div>
-              <div class="marketsicons todaySales" onclick="checkSales('today'); return false;" title="TODAY">TODAY</div>
+              <div class="marketsicons allsales" onclick="checkSales('all'); return false;" title="ALL">ALL</div>
             </div>
-            <!--<button class="soldproductsbutton" type="submit" id="soldproducts" onclick="checkSales(); return false;">Show Sales</button>-->
             <output class="sold-products-results" id="soldproductsresults" style="text-align: center" name="soldproductsresults"></output>
           </form>
         </div>
@@ -181,25 +180,5 @@
     
     <footer>
     </footer>
-    <script>
-      'use strict';
-
-      /*document.body.onload = function () {
-        document.addEventListener('click', function(event) {
-          if (event.target.tagName === 'A') {
-            event.preventDefault(); event.stopPropagation();
-            open(event.target.href).blur(); //disabling focus on the freshly opened tab is not working
-            //event.target.dispatchEvent(new MouseEvent('click', {ctrlKey: true, cancelable: true})); //simulation of CTRL+click is not working
-          }
-        }, false);
-      };*/
-        
-      var endTime = new Date().getTime();
-      var totalTime = (endTime - startTime)/1000;
-      if (document.getElementById("pageloadtime"))
-      {
-        document.getElementById("pageloadtime").innerHTML = `${totalTime}s`;
-      }
-    </script>
   </body>
 </html>

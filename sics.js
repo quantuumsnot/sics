@@ -1,14 +1,22 @@
 'use strict';
 
-console.clear();
+//console.clear(); // gives Lighthouse error
 
 //var lang = "EN";
 var lang = "BG";
 var obj = JSON.parse(translations);
+// perfopt: minimize DOM access
+var elementsForTranslation = [];
+for (let elem in obj[lang]) {
+  var el = document.getElementById(obj[lang][elem].id);
+  elementsForTranslation[el.id] = el;
+}
+// end of perfopt
 var success = new Audio('success.mp3');
 var failure = new Audio('failure.mp3');
 var message = new Audio('message.mp3');
 var Monitored = null;
+var styleCSSHash = "0";
 //var productsMonState = [];
 
 function playSuccess() {
@@ -30,16 +38,28 @@ function playMessage() {
 }
 
 function switchLang() {
-  for (var elem in obj[lang]) {
-    switch (obj[lang][elem].property) {
-      case "innerHTML":   document.getElementById(obj[lang][elem].id).innerHTML   = obj[lang][elem].translation; break;
-      case "textContent": document.getElementById(obj[lang][elem].id).textContent = obj[lang][elem].translation; break;
-      case "placeholder": document.getElementById(obj[lang][elem].id).placeholder = obj[lang][elem].translation; break;
-      case "title":       document.getElementById(obj[lang][elem].id).title       = obj[lang][elem].translation; break;
+  //if (window.location.pathname !== "/index.html") {
+    //document.getElementById("searchproduct").innerHTML = obj[lang]["searchproduct"].translation; // Throws undefined, dunno why
+  //}
+  for (let elem in obj[lang]) {
+    if (elem) {
+      if (obj[lang][elem].property) {
+        switch (obj[lang][elem].property) {
+          case "innerHTML":   elementsForTranslation[obj[lang][elem].id].innerHTML   = obj[lang][elem].translation; break;
+          case "textContent": elementsForTranslation[obj[lang][elem].id].textContent = obj[lang][elem].translation; break;
+          case "placeholder": elementsForTranslation[obj[lang][elem].id].placeholder = obj[lang][elem].translation; break;
+          case "title":       elementsForTranslation[obj[lang][elem].id].title       = obj[lang][elem].translation; break;
+        }
+      }
     }
   }
+
   //playSuccess();
   //playFailure();
+}
+
+function sysInfo() {
+  //;
 }
 
 function loadPreview() {
@@ -69,6 +89,20 @@ function classSwitch(state) {
       document.getElementById("setmonitoring").classList.remove("productmonitoringenabled");
     }
     document.getElementById("setmonitoring").classList.add("productmonitoringdisabled");
+  }
+}
+
+function classSwitchIssues(stateIssues, stateButtonID) {
+  if (stateIssues === "1") {
+    if (document.getElementById(stateButtonID).classList.contains("productmonitoringdisabled")) {
+      document.getElementById(stateButtonID).classList.remove("productmonitoringdisabled");
+    } else document.getElementById(stateButtonID).classList.add("productmonitoringenabled");
+  }
+  
+  if (stateIssues === "0")  {
+    if (document.getElementById(stateButtonID).classList.contains("productmonitoringenabled")) {
+      document.getElementById(stateButtonID).classList.remove("productmonitoringenabled");
+    } else document.getElementById(stateButtonID).classList.add("productmonitoringdisabled");
   }
 }
 
@@ -115,23 +149,18 @@ function addProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        if (this.responseText.includes("added")) {
-          if (lang === "BG") {
-            document.getElementById("newproductresults").innerHTML = "Продуктът беше успешно добавен!";
-          } else document.getElementById("newproductresults").innerHTML = this.responseText;
-          document.getElementById("newproductresults").style.backgroundColor = "green";
-          document.getElementById('prodpicture').src = '';
-          document.getElementById('pictures').value = '';
-          playSuccess();
-        }
-        if (this.responseText.includes("already")) {
-          if (lang === "BG") {
-            document.getElementById("newproductresults").innerHTML = "Продукт със същия арт. номер е вече качен!";
-          } else document.getElementById("newproductresults").innerHTML = this.responseText;
-          document.getElementById("newproductresults").style.backgroundColor = "red";
-          document.getElementById('prodpicture').src = '';
-          document.getElementById('pictures').value = '';
-          playFailure();
+        document.getElementById("newproductresults").innerHTML = systemErrors[lang]['sellprod'][this.responseText];
+        switch (this.responseText) {
+          case "0": document.getElementById("newproductresults").style.backgroundColor = "red", 
+                    document.getElementById('prodpicture').src = '',
+                    document.getElementById('pictures').value = '', 
+                    playFailure(); 
+                    break;
+          case "1": document.getElementById("newproductresults").style.backgroundColor = "green",
+                    document.getElementById('prodpicture').src = '', 
+                    document.getElementById('pictures').value = '', 
+                    playSuccess(); 
+                    break;
         }
       } else {
         playFailure();
@@ -208,8 +237,8 @@ function searchProduct() {
         var i;
         
         // Check if returned data is "No product found!"
-        if (Object.keys(data).length == 1) {
-          document.getElementById("newproductresults").innerHTML              = data;
+        if (this.responseText === "0") {
+          document.getElementById("newproductresults").innerHTML = systemErrors[lang]['searchprod'][this.responseText];
           document.getElementById("newproductresults").style.backgroundColor  = "red";
           document.getElementById("prodpicture").src                          = '';
           document.getElementById("name").value                               = '';
@@ -252,9 +281,6 @@ function searchProduct() {
     
   xhttp.open("POST", "index.php", true);
   
-  //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
-  
   if (searchNumber !== '') {
         formData.append('action', "search");
         formData.append('number', searchNumber);
@@ -265,6 +291,121 @@ function searchProduct() {
   } else {
     playFailure();
     alert("Error: Some fields are empty!");
+  }
+}
+
+// Search a product for warehouse employees
+function searchWarehouse() {
+  var productName = document.getElementById('name').value;
+  if (productName === '') {
+    playFailure();
+    alert("Product name is empty!");
+    return;
+  }
+  
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to add the product
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        var data = JSON.parse(this.responseText);
+        
+        var i, j;
+        
+        // Check if returned data is "No product found!"
+        /*if (lang === "BG") {
+        } else {
+        }*/
+        
+        if (data !== 0) {
+          for (j of data) {
+            var piclink = "../productpics/" + j[0] + ".jpg"; // image src="${j[4]}", links look better for reading than sending base64 encoded data from db
+            i += `<div>
+                    <img loading="lazy" src="${piclink}" alt="Product picture is not available" class="warehousepics" onclick="itemRemovalFromWarehouse(this.value); return false;" value="${j[0]}"/>
+                  </div>`;
+          }
+          var el = document.getElementById("searchproductresults");
+          el.querySelectorAll("*").forEach(el => el.remove());
+          document.getElementById("searchproductresults").innerHTML = i;
+          playSuccess();
+        } else {
+          document.getElementById("searchproductresults").innerHTML = systemErrors[lang]['searchprod'][this.responseText];
+          document.getElementById("searchproductresults").style.backgroundColor  = "red";
+          document.getElementById("name").value                               = '';
+          playFailure()
+        }
+      }
+      else {
+        playFailure();
+        alert("Error: returned status code " + this.status + " " + this.statusText);
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+
+  if (productName !== '') {
+        formData.append('action', "warehouse");
+        formData.append('name', productName);
+        
+        xhttp.send(formData);
+  } else {
+    playFailure();
+    alert("Error: Some fields are empty!");
+  }
+}
+
+function itemRemovalFromWarehouse(productNumber) {
+  var productNumber    = productNumber;
+  console.log(productNumber);
+  if (productNumber.length > 7) {
+    playFailure();
+    alert("Maximum allowed number of symbols for SKU is 7!");
+    return;
+  }
+
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to add the product
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        document.getElementById("searchproductresults").innerHTML = systemErrors[lang]['sellprod'][this.responseText];
+        switch (this.responseText) {
+          case "0": /* Output the error */; break;//document.getElementById("searchproductresults").style.backgroundColor = "red", playFailure(); break;
+          case "1": /* Close popup here on success */; break;//document.getElementById("searchproductresults").style.backgroundColor = "green", playSuccess(); break;
+        }
+      } else {
+        playFailure();
+        alert("Error: returned status code " + this.status + " " + this.statusText);
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  var remquantity = document.getElementById("modalpopupid").value;
+  
+  if (productNumber !== '' &&
+      remquantity   !== '') {
+        formData.append('action', "itemremoval");
+        formData.append('number', productNumber);
+        formData.append('remquantity', remquantity);
+        
+        xhttp.send(formData);
+        
+        document.getElementById('number').value   = '';
+        document.getElementById('remquantity').value = '';
+  } else {
+      playFailure();
+      alert("Error: Some fields are empty!");
   }
 }
 
@@ -283,7 +424,7 @@ function setProductMonitoring() {
   // Make a request to add the product
   var xhttp = new XMLHttpRequest();
   
-  xhttp.onreadystatechange = function() {
+  xhttp.onreadystatechange = function() { 
     if (this.readyState == 4) {
       if (this.status == 200) {
         //var data = JSON.parse(this.responseText);
@@ -319,6 +460,50 @@ function setProductMonitoring() {
   }
 }
 
+function setProductMonitoringIssues(sku, stateIssues, stateButtonID) {
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to add the product
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() { 
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        //var data = JSON.parse(this.responseText);
+        var data = this.responseText;
+        stateIssues = data;
+      
+        // Check if there is some data returned
+        if (data) {
+          playSuccess();
+          classSwitchIssues(stateIssues, stateButtonID);
+        } else {
+          playFailure();
+          alert("Error: returned status code " + this.status + " " + this.statusText);
+        }
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  if (sku !== '' && stateIssues !== '') {
+    switch (stateIssues) {
+      case "1": stateIssues = "0"; break;
+      case "0": stateIssues = "1"; break;
+    }
+    formData.append('action', "setmonitoring");
+    formData.append('number', sku);
+    formData.append('Monitored', stateIssues);
+    
+    xhttp.send(formData);
+  } else {
+    playFailure();
+    alert("Error: Some fields are empty!");
+  }
+}
+
 // Restock a product and update the quantity left in the database
 function restockProduct() {
   var restockNumber    = document.getElementById('restocknumber').value;
@@ -338,21 +523,12 @@ function restockProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        if (this.responseText.includes("wasn't")) {
-          if (lang === "BG") {
-            document.getElementById("restockproductresults").innerHTML = "Продуктът не беше открит в базата данни!";
-          } else document.getElementById("restockproductresults").innerHTML = this.responseText;
-          document.getElementById("restockproductresults").style.backgroundColor = "red";
-          playFailure();
-        } else {
-          if (lang === "BG") {
-            document.getElementById("restockproductresults").innerHTML = "Продуктовата наличност беше успешно обновена!";
-          } else document.getElementById("restockproductresults").innerHTML = this.responseText;
-          document.getElementById("restockproductresults").style.backgroundColor = "green";
-          playSuccess();
+        document.getElementById("restockproductresults").innerHTML = systemErrors[lang]['restock'][this.responseText];
+        switch (this.responseText) {
+          case "0": document.getElementById("restockproductresults").style.backgroundColor = "red", playFailure(); break;
+          case "1": document.getElementById("restockproductresults").style.backgroundColor = "green", playSuccess(); break;
         }
-      }
-      else {
+      } else {
         playFailure();
         alert("Error: returned status code " + this.status + " " + this.statusText);
       }
@@ -360,9 +536,6 @@ function restockProduct() {
   };
     
   xhttp.open("POST", "index.php", true);
-  
-  //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
   
   if (restockNumber    !== '' &&
       restockQuantity  !== '') {
@@ -400,21 +573,12 @@ function sellProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        if (this.responseText.includes("wasn't")) {
-          if (lang === "BG") {
-            document.getElementById("sellproductresults").innerHTML = "Продуктът не беше открит в базата данни!";
-          } else document.getElementById("sellproductresults").innerHTML = this.responseText;
-          document.getElementById("sellproductresults").style.backgroundColor = "red";
-          playFailure();
-        } else {
-          if (lang === "BG") {
-            document.getElementById("sellproductresults").innerHTML = "Продуктът беше успешно записан като продаден!";
-          } else document.getElementById("sellproductresults").innerHTML = this.responseText;
-          document.getElementById("sellproductresults").style.backgroundColor = "red";
-          playSuccess();
+        document.getElementById("sellproductresults").innerHTML = systemErrors[lang]['sellprod'][this.responseText];
+        switch (this.responseText) {
+          case "0": document.getElementById("sellproductresults").style.backgroundColor = "red", playFailure(); break;
+          case "1": document.getElementById("sellproductresults").style.backgroundColor = "green", playSuccess(); break;
         }
-      }
-      else {
+      } else {
         playFailure();
         alert("Error: returned status code " + this.status + " " + this.statusText);
       }
@@ -422,10 +586,7 @@ function sellProduct() {
   };
     
   xhttp.open("POST", "index.php", true);
-  
-  //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
-  
+    
   if (sellNumber    !== '' &&
       sellquantity  !== '' &&
       soldin        !== '') {
@@ -451,6 +612,24 @@ function checkSales(market) {
   
   var soldproductsfrom    = document.getElementById('soldproductsfrom').value;
   var soldproductsto      = document.getElementById('soldproductsto').value;
+  
+  if (soldproductsfrom === '' && soldproductsto === '') {
+    var currDate = new Date();
+    var currYear      = currDate.getFullYear();
+    var currMonth     = currDate.getMonth();
+    var currDay       = currDate.getDate();
+    
+    currMonth += 1;
+    if (currMonth < 10) {
+      currMonth = "0" + currMonth;
+    }
+    
+    if (currDay < 10) {
+      currDay = "0" + currDay;
+    }
+    
+    soldproductsfrom  = soldproductsto = currYear + "-" + currMonth + "-" + currDay;
+  }
   
   // Create a FormData object
   var formData = new FormData();
@@ -501,27 +680,6 @@ function checkSales(market) {
     
   xhttp.open("POST", "index.php", true);
   
-  //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
-  
-  if (market === 'today') {
-    var currDate = new Date();
-    var currYear      = currDate.getFullYear();
-    var currMonth     = currDate.getMonth();
-    var currDay       = currDate.getDate();
-    
-    currMonth += 1;
-    if (currMonth < 10) {
-      currMonth = "0" + currMonth;
-    }
-    
-    if (currDay < 10) {
-      currDay = "0" + currDay;
-    }
-    
-    soldproductsfrom  = soldproductsto = currYear + "-" + currMonth + "-" + currDay;
-  }
-  
   if (soldproductsfrom !== '' && soldproductsto !== '') {
         formData.append('action', "sales");
         formData.append('soldproductsfrom', soldproductsfrom);
@@ -529,7 +687,7 @@ function checkSales(market) {
         formData.append('market', market);
         
         xhttp.send(formData);
-
+        
         document.getElementById('soldproductsfrom').value = '';
         document.getElementById('soldproductsto').value   = '';
   } else {
@@ -562,9 +720,6 @@ function searchCustomer() {
   };
     
   xhttp.open("POST", "index.php", true);
-  
-  //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
   
   if (searchNumber !== '') {
         formData.append('action', "searchcustomer");
@@ -608,9 +763,6 @@ function banCustomer() {
   };
     
   xhttp.open("POST", "index.php", true);
-  
-  //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
   
   if (customerphonenumber     !== '' && 
       customernames           !== '' && 
@@ -658,28 +810,25 @@ function checkIssues() {
       if (this.status == 200) {
         var data = JSON.parse(this.responseText);
         
-        var i, j, SKU, Name, Problem, From, Monitored;
+        var i, j, SKU, Name, Problem, From, Actions, Picture;
         if (lang === "BG") {
           SKU       = "Арт. номер";
           Name      = "Име на продукта";
           Problem   = "Проблем";
           From      = "Доставчик";
-          Monitored = "Наблюдаван";
+          Actions   = "Действия";
+          Picture   = "Снимка";
         } else {
           SKU       = "SKU";
           Name      = "Name";
           Problem   = "Problem";
           From      = "Contractor";
-          Monitored = "Monitored";
+          Actions   = "Actions";
+          Picture   = "Picture";
         }
-        //var itemproblem = "";
         
         if (data !== 0) {
-          //j = `<table><tr><th>${SKU}</th><th>${Name}</th><th>${Problem}</th><th>${From}</th></tr>`;
-          //for (i of data) {
-            //j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td></tr>`;
-          //}
-          //j += "</table>"
+          //for i[3] -> <div class="divtableheadcell">${Actions}</div>
           j = `<div class="divtable">
                 <div class="divtablebody">
                   <div class="divrow">
@@ -687,17 +836,20 @@ function checkIssues() {
                     <div class="divtableheadcell">${Name}</div>
                     <div class="divtableheadcell">${Problem}</div>
                     <div class="divtableheadcell">${From}</div>
-                    <div class="divtableheadcell">${Monitored}</div>
+                    <div class="divtableheadcell">${Picture}</div>
                   </div>`;
           for (i of data) {
-            //var itemsku = `${i[0]}`;
-            //productsMonState[itemsku] = i[4];
+            //var actionSKU       = i[0];
+            //var actionMonState  = i[4];
+            //var stateButtonID   = `p${actionSKU}`;
+            //var stateButton = `<button id="${stateButtonID}" class="setmonitoringbutton" type="submit" onclick="setProductMonitoringIssues(${actionSKU}, ${actionMonState}, this.id); return false;" title="Enable/Disable product monitoring"></button>`;
+            //for i[3] -> <div class="divtablecell">${stateButton}</div>
             j += `<div class="divrow">
                     <div class="divtablecell">${i[0]}</div>
                     <div class="divtablecell">${i[1]}</div>
                     <div class="divtablecell">${i[2]}</div>
-                    <div class="divtablecell">${i[3]}</div>
-                    <div class="divtablecell">${i[4]}</div>
+                    <div class="divtablecell">${i[3]} <button class="warehouserequest" type="submit" onclick="requestToWarehouse(this); return false;" value="${i[5]}"></button></div>
+                    <div class="divtablecell"><img loading="lazy" src="${i[6]}" alt="Product picture is not available" class="prodissuepic" /></div>
                   </div>`;
           }
           j += "</div></div>";
@@ -713,7 +865,7 @@ function checkIssues() {
             document.getElementById("productissues").classList.remove("blink"); // disable blinking when no problems found
           }
           document.getElementById("productissues").innerHTML = ''; // remove counter when no problems found
-          document.getElementById("issuesresults").innerHTML = "NO PROBLEMS FOUND!";
+          document.getElementById("issuesresults").innerHTML = systemErrors[lang]['issues'][this.responseText];
         }
       }
       else {
@@ -726,9 +878,18 @@ function checkIssues() {
   xhttp.open("POST", "index.php", true);
   
   formData.append('action', "checkissues");
-  formData.append('tName', "products");
         
   xhttp.send(formData);
+}
+
+// Show issues popup
+function checkissuespopupshowModal() {
+  document.getElementById("overlayissues").style.display = "block";
+}
+
+// Close issues popup
+function checkissuespopupclose() {
+  document.getElementById("overlayissues").style.display = "none";
 }
 
 // Get user messages
@@ -783,14 +944,101 @@ function checkMessages() {
   xhttp.send(formData);
 }
 
+// Show messages popup
+function usermessagespopupshowModal() {
+  document.getElementById("overlaymessages").style.display = "block";
+}
+
+// Close messages popup
+function usermessagespopupclose() {
+  document.getElementById("overlaymessages").style.display = "none";
+}
+
 // Send user message
 function sendMessage() {
   //playSuccess();
   //playFailure();
 }
 
+// Check for updated files
+function checkFileHash() {
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to check for product issues like out of stock, missing info or pictures
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        var data = JSON.parse(this.responseText);
+        
+        if (data === 0) {
+          //console.log("File not changed");
+          //console.log("data-> " + data);
+          //console.log("local-> " + styleCSSHash);
+          //console.log("----------");
+          document.getElementById("sysinfodata").innerHTML = ''; // remove notification when there are no updates
+          if (document.getElementById("sysinfodata").classList.contains("blink")) {
+            document.getElementById("sysinfodata").classList.remove("blink"); // disable blinking when there are no updates
+          }
+        } else if (styleCSSHash !== data) {
+          var oldhash = styleCSSHash;
+          styleCSSHash = data;
+          //location.reload();
+          //console.log("File changed");
+          //console.log("data-> " + data);
+          //console.log("old-> " + oldhash);
+          //console.log("new-> " + styleCSSHash);
+          //console.log("----------");
+          document.getElementById("sysinfodata").innerHTML = "!";
+          document.getElementById("sysinfodata").style.color = "red";
+          document.getElementById("sysinfodata").style.fontWeight = "bold";
+          document.getElementById("sysinfodata").classList.add("blink");
+        }
+      } else {
+        playFailure();
+        alert("Error: returned status code " + this.status + " " + this.statusText);
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  formData.append('action', "checkFileHash");
+  formData.append('styleCSSHash', styleCSSHash);
+        
+  xhttp.send(formData);
+}
+
+// Get/Set current system information and settings
+function sysInfo() {
+  ;
+}
+
+// Create ready-to-paste message for our warehouse
+// in HTML use onclick="this.select();" inside the element that has a value="productimagelink" property
+// example element: <input onclick="this.select();" type='text' value='copy me' />
+function requestToWarehouse(data) {
+  //data.select();
+  //document.execCommand('copy');
+  // or
+  //clipboardData.setData('text/plain', data.value);
+  // or
+  navigator.clipboard.writeText(data.value + "\n" + warehouseChat[lang]); // only in HTTPS?
+  data.classList.add("warehouserequestchecked");
+}
+
+// Directly switch UI to the local translation
 switchLang();
+
+// Automatically check issues and messages at given time interval
 setInterval(function () {
   checkIssues();
   checkMessages();
 }, 30 * 60 * 1000); // first 30 is for 30min
+
+// Automatically check for file changes at given interval and reload the page if any
+/*setInterval(function () {
+  checkFileHash();
+}, 1 * 10 * 1000);*/ // check for file changes each 15 mins

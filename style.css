@@ -100,10 +100,11 @@ select { font-size: 1em; }
 
 .notificationicons:hover { border-bottom: 2px solid #80ecff; cursor: pointer; }
 
-.checkissues { background: url("icons8-sugar-cubes-50.png"); } /* First load the image then set its properties */
-.usermessages { background: url("icons8-messaging-48.png"); }
+.checkissues { background: url("cubes_48.png"); } /* First load the image then set its properties */
+.usermessages { background: url("messages_48.png"); }
+.sysinfo { background: url("settings_48.png"); background-color: black; } /* set background-color because css filter: invert(1) equals background-color and picture if there is alpha channel as in PNGs */
 
-.checkissues, .usermessages {
+.checkissues, .usermessages, .sysinfo {
   background-position: center; /* Center the image */
   background-repeat: no-repeat; /* Do not repeat the image */
   background-size: cover; /* Resize the background image to cover the entire container */
@@ -112,30 +113,21 @@ select { font-size: 1em; }
   position: relative;
 }
 
-.notificationicons img, .checkissues img, .usermessages img { max-width: 100%; }
+.prodissuepic { width: 100px; }
+.warehousepics { width: 200px; }
 
-.appversion > div {
-  font-size: 0.9rem;
-  text-align: center;
-  vertical-align: middle;
-  line-height: 2;
-}
-
-.loadingTime > div {
-  font-size: 0.6rem;
-  text-align: center;
-  vertical-align: middle;
-  line-height: 3;
-}
+.notificationicons img, .checkissues img, .usermessages img, .sysinfo img { max-width: 100%; }
 
 .licensearea { width: auto; }
 #licenseimg { border-width: 0; height: auto; width: 100%; } /* Lighthouse audit fix */
 
-#productissues, #usermessages {
+#productissues, #usermessages, #sysinfodata {
   position: absolute;
   top: -40%;
   right: -20%;
 }
+
+#sysinfodata { font-size: 1.5em; }
 
 #checkissuespopupclose, #usermessagespopupclose {
   cursor: pointer;
@@ -157,16 +149,14 @@ select { font-size: 1em; }
   border: 1px solid black;
 }
 
-.checkissues:hover, .usermessages:hover {
-  /*background: url("icons8-sugar-cubes-50-inverted.png");*/
-  /*background: url("icons8-messaging-48-inverted.png");*/
+.checkissues:hover, .usermessages:hover, .sysinfo:hover {
   filter: invert(1);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
 }
 
-.switchlocalization:hover, .appversion:hover, .loadingTime:hover { color: black; background-color: white; }
+.switchlocalization:hover { color: black; background-color: white; }
 
 .licensearea:hover { filter: invert(1); }
 
@@ -175,6 +165,34 @@ select { font-size: 1em; }
   /*border-radius: 1.5em;*/
   height: 480px;
   overflow: auto;
+  position: absolute;
+  width: 50%;
+  margin: 0 auto;
+  top: 20%;
+  left: 25%;
+  text-align: center;
+  background: white;
+  color: black;
+  box-shadow: 0px 0px 10px 0px black;
+}
+
+#overlayissues, #overlaymessages {
+  position: absolute;
+  display: none;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 0 auto;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.2),
+    rgba(0, 0, 0, 0.2) 1px,
+    rgba(0, 0, 0, 0.3) 1px,
+    rgba(0, 0, 0, 0.3) 20px
+  );
+  backdrop-filter: blur(3px);
 }
 
 .marketsarea {
@@ -202,14 +220,14 @@ select { font-size: 1em; }
   background-color: white;
 }
 
-.todaySales {
+.allsales {
   font-weight: bold;
   color: black;
   border-top: 2px solid #bfdfff;
   background-color: white;
 }
 
-.todaySales:hover { color: black; background-color: #bfdfff; border-color: #ff0000;}
+.allsales:hover { color: black; background-color: #bfdfff; border-color: #ff0000;}
 
 #issuesresults table {
   border-collapse: collapse;
@@ -221,6 +239,14 @@ select { font-size: 1em; }
 }
 
 #issuesresults td, tr, th { border: 1px solid black; border-spacing: 0; padding: 0; }
+
+/* both variants work, the one with ASCII code widens a bit the button */
+.warehouserequest::before { content: "C"; }
+.warehouserequest { border-radius: 50%; outline: none; }
+.warehouserequestchecked::before { content: "L"; }
+.warehouserequestchecked { background-color: green; transform: rotate(45deg) scaleX(-1); }
+/*.warehouserequestchecked::before { content: "\2713"; }*/
+/*.warehouserequestchecked { background-color: green; }*/
 
 #addtable {
   border-collapse: collapse;
@@ -291,16 +317,27 @@ select { font-size: 1em; }
   background-size: cover; /* Resize the background image to cover the entire container */
 }
 
-dialog::backdrop { /* Carbon effect on foreground */
-  background: repeating-linear-gradient(
+/*dialog::backdrop { /* Carbon effect on foreground */
+  /*background: repeating-linear-gradient(
     45deg,
     rgba(0, 0, 0, 0.2),
     rgba(0, 0, 0, 0.2) 1px,
     rgba(0, 0, 0, 0.3) 1px,
     rgba(0, 0, 0, 0.3) 20px
   );
-  backdrop-filter: blur(3px);
-}
+  backdrop-filter: blur(3px);*/
+/*}*/
+
+/*#checkissuespopup::backdrop, #usermessagespopup::backdrop { /* Carbon effect on foreground */
+  /*background: repeating-linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.2),
+    rgba(0, 0, 0, 0.2) 1px,
+    rgba(0, 0, 0, 0.3) 1px,
+    rgba(0, 0, 0, 0.3) 20px
+  );
+  backdrop-filter: blur(3px);*/
+/*}*/
 
 .tabs {
   display: -webkit-box;
@@ -354,7 +391,7 @@ dialog::backdrop { /* Carbon effect on foreground */
 
 .tabs input[type="radio"]:checked + label + .tab { display: block; }
 
-.addproduct-form, .sellproduct-form, .customerbanlist-form, .bancustomer-form, .restockproduct-form {
+.addproduct-form, .sellproduct-form, .searchproduct-form, .customerbanlist-form, .bancustomer-form, .restockproduct-form {
   display: flex;
   flex-wrap: wrap;
   flex-direction: column;
@@ -421,6 +458,8 @@ dialog::backdrop { /* Carbon effect on foreground */
 .divrow { display: table-row; }
 /*.divheader { display: table-header-group; font-weight: bold; background-color: #EEE; }*/
 .divtableheadcell { font-weight: bold; background-color: #EEE; }
-.divtablecell, .divtableheadcell { display: table-cell; border: 1px solid #999999; padding: 3px 10px; }
+.divtablecell, .divtableheadcell { display: table-cell; border: 1px solid #999999; padding: 3px 10px; text-align: center; vertical-align: middle; }
 .divtablefoot { display: table-footer-group; }
 .divtablebody { display: table-row-group; }
+
+/*abcd*/

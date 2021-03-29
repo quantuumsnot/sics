@@ -3,9 +3,11 @@
 error_reporting(-1); //Rasmus Lerdorf said to use this
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
+//ini_set('max_execution_time', 0); //we assume that our scrapper will download the whole Internet so be polite and set the max execution time to Infinite
 //mb_internal_encoding('UTF-8');
 //mb_http_output('UTF-8');
 gc_enable(); //enables Garbage Collector
+//gc_disable(); //disables Garbage Collector to improve/test performance
 /*IMPORTANT - after each include of external file get the memory allocated by OS
  with memory_get_peak_usage(true) to get correct memory usage*/
 
@@ -22,9 +24,11 @@ header("Content-type: text/plain");
 $phpVersionNumber = PHP_VERSION_ID;
 $phpVersionType   = PHP_INT_SIZE * 8 . "bit";
 
+$styleCSSHash = hash_file("haval160,4", "style.css"); //haval160,4 seems to be the fastest atm
+
 // Open database
-$productsColumns            = "number TEXT, name TEXT, category TEXT, quantity INTEGER, contractor TEXT, price REAL, weight REAL, info TEXT, prodlinks TEXT, monitored INTEGER, pictures BLOB";
-//$productsColumnsNoDataType  = "number, name, category, quantity, contractor, price, weight, info, prodlinks, monitored, pictures";
+$productsColumns            = "number TEXT, name TEXT, category TEXT, quantity INTEGER, contractor TEXT, price REAL, weight REAL, info TEXT, prodlinks TEXT, monitored INTEGER, piclinks TEXT, pictures BLOB";
+//$productsColumnsNoDataType  = "number, name, category, quantity, contractor, price, weight, info, prodlinks, monitored, piclinks, pictures";
 $productsColumnsNoDataType  = "number, name, quantity, contractor, price, monitored, pictures";
 $salesColumns               = "date TEXT, number TEXT, itemdescription TEXT, quantity INTEGER, soldin TEXT";
 $salesColumnsNoDataType     = "date, number, itemdescription, quantity, soldin";
@@ -130,9 +134,9 @@ function addProduct() {
           }
         }
         
-        echo "The product was succesfully added!";
+        echo 1;
       } else {
-        echo "This product is already in the database!";
+        echo 0;
       }
     }
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
@@ -181,10 +185,118 @@ function searchProduct() {
         //$output [] = array("Picture" => "data:" . $imgType . ";base64,"  . base64_encode($lob));
         echo json_encode($output);
       } else {
-        echo json_encode(array("No product found!"));
+        echo 0;
       }
     }
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result, $finfo, $mimeType); /*and close database handler*/ }
+}
+
+function searchWarehouse() {
+  try {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+      global $db;
+      
+      $name     = mb_strtolower($_POST['name']);
+      
+      // Workaround for SQLite ASCII only support for UPPERCASE
+      $query = "SELECT number, name, info, prodlinks, piclinks FROM products WHERE name LIKE '%" . $name . "%' UNION
+                SELECT number, name, info, prodlinks, piclinks FROM products WHERE name LIKE '%" . mb_strtoupper($name) . "%' ORDER BY name";
+      
+      $result = $db->prepare($query);
+      $result->execute();
+      $result->bindColumn(1, $number);
+      $result->bindColumn(2, $name);
+      $result->bindColumn(3, $info);
+      $result->bindColumn(4, $prodlinks);
+      $result->bindColumn(5, $piclinks);
+      //$result->bindColumn(6, $pictures); // Disabled for now - too many MBs of data transfered!!!
+      $result = $result->fetchAll(PDO::FETCH_ASSOC);
+      
+      if (count($result) > 0) {
+        $output = [];
+        $i = 0;
+        foreach ($result as $product) {
+          //$product['piclinks'] = "OPA";
+          $output[$i] = array($product['number'], $product['name'], $product['info'], $product['prodlinks'], $product['piclinks'] /*$product['pictures']*/);
+
+          if ($product['info'] === null || $product['info'] === "") { //check if product has info
+            $output[$i][2] = "_NOINFO";
+          }
+          
+          if ($product['prodlinks'] === null || $product['prodlinks'] === "") { //check if product has additional links
+            $output[$i][3] = "_NOLINKS";
+          }
+          
+          if ($product['piclinks'] === null || $product['info'] === "") { //check if product has info
+            $output[$i][4] = "_NOPICLINKS";
+          }
+          
+          /*if ($product['pictures'] === null || $product['pictures'] === "") { //check if product has picture
+            $output[$i][5] = "_NOPICTURES";
+          } else {
+            $finfo    = new finfo(FILEINFO_MIME);
+            $mimeType = $finfo->buffer($product['pictures']);
+            $mimeType = substr($mimeType, 0, strpos($mimeType, ";"));
+            $product['pictures'] = "data:" . $mimeType . ";base64,"  . base64_encode($product['pictures']);
+            $output[$i][5] = $product['pictures'];
+          }*/
+          
+          $i++;
+        }
+        //echo json_encode(count($result));
+        echo json_encode($output);
+      } else {
+        echo json_encode(0);
+      }
+    }
+  } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
+}
+
+function itemRemovalFromWarehouse() {
+  try {
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+      global $db, $restocksColumnsNoDataType;
+      
+      $itemNumber = $_POST['number'];
+      $qty        = $_POST['remquantity'];
+      
+      $result = $db->prepare("SELECT name FROM products WHERE number=?");
+      $result->execute(array($itemNumber)); //this line first or bindColumn won't work
+      $result->bindColumn(1, $name);
+      $result = $result->fetchAll(PDO::FETCH_ASSOC);
+      if (count($result) > 0) {
+        $result = $db->prepare("UPDATE products SET quantity=quantity+{$qty} WHERE number=?");
+        $result->bindValue(1, $itemNumber);
+        $result->execute();
+        
+        // Start logging the query
+        $queryforsave = "UPDATE products SET quantity=quantity+{$qty} WHERE number={$itemNumber}" . PHP_EOL;
+        logQuery($queryforsave);
+        // End logging the query
+        
+        $itemName = $name;
+        
+        //$actionDate = date('d M Y H-i-s');
+        $actionDate = date('Y-m-d'); //ISO-8601 format for SQLite without Hours Mins Secs
+        
+        $result = $db->prepare("INSERT INTO restocks ({$restocksColumnsNoDataType}) VALUES (?, ?, ?, ?)");
+        $result->bindValue(1, $actionDate);
+        $result->bindValue(2, $itemNumber);
+        $result->bindValue(3, $itemName);
+        $result->bindValue(4, $qty);
+        $result->execute();
+        
+        // Start logging the query
+        $queryforsave = "INSERT INTO restocks ({$restocksColumnsNoDataType}) VALUES ('{$actionDate}', '{$itemNumber}', '{$itemName}', '{$qty}')" . PHP_EOL;
+        logQuery($queryforsave);
+        // End logging the query
+
+        echo 1;
+      } else {
+        echo 0;
+      }
+    }
+  } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
 }
 
 function setProductMonitoring() {
@@ -262,9 +374,9 @@ function sellProduct() {
         $fileLine = $actionDate . " | " . $sellNumber . " | " . $itemName . " | " . $sellQuantity . " | " . $soldIn . PHP_EOL;
         file_put_contents($fileName, $fileLine, FILE_APPEND);
         
-        echo "The product was succesfully marked as sold!";
+        echo 1;
       } else {
-        echo "The product wasn't found in the database!";
+        echo 0;
       }
     }
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
@@ -278,9 +390,33 @@ function checkSales() {
       //$date = "'%" . date("d M Y", strtotime($_POST['soldproductsdate'])) . "%'";
       $dateFrom = date("Y-m-d", strtotime($_POST['soldproductsfrom'])); //ISO-8601 format for SQLite without Hours Mins Secs 
       $dateTo   = date("Y-m-d", strtotime($_POST['soldproductsto'])); //ISO-8601 format for SQLite without Hours Mins Secs
+      
+      // Check if dateFrom and dateTo are valid dates
+      $currentDate = getdate();
+      $currentDate = $currentDate["year"] . "-" . $currentDate["mon"] . "-" . $currentDate["mday"];
+      $currentDate = date("Y-m-d", strtotime($currentDate));
+      if (!isset($dateFrom) || $dateFrom === "") {
+        $dateFrom = $currentDate;
+      }
+      if (!isset($dateTo) || $dateTo === "") {
+        $dateTo = $currentDate;
+      }
+      
+      $dateFromCheck  = date_parse($dateFrom);
+      $dateToCheck    = date_parse($dateTo);
+      if ($dateFromCheck["warning_count"] != 0 && $dateFromCheck["error_count"] != 0 && !empty($dateFromCheck["is_localtime"])) {
+        $dateFrom = $dateFromCheck["year"] . "-" . $dateFromCheck["month"] . "-" . $dateFromCheck["day"];
+        $dateFrom = date("Y-m-d", strtotime($dateFrom));
+      }
+      if ($dateToCheck["warning_count"] != 0 && $dateToCheck["error_count"] != 0 && !empty($dateToCheck["is_localtime"])) {
+        $dateTo = $dateToCheck["year"] . "-" . $dateToCheck["month"] . "-" . $dateToCheck["day"];
+        $dateTo = date("Y-m-d", strtotime($dateTo));
+      }
+      // End of date validity checking
+      
       $market   = $_POST['market'];
       
-      if ($market === "all" || $market === "today") {
+      if ($market === "all") {
         $market = '';
       } else {
         $market = "soldin=('{$market}') AND ";
@@ -348,9 +484,9 @@ function restockProduct() {
         logQuery($queryforsave);
         // End logging the query
         
-        echo "The product's quantity was succesfully updated!";
+        echo 1;
       } else {
-        echo "The product wasn't found in the database!";
+        echo 0;
       }
     }
   } catch(PDOException $e) { echo $e->getMessage(); $db = null; unset($db, $result); /*and close database handler*/ }
@@ -422,8 +558,14 @@ function checkIssues() {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
       global $db;
       
-      $result = $db->prepare("SELECT * FROM products WHERE monitored = 1 AND quantity < 2");
+      $result = $db->prepare("SELECT number, name, quantity, contractor, monitored, pictures FROM products WHERE monitored = 1 AND quantity < 2");
       $result->execute();
+      $result->bindColumn(1, $number);
+      $result->bindColumn(2, $name);
+      $result->bindColumn(3, $quantity);
+      $result->bindColumn(4, $contractor);
+      $result->bindColumn(5, $monitored);
+      $result->bindColumn(6, $pictures);
       $result = $result->fetchAll(PDO::FETCH_ASSOC);
 
       
@@ -431,7 +573,12 @@ function checkIssues() {
         $output = [];
         $i = 0;
         foreach ($result as $product) {
-          $output[$i] = array($product['number'], $product['name'], null, $product['contractor'], $product['monitored']);
+          $finfo    = new finfo(FILEINFO_MIME);
+          $mimeType = $finfo->buffer($product['pictures']);
+          $mimeType = substr($mimeType, 0, strpos($mimeType, ";"));
+          $product['pictures'] = "data:" . $mimeType . ";base64,"  . base64_encode($product['pictures']);
+          $product['piclinks'] = "OPA";
+          $output[$i] = array($product['number'], $product['name'], null, $product['contractor'], $product['monitored'], $product['piclinks'], $product['pictures']);
           
           if ($product['quantity'] < 2) {
             $output[$i][2] = "_LESS THAN 2 (currently {$product['quantity']} qty)" . "<br />"; //check product's current qty
@@ -497,19 +644,36 @@ function sendMessage() {
   ;
 }
 
+function checkFileHash() {
+  if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    global $styleCSSHash;
+    
+    $hashToCheck = $_POST["styleCSSHash"];
+    
+    if (!hash_equals($hashToCheck, $styleCSSHash)) {
+      echo json_encode($styleCSSHash);
+    } else {
+      echo json_encode(0);
+    }
+  }
+}
+
 // Our main loop
 switch ($_POST['action']) {
-  case "new"            : addProduct();             break; // Add item to database
-  case "search"         : searchProduct();          break; // Search for item in the database
-  case "setmonitoring"  : setProductMonitoring();   break; // Search for item in the database
-  case "sell"           : sellProduct();            break; // Sell an item and exclude it from the database
-  case "sales"          : checkSales();             break; // Show sales per a given date
-  case "restock"        : restockProduct();         break; // Restock an item
-  case "searchcustomer" : searchCustomer();         break; // Check if the customer is marked as dishonest ie not picking their order, not paying the shipping fee for returning or breaking the products
-  case "bancustomer"    : banCustomer();            break; // Ban the customer if not picking their order, not paying the shipping fee for returning or breaking the products
-  case "checkissues"    : checkIssues();            break; // Check for product issues
-  case "checkmessages"  : checkMessages();          break; // Check for important messages or tasks
-  case "sendmessage"    : sendMessage();            break; // Send important message or task
+  case "new"            : addProduct();               break; // Add item to database
+  case "search"         : searchProduct();            break; // Search for item in the database
+  case "warehouse"      : searchWarehouse();          break; // Search for item in the database
+  case "itemremoval"    : itemRemovalFromWarehouse(); break; // Remove item from warehouse and update its qty in the database
+  case "setmonitoring"  : setProductMonitoring();     break; // Search for item in the database
+  case "sell"           : sellProduct();              break; // Sell an item and exclude it from the database
+  case "sales"          : checkSales();               break; // Show sales per a given date
+  case "restock"        : restockProduct();           break; // Restock an item
+  case "searchcustomer" : searchCustomer();           break; // Check if the customer is marked as dishonest ie not picking their order, not paying the shipping fee for returning or breaking the products
+  case "bancustomer"    : banCustomer();              break; // Ban the customer if not picking their order, not paying the shipping fee for returning or breaking the products
+  case "checkissues"    : checkIssues();              break; // Check for product issues
+  case "checkmessages"  : checkMessages();            break; // Check for important messages or tasks
+  case "sendmessage"    : sendMessage();              break; // Send important message or task
+  case "checkFileHash"  : checkFileHash();            break; // Send file hash string if the file is changed
 }
 
 // Some script performance metrics
