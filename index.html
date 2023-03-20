@@ -24,6 +24,8 @@
     <link rel="preload" as="image"      href="image-not-available.jpg">
     <link rel="preload" as="image"      href="monitored_48.png">
     <link rel="preload" as="image"      href="notmonitored_48.png">
+    <link rel="preload" as="image"      href="instock_48.png">
+    <link rel="preload" as="image"      href="outofstock_48.png">
     <link rel="preload" as="audio"      href="success.mp3">
     <link rel="preload" as="audio"      href="failure.mp3">
     <link rel="preload" as="audio"      href="message.mp3">
@@ -49,7 +51,7 @@
         <div class="notificationicons licensearea" id="licensearea" title="This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License">
           <div id="licensetext">
             <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"> <!-- target="_blank" rel="noopener noreferrer" gives Lighthouse error -->
-              <img loading="lazy" id="licenseimg" alt="Creative Commons License" width="88" height="49" src="cc-by-nc-sa.png" />
+              <img loading="lazy" decoding="async" id="licenseimg" alt="Creative Commons License" width="88" height="49" src="cc-by-nc-sa.png" />
             </a>
           </div>
         </div>
@@ -81,17 +83,25 @@
                       <input type="number"  id="quantity"   name="quantity"   required placeholder="Quantity" min="0">
                       <input type="text"    id="contractor" name="contractor" required placeholder="Contractor">
                       <input type="number"  id="price"      name="price"      required placeholder="Price" min="0">
+                      <input type="number"  id="warehouseqty" name="warehouseqty"      required placeholder="Warehouse Qty" min="0">
                       <!--<input type="text"    id="info"       name="info"       required placeholder="Additional product info">-->
                       <!--<input type="text"    id="prodlinks"  name="prodlinks"  required placeholder="Product Links">-->
-                      <button class="setmonitoringbutton" type="submit" id="setmonitoring" onclick="setProductMonitoring(); return false;" title="Enable/Disable product monitoring"></button>
+                      <div>
+                        <button class="setmonitoringbutton" type="submit" id="setmonitoring" onclick="setProductMonitoring(); return false;" title="Enable/Disable product monitoring"></button>
+                        <button class="setoutofstockbutton" type="submit" id="setoutofstock" onclick="setOutOfStock(); return false;" title="Mark/Unmark if product is out of stock"></button>
+                      </div>
                       <label class="prodpicuploadbutton" id="prodpicuploadbutton">
                         <div id="prodpicuploadbuttontext">Choose product pictures</div>
                         <input class="fileuploadbutton" id="pictures" name="pictures" type="file" multiple accept="image/png, image/jpeg, image/jpg" onchange="loadPreview(event);">
                       </label>
+                      <label class="changeprodpicbutton" id="changeprodpicbutton">
+                        <div id="changeprodpicbuttontext">Change product picture</div>
+                        <input class="fileuploadbutton" id="changepic" name="changepic" type="file" multiple accept="image/png, image/jpeg, image/jpg" onchange="loadPreview(event);">
+                      </label>
                     </div>
                   </td>
                   <td class="xxx">
-                    <img loading="lazy" src="image-not-available.jpg" alt="" id="prodpicture" width="400" height="225" onerror="imgNotAvail()" />
+                    <img loading="lazy" decoding="async" src="image-not-available.jpg" alt="" id="prodpicture" width="400" height="225" onerror="imgNotAvail()" />
                   </td>
                 </tr>
                 <tr>
@@ -121,7 +131,7 @@
               <option id="soldinviber"  value="viber">Viber</option>
             </select>
             <button class="sellproductbutton" type="submit" id="sellproduct" onclick="sellProduct(); return false;">Sell</button>
-            <output class="sell-product-results" id="sellproductresults" style="text-align: center" name="sellproductresults"></output>
+            <output class="sell-product-results" id="sellproductresults" style="text-align: center" name="sellproductresults">&nbsp;</output>
             <hr style="height:2px ; border-width:0; color: blue; background-color: blue" />
             <em id="datesinfo">Choose a sales period or directly click for the daily ones</em>
             <input type="date"  id="soldproductsfrom"   name="soldproductsfrom"   required min="1970-01-01">
@@ -134,6 +144,7 @@
               <div class="marketsicons" onclick="checkSales('bazar'); return false;" title="Bazar.BG">Bazar.BG</div>
               <div class="marketsicons" onclick="checkSales('phone'); return false;" title="Phone">Phone</div>
               <div class="marketsicons" onclick="checkSales('viber'); return false;" title="Viber">Viber</div>
+              <div class="marketsicons allsales" onclick="checkSales('online'); return false;" title="ALL ONLINE">ALL ONLINE</div>
               <div class="marketsicons allsales" onclick="checkSales('all'); return false;" title="ALL">ALL</div>
             </div>
             <output class="sold-products-results" id="soldproductsresults" style="text-align: center" name="soldproductsresults"></output>
@@ -143,11 +154,20 @@
         <input type="radio" name="tabs" id="tabthree">
         <label for="tabthree" id="labelthree">Restock</label>
         <div class="tab">
+          Store
           <form class="restockproduct-form" name="restockproduct-form" action="#" method="post">
             <input type="number" id="restocknumber"    name="restocknumber"   required placeholder="SKU" min="0">
             <input type="number" id="restockquantity"  name="restockquantity" required placeholder="Quantity" min="0">
+            <div><input type="checkbox" id="itemreturned" name="itemreturned" style="margin-right: 10px"><span id="itemreturnedlabel">Returned</span></div>
             <button class="restockproductbutton" type="submit" id="restockproduct" onclick="restockProduct(); return false;">Restock</button>
-            <output class="restock-product-results" id="restockproductresults" style="text-align: center" name="restockproductresults"></output>
+          </form>
+          <hr />
+          Warehouse
+          <form class="restockproduct-form" name="restockproduct-form" action="#" method="post">
+            <input type="number" id="restockwarehousenumber"    name="restockwarehousenumber"   required placeholder="SKU" min="0">
+            <input type="number" id="restockwarehousequantity"  name="restockwarehousequantity" required placeholder="Quantity" min="0">
+            <button class="restockproductbutton" type="submit" id="restockwarehouseproduct" onclick="restockWarehouseProduct(); return false;">Restock</button>
+            <output class="restock-product-results" id="restockproductresults" style="text-align: center" name="restockproductresults">&nbsp;</output>
           </form>
         </div>
 
@@ -171,12 +191,14 @@
               <option id="wherewasorderedviber" value="viber">Viber</option>
             </select>
             <button class="bancustomerbutton" type="submit" id="bancustomer" onclick="banCustomer(); return false;">Ban</button>
-            <output class="bancustomer-results" id="bancustomerresults" style="text-align: center" name="bancustomerresults"></output>
-            <output class="customerbanlist-results" id="customerbanlistresults" style="text-align: center" name="customerbanlistresults"></output>
+            <output class="bancustomer-results" id="bancustomerresults" style="text-align: center" name="bancustomerresults">&nbsp;</output>
+            <output class="customerbanlist-results" id="customerbanlistresults" style="text-align: center" name="customerbanlistresults">&nbsp;</output>
           </form>
         </div>
       </div>
     </main>
+    
+    <div id="maintenance">The system is in maintenance mode. Please, come back later</div>
     
     <footer>
     </footer>

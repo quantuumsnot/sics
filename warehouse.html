@@ -16,23 +16,14 @@
     <link rel="preload" as="script"     href="translations.js?v=1.0">
     <link rel="preload" as="script"     href="sics.js?v=1.0">
     <link rel="stylesheet"              href="normalize.css?v=1.0">
-    <link rel="stylesheet"              href="style.css?v=1.0">
-    <!--<link rel="preload" as="image"      href="cubes_48.png">
-    <link rel="preload" as="image"      href="messages_48.png">
-    <link rel="preload" as="image"      href="settings_48.png">
-    <link rel="preload" as="image"      href="settings_48.png">
-    <link rel="preload" as="image"      href="image-not-available.jpg">
-    <link rel="preload" as="image"      href="monitored_48.png">
-    <link rel="preload" as="image"      href="notmonitored_48.png">
-    <link rel="preload" as="audio"      href="success.mp3">
-    <link rel="preload" as="audio"      href="failure.mp3">
-    <link rel="preload" as="audio"      href="message.mp3">-->
+    <link rel="stylesheet"              href="warestyle.css?v=1.0">
     <script src="translations.js?v=1.0" defer></script>
     <script src="sics.js?v=1.0" defer></script>
   </head>
   <body>
     <header style="text-align: center">
       <h1 id="softwarename">Sales and Inventory Control System</h1>
+      <a href="#" title="PRINT REPORT FOR TODAY" id="report" target="_blank">REPORT</a>
     </header>
 
     <main>
@@ -44,8 +35,11 @@
             <label for="number" class="visuallyhidden">.</label><!-- label is Lighthouse audit fix -->
             <input type="text"  id="name"       name="name"       required placeholder="Name" autofocus>
             <button class="searchproductbutton" type="submit" id="searchproduct" onclick="searchWarehouse(); return false;">Search</button>
+            
+            <label for="qty"></label>
+            <input type="number" id="qty" name="qty" value="1" min="1" max="100">
           </form>
-          <output class="search-product-results" id="searchproductresults" style="text-align: center" name="searchproductresults"></output>
+          <output class="search-product-results" id="searchproductresults" style="text-align: center" name="searchproductresults">&nbsp;</output>
         </div>
       </div>
     </main>
@@ -53,4 +47,21 @@
     <footer>
     </footer>
   </body>
+  <script>
+    var time = new Date();
+
+    // returns the month (from 0 to 11)
+    var month = time.toDateString().split(' ')[1];
+
+    // returns the day of the month (from 1 to 31)
+    var day = time.getDate();
+
+    // returns the year (four digits)
+    var year = time.getFullYear();
+
+    var today = day + " " + month + " " + year;
+    
+    var reportlink = "warehouse/" + today + ".txt";
+    document.getElementById("report").href = reportlink;
+    </script>
 </html>

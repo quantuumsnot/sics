@@ -1,23 +1,33 @@
 'use strict';
 
-//console.clear(); // gives Lighthouse error
+//console.clear(); // generates Lighthouse error if enabled
 
+// code minification
+var $ = document;
+// end of code minification
 //var lang = "EN";
-var lang = "BG";
-var obj = JSON.parse(translations);
+var lang  = "BG";
+var obj   = JSON.parse(translations);
 // perfopt: minimize DOM access
 var elementsForTranslation = [];
 for (let elem in obj[lang]) {
   var el = document.getElementById(obj[lang][elem].id);
-  elementsForTranslation[el.id] = el;
+  if (el !== null || el !== "undefined") {
+    elementsForTranslation[el.id] = el;
+  }
 }
 // end of perfopt
 var success = new Audio('success.mp3');
 var failure = new Audio('failure.mp3');
 var message = new Audio('message.mp3');
 var Monitored = null;
+var outofstock = null;
 var styleCSSHash = "0";
 //var productsMonState = [];
+var multipleClicksState = 0;
+var maintenanceElem = document.getElementById("maintenance");
+var maintenanceMode = 0;
+maintenanceElem.className = "maintenanceOff";
 
 function playSuccess() {
   success.pause();
@@ -65,6 +75,9 @@ function sysInfo() {
 function loadPreview() {
   var image = document.getElementById('prodpicture');
 	image.src = URL.createObjectURL(event.target.files[0]);
+  if (event.target.id === "changepic") {
+    changePicture();
+  }
 }
 
 function imgNotAvail() {
@@ -106,6 +119,40 @@ function classSwitchIssues(stateIssues, stateButtonID) {
   }
 }
 
+function classSwitchOutOfStock(state) {
+  outofstock = state;
+  
+  // Reversed: 0 when is 'in stock', 1 is when the products is 'out of stock'
+  if (state === "0") {
+    if (document.getElementById("setoutofstock").classList.contains("productoutofstockdisabled")) {
+      document.getElementById("setoutofstock").classList.remove("productoutofstockdisabled");
+    }
+    document.getElementById("setoutofstock").classList.add("productoutofstockenabled");
+  }
+  
+  if (state === "1")  {
+    if (document.getElementById("setoutofstock").classList.contains("productoutofstockenabled")) {
+      document.getElementById("setoutofstock").classList.remove("productoutofstockenabled");
+    }
+    document.getElementById("setoutofstock").classList.add("productoutofstockdisabled");
+  }
+}
+
+function classSwitchIssuesOutOfStock(stateIssues, stateButtonID) {
+  // Reversed: 0 when is 'in stock', 1 is when the products is 'out of stock'
+  if (stateIssues === "0") {
+    if (document.getElementById(stateButtonID).classList.contains("productoutofstockdisabled")) {
+      document.getElementById(stateButtonID).classList.remove("productoutofstockdisabled");
+    } else document.getElementById(stateButtonID).classList.add("productoutofstockenabled");
+  }
+  
+  if (stateIssues === "1")  {
+    if (document.getElementById(stateButtonID).classList.contains("productoutofstockenabled")) {
+      document.getElementById(stateButtonID).classList.remove("productoutofstockenabled");
+    } else document.getElementById(stateButtonID).classList.add("productoutofstockdisabled");
+  }
+}
+
 function addProduct() {
   var number      =  document.getElementById('number').value;
   if (number.length > 7) {
@@ -116,6 +163,7 @@ function addProduct() {
   var name        =  document.getElementById('name').value;
   //var category    =  document.getElementById('category').value;
   var quantity    =  document.getElementById('quantity').value;
+  var warehouseqty =  document.getElementById('warehouseqty').value;
   var contractor  =  document.getElementById('contractor').value;
   var price       =  document.getElementById('price').value;
   //var info        =  document.getElementById('info').value;
@@ -186,6 +234,7 @@ function addProduct() {
   if (name        !== '' && 
       number      !== '' && 
       quantity    !== '' && 
+      warehouseqty !== '' &&
       contractor  !== '' && 
       price       !== '') {
         formData.append('action', "new");
@@ -193,6 +242,7 @@ function addProduct() {
         formData.append('number', number);
         //formData.append('category', category);
         formData.append('quantity', quantity);
+        formData.append('warehouseqty', warehouseqty);
         formData.append('contractor', contractor);
         formData.append('price', price);
         //formData.append('info', info);
@@ -204,11 +254,94 @@ function addProduct() {
         document.getElementById('number').value = '';
         //document.getElementById('category').value = '';
         document.getElementById('quantity').value = '';
+        document.getElementById('warehouseqty').value = '';
         document.getElementById('contractor').value = '';
         document.getElementById('price').value = '';
         //document.getElementById('info').value = '';
         //document.getElementById('prodlinks').value = '';
         document.getElementById('pictures').value = '';
+  } else {
+      alert("Error: Some fields are empty!");
+  }
+}
+
+function changePicture() {
+  var changepic   =  document.getElementById('changepic');
+  var number      =  document.getElementById('number').value;
+  if (number.length > 7) {
+    alert("Maximum allowed number of symbols is 7!");
+    playFailure();
+    return;
+  }
+  
+  // Create a FormData object
+  var formData = new FormData();
+  
+  // Get the files from the form input
+  var files = changepic.files;
+  
+  // Select only the first file from the input array
+  var file = files[0];
+ 
+  if (file.size > 0) {
+    if (["image/jpg", "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp"].includes(file.type)) {
+      formData.append('changepic', file, file.name); // Add the file to the AJAX request
+      formData.append('uplfiletype', file.type); // Add the filetype to the AJAX request to search for the original file extension
+    } else {
+      changepic.value = '';
+      document.getElementById("changeprodpicbuttontext").textContent = "This picture format is not supported";
+      document.getElementById("changeprodpicbuttontext").style.backgroundColor = "red";
+      playFailure();
+      return false;
+    }
+  } else { changepic.value = ''; playFailure(); return false; }
+  
+  // Make a request to add the product
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        document.getElementById("newproductresults").innerHTML = systemErrors[lang]['changepic'][this.responseText];
+        switch (this.responseText) {
+          case "0": document.getElementById("newproductresults").style.backgroundColor = "red", 
+                    document.getElementById('prodpicture').src = '',
+                    document.getElementById('changepic').value = '', 
+                    playFailure();
+                    break;
+          case "1": document.getElementById("newproductresults").style.backgroundColor = "green", 
+                    document.getElementById('changepic').value = '', 
+                    playSuccess();
+                    break;
+        }
+      } else {
+        playFailure();
+        alert("Error: returned status code " + this.status + " " + this.statusText);
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  //xhttp.setRequestHeader("Content-type", "multipart/form-data; charset=utf-8; boundary=---------------------------974767299852498929531610575");
+  
+  /*(name        !== '' && 
+      number      !== '' && 
+      category    !== '' && 
+      quantity    !== '' && 
+      contractor  !== '' && 
+      price       !== '' && 
+      info        !== '' && 
+      prodlinks   !== '')*/
+  
+  if (number      !== '') {
+        formData.append('action', "changepic");
+        formData.append('number', number);
+        
+        xhttp.send(formData);
+        
+        document.getElementById('changepic').value = '';
   } else {
       alert("Error: Some fields are empty!");
   }
@@ -243,18 +376,23 @@ function searchProduct() {
           document.getElementById("prodpicture").src                          = '';
           document.getElementById("name").value                               = '';
           document.getElementById("quantity").value                           = '';
+          document.getElementById("warehouseqty").value                       = '';
           document.getElementById("contractor").value                         = '';
           document.getElementById("price").value                              = '';
           document.getElementById("hiddenaddinput").style.visibility          = "visible"; // show input fields
           document.getElementById("addproduct").style.visibility              = "visible"; // show 'Add product' button when product isn't found
           document.getElementById("prodpicuploadbutton").style.visibility     = "visible"; // show 'Choose product pictures' button when product isn't found
+          document.getElementById("changeprodpicbutton").style.visibility     = "hidden"; // hide 'Change product picture' button when product isn't found
           document.getElementById("setmonitoring").style.visibility           = "hidden"; // hide 'Monitor' button when product isn't found, it will be automatically enabled in the database
+          document.getElementById("setoutofstock").style.visibility           = "hidden"; // hide 'Out of stock' button when product isn't found, it will be automatically enabled in the database
           playFailure();
         } else {
           document.getElementById("hiddenaddinput").style.visibility          = "visible"; // show input fields
           document.getElementById("addproduct").style.visibility              = "hidden"; // hide 'Add product' button when product is found
           document.getElementById("prodpicuploadbutton").style.visibility     = "hidden"; // hide 'Choose product pictures' button when product is found
+          document.getElementById("changeprodpicbutton").style.visibility     = "visible"; // show 'Change product picture' button when product is found
           document.getElementById("setmonitoring").style.visibility           = "visible"; // show 'Monitor' button when product is found, so the user can set the option
+          document.getElementById("setoutofstock").style.visibility           = "visible"; // show 'Out of stock' button when product is found, so the user can set the option
           document.getElementById("newproductresults").innerHTML              = '';
           document.getElementById("newproductresults").style.backgroundColor  = 'transparent';
           document.getElementById("prodpicture").src                          = '';
@@ -264,9 +402,11 @@ function searchProduct() {
             switch (Object.keys(i)[0]) {
               case "Name":                    document.getElementById("name").value             = i[Object.keys(i)[0]]; break;
               case "Quantity in shop":        document.getElementById("quantity").value         = i[Object.keys(i)[0]]; break;
+              case "Warehouse":           document.getElementById("warehouseqty").value         = i[Object.keys(i)[0]]; break;
               case "Contractor":              document.getElementById("contractor").value       = i[Object.keys(i)[0]]; break;
               case "Price":                   document.getElementById("price").value            = i[Object.keys(i)[0]]; break;
               case "Monitored":               classSwitch(i[Object.keys(i)[0]]);                                        break;
+              case "outofstock":              classSwitchOutOfStock(i[Object.keys(i)[0]]);                              break;
               case "Picture":                 document.getElementById("prodpicture").src        = i[Object.keys(i)[0]]; break;
             }
           }
@@ -323,9 +463,19 @@ function searchWarehouse() {
         
         if (data !== 0) {
           for (j of data) {
-            var piclink = "../productpics/" + j[0] + ".jpg"; // image src="${j[4]}", links look better for reading than sending base64 encoded data from db
-            i += `<div>
-                    <img loading="lazy" src="${piclink}" alt="Product picture is not available" class="warehousepics" onclick="itemRemovalFromWarehouse(this.value); return false;" value="${j[0]}"/>
+            var number        = j[0];
+            var name          = j[1];
+            var warehouseqty  = j[2];
+            var info          = j[3];
+            var piclinks      = j[4]; // image src="${j[4]}", maybe it's better to load images from url than sending base64 encoded data from db
+            var prodlinks     = j[5];
+            i += `<div class="warehouseitems">
+                    <img loading="lazy" decoding="async" src="${piclinks}" alt="Product picture is not available" class="warehousepics" onclick="itemRemovalFromWarehouse(this.name); return false;" name="${number}"/>
+                    <div class="warehousedata">${number}</div>
+                    <div class="warehousedata">${name}</div>
+                    <div class="warehousedata">${warehouseqty}</div>
+                    <div class="warehousedata">${info}</div>
+                    <div class="warehousedata">${prodlinks}</div>
                   </div>`;
           }
           var el = document.getElementById("searchproductresults");
@@ -360,8 +510,14 @@ function searchWarehouse() {
 }
 
 function itemRemovalFromWarehouse(productNumber) {
+  // ACCIDENTAL DOUBLE-CLICK PREVENTION, YAY!
+  if (multipleClicksState == 0) {
+    multipleClicksState = 1;
+  } else if (multipleClicksState == 1) {
+    event.preventDefault();
+    return;
+  }
   var productNumber    = productNumber;
-  console.log(productNumber);
   if (productNumber.length > 7) {
     playFailure();
     alert("Maximum allowed number of symbols for SKU is 7!");
@@ -377,21 +533,23 @@ function itemRemovalFromWarehouse(productNumber) {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        document.getElementById("searchproductresults").innerHTML = systemErrors[lang]['sellprod'][this.responseText];
+        document.getElementById("searchproductresults").innerHTML = this.responseText; //systemErrors[lang]['sellprod'][this.responseText];
         switch (this.responseText) {
-          case "0": /* Output the error */; break;//document.getElementById("searchproductresults").style.backgroundColor = "red", playFailure(); break;
-          case "1": /* Close popup here on success */; break;//document.getElementById("searchproductresults").style.backgroundColor = "green", playSuccess(); break;
+          case "0": alert("SOMETHING'S WRONG!"); /* Output the error */; break;//document.getElementById("searchproductresults").style.backgroundColor = "red", playFailure(); break;
+          case "1": alert("PRODUCT WAS SUCCESSFULLY WRITTEN OFF FROM THE WAREHOUSE!"); /* Close popup here on success */; break;//document.getElementById("searchproductresults").style.backgroundColor = "green", playSuccess(); break;
         }
       } else {
         playFailure();
         alert("Error: returned status code " + this.status + " " + this.statusText);
       }
+      document.getElementById('qty').value = 1;
+      multipleClicksState = 0; // ACCIDENTAL DOUBLE-CLICK PREVENTION, YAY!
     }
   };
     
   xhttp.open("POST", "index.php", true);
   
-  var remquantity = document.getElementById("modalpopupid").value;
+  var remquantity = document.getElementById("qty").value;
   
   if (productNumber !== '' &&
       remquantity   !== '') {
@@ -401,8 +559,7 @@ function itemRemovalFromWarehouse(productNumber) {
         
         xhttp.send(formData);
         
-        document.getElementById('number').value   = '';
-        document.getElementById('remquantity').value = '';
+        //document.getElementById('number').value   = '';
   } else {
       playFailure();
       alert("Error: Some fields are empty!");
@@ -504,6 +661,101 @@ function setProductMonitoringIssues(sku, stateIssues, stateButtonID) {
   }
 }
 
+// Set product's availability
+function setOutOfStock() {
+  var prodNumber = document.getElementById('number').value;
+  if (prodNumber.length > 7) {
+    playFailure();
+    alert("Maximum allowed number of symbols is 7!");
+    return;
+  }
+  
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to add the product
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() { 
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        //var data = JSON.parse(this.responseText);
+        var data = this.responseText;
+      
+        // Check if there is some data returned
+        if (data) {
+          playSuccess();
+          classSwitchOutOfStock(data);
+        } else {
+          playFailure();
+          alert("Error: returned status code " + this.status + " " + this.statusText);
+        }
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  if (prodNumber !== '') {
+    switch (outofstock) {
+      case "1": outofstock = "0"; break;
+      case "0": outofstock = "1"; break;
+    }
+    formData.append('action', "setoutofstock");
+    formData.append('number', prodNumber);
+    formData.append('outofstock', outofstock);
+    
+    xhttp.send(formData);
+  } else {
+    playFailure();
+    alert("Error: Some fields are empty!");
+  }
+}
+
+function setOutOfStockIssues(sku, stateIssues, stateButtonID) {
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to add the product
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() { 
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        //var data = JSON.parse(this.responseText);
+        var data = this.responseText;
+        stateIssues = data;
+      
+        // Check if there is some data returned
+        if (data) {
+          playSuccess();
+          classSwitchIssuesOutOfStock(stateIssues, stateButtonID);
+        } else {
+          playFailure();
+          alert("Error: returned status code " + this.status + " " + this.statusText);
+        }
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  if (sku !== '' && stateIssues !== '') {
+    switch (stateIssues) {
+      case "1": stateIssues = "0"; break;
+      case "0": stateIssues = "1"; break;
+    }
+    formData.append('action', "setoutofstock");
+    formData.append('number', sku);
+    formData.append('outofstock', stateIssues);
+    
+    xhttp.send(formData);
+  } else {
+    playFailure();
+    alert("Error: Some fields are empty!");
+  }
+}
+
 // Restock a product and update the quantity left in the database
 function restockProduct() {
   var restockNumber    = document.getElementById('restocknumber').value;
@@ -513,6 +765,11 @@ function restockProduct() {
     return;
   }
   var restockQuantity  = document.getElementById('restockquantity').value;
+  if (restockQuantity < 1) {
+    playFailure();
+    alert("Minimum allowed quantity is 1 !");
+    return;
+  }
 
   // Create a FormData object
   var formData = new FormData();
@@ -523,10 +780,16 @@ function restockProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        document.getElementById("restockproductresults").innerHTML = systemErrors[lang]['restock'][this.responseText];
-        switch (this.responseText) {
-          case "0": document.getElementById("restockproductresults").style.backgroundColor = "red", playFailure(); break;
-          case "1": document.getElementById("restockproductresults").style.backgroundColor = "green", playSuccess(); break;
+        var data = JSON.parse(this.responseText);
+        
+        document.getElementById("restockproductresults").innerHTML = `<div>` + systemErrors[lang]['restock'][data[0]] + `</div>`;
+        if (data[0] === 1) {
+          document.getElementById("restockproductresults").style.backgroundColor = "green";
+          document.getElementById("restockproductresults").innerHTML += `<img loading="lazy" decoding="async" src="` + data[1] + `" alt="Product picture is not available" class="restockprodpic" />`;
+          playSuccess();
+        } else if (data[0] === 0) {
+          document.getElementById("restockproductresults").style.backgroundColor = "red";
+          playFailure();
         }
       } else {
         playFailure();
@@ -539,17 +802,99 @@ function restockProduct() {
   
   if (restockNumber    !== '' &&
       restockQuantity  !== '') {
+        if (restockQuantity < 1) {
+          playFailure();
+          alert("Minimum allowed quantity is 1 !");
+          return;
+        }
+        
+        var itemReturned = 0;
+        
+        if (document.getElementById("itemreturned").checked === true) {
+          itemReturned = 1;
+        }
+        
         formData.append('action', "restock");
         formData.append('restocknumber', restockNumber);
         formData.append('restockquantity', restockQuantity);
+        formData.append('itemreturned', itemReturned);
         
         xhttp.send(formData);
         
         document.getElementById('restocknumber').value   = '';
         document.getElementById('restockquantity').value = '';
+        document.getElementById("itemreturned").checked = false;
   } else {
       playFailure();
       alert("Error: Some fields are empty!");
+  }
+}
+
+// Restock a product for Warehouse and update the quantity left in the database
+function restockWarehouseProduct() {
+  var restockWarehouseNumber    = document.getElementById('restockwarehousenumber').value;
+  if (restockWarehouseNumber.length > 7) {
+    playFailure();
+    alert("Maximum allowed number of symbols is 7!");
+    return;
+  }
+  
+  var restockWarehouseQuantity  = document.getElementById('restockwarehousequantity').value;
+  // Check if quantity is not 0
+  if (restockWarehouseQuantity < 1) {
+    playFailure();
+    alert("Minimum allowed quantity is 1 !");
+    return;
+  }
+  
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to add the product
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        var data = JSON.parse(this.responseText);
+        
+        document.getElementById("restockproductresults").innerHTML = `<div>` + systemErrors[lang]['restock'][data[0]] + `</div>`;
+        if (data[0] === 1) {
+          document.getElementById("restockproductresults").style.backgroundColor = "green";
+          document.getElementById("restockproductresults").innerHTML += `<img loading="lazy" decoding="async" src="` + data[1] + `" alt="Product picture is not available" class="restockprodpic" />`;
+          playSuccess();
+        } else if (data[0] === 0) {
+          document.getElementById("restockproductresults").style.backgroundColor = "red";
+          playFailure();
+        }
+      } else {
+        playFailure();
+        alert("Error: returned status code " + this.status + " " + this.statusText);
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  
+  if (restockWarehouseNumber    !== '' &&
+      restockWarehouseQuantity  !== '') {
+        if (restockWarehouseQuantity < 1) {
+          playFailure();
+          alert("Minimum allowed quantity is 1 !");
+          return;
+        } else {
+          formData.append('action', "restockwarehouse");
+          formData.append('restockwarehousenumber', restockWarehouseNumber);
+          formData.append('restockwarehousequantity', restockWarehouseQuantity);
+          
+          xhttp.send(formData);
+          
+          document.getElementById('restockwarehousenumber').value   = '';
+          document.getElementById('restockwarehousequantity').value = '';
+        }
+  } else {
+    playFailure();
+    alert("Error: Some fields are empty!");
   }
 }
 
@@ -573,10 +918,16 @@ function sellProduct() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4) {
       if (this.status == 200) {
-        document.getElementById("sellproductresults").innerHTML = systemErrors[lang]['sellprod'][this.responseText];
-        switch (this.responseText) {
-          case "0": document.getElementById("sellproductresults").style.backgroundColor = "red", playFailure(); break;
-          case "1": document.getElementById("sellproductresults").style.backgroundColor = "green", playSuccess(); break;
+        var data = JSON.parse(this.responseText);
+        
+        document.getElementById("sellproductresults").innerHTML = `<div>` + systemErrors[lang]['sellprod'][data[0]] + `</div>`;
+        if (data[0] === 1) {
+          document.getElementById("sellproductresults").style.backgroundColor = "green";
+          document.getElementById("sellproductresults").innerHTML += `<img loading="lazy" decoding="async" src="` + data[1] + `" alt="Product picture is not available" class="sellprodpic" />`;
+          playSuccess();
+        } else if (data[0] === 0) {
+          document.getElementById("sellproductresults").style.backgroundColor = "red";
+          playFailure();
         }
       } else {
         playFailure();
@@ -642,26 +993,31 @@ function checkSales(market) {
       if (this.status == 200) {
         var data = JSON.parse(this.responseText);
         
-        var i, j, SaleDate, SKU, ItemDescription, Quantity, SoldIn;
+        var i, j, SaleDate, SKU, ItemDescription, Quantity, TotalPrice, SoldIn;
         if (lang === "BG") {
           SaleDate        = "Дата";
           SKU             = "Арт. номер";
           ItemDescription = "Описание на продукта";
           Quantity        = "Брой";
+          TotalPrice      = "Крайна сума";
           SoldIn          = "Продадено в";
         } else {
           SaleDate        = "Date";
           SKU             = "SKU";
           ItemDescription = "Item description";
           Quantity        = "Quantity";
+          TotalPrice      = "Total Price";
           SoldIn          = "Sold in";
         }
-      
+
         if (data !== 0) {
-          j = `<table><tr><th>${SaleDate}</th><th>${SKU}</th><th>${ItemDescription}</th><th>${Quantity}</th><th>${SoldIn}</th></tr>`;
+          var totalSum = 0;
+          j = `<table><tr class='tableheader'><th>${SaleDate}</th><th>${SKU}</th><th>${ItemDescription}</th><th>${Quantity}</th><th>${TotalPrice}` + ` ` + currency[lang] + `</th><th>${SoldIn}</th></tr>`;
           for (i of data) {
-            j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td><td>${i[4]}</td></tr>`;
+            j += `<tr><td>${i[0]}</td><td>${i[1]}</td><td>${i[2]}</td><td>${i[3]}</td><td>${i[4]}</td><td>${i[5]}</td></tr>`;
+            totalSum += parseFloat(i[4]);
           }
+          j += `<tr class='totalSum'><td></td><td></td><td>${data.length} products were sold ... Total Sum -></td><td></td><td>${totalSum}</td><td></td></tr>`;
           j += "</table>";
           document.getElementById("soldproductsresults").innerHTML = j;
           playSuccess();
@@ -810,51 +1166,60 @@ function checkIssues() {
       if (this.status == 200) {
         var data = JSON.parse(this.responseText);
         
-        var i, j, SKU, Name, Problem, From, Actions, Picture;
-        if (lang === "BG") {
+        //var i, j, SKU, Name, Problem, From, Actions, Picture;
+        var i, j;
+        /*if (lang === "BG") { // future feature, not needed for now; [FUTFEAT]
           SKU       = "Арт. номер";
           Name      = "Име на продукта";
           Problem   = "Проблем";
           From      = "Доставчик";
-          Actions   = "Действия";
           Picture   = "Снимка";
         } else {
           SKU       = "SKU";
           Name      = "Name";
           Problem   = "Problem";
           From      = "Contractor";
-          Actions   = "Actions";
           Picture   = "Picture";
-        }
+        }*/
         
         if (data !== 0) {
-          //for i[3] -> <div class="divtableheadcell">${Actions}</div>
-          j = `<div class="divtable">
+          /*j = `<div class="divtable">
                 <div class="divtablebody">
-                  <div class="divrow">
+                  <div class="divrow tableheader">
                     <div class="divtableheadcell">${SKU}</div>
                     <div class="divtableheadcell">${Name}</div>
                     <div class="divtableheadcell">${Problem}</div>
                     <div class="divtableheadcell">${From}</div>
                     <div class="divtableheadcell">${Picture}</div>
-                  </div>`;
+                  </div>`;*/
+          j = "";
           for (i of data) {
+            var outofstockColor = "background-color: #32CD32";
+            if (i[5] == 1) { outofstockColor = "background-color: #ff0000"; }
+            var chatMsg = '';
+            chatMsg = `${i[4]} - ${i[1]} - ${warehouseChat[lang]}`;
             //var actionSKU       = i[0];
             //var actionMonState  = i[4];
             //var stateButtonID   = `p${actionSKU}`;
             //var stateButton = `<button id="${stateButtonID}" class="setmonitoringbutton" type="submit" onclick="setProductMonitoringIssues(${actionSKU}, ${actionMonState}, this.id); return false;" title="Enable/Disable product monitoring"></button>`;
             //for i[3] -> <div class="divtablecell">${stateButton}</div>
-            j += `<div class="divrow">
+            //<div class="divtablecell">${i[3]} <button class="warehouserequest" type="submit" onclick="requestToWarehouse(this); return false;" value="${i[4]}"></button></div>
+            /*j += `<div class="divrow">
                     <div class="divtablecell">${i[0]}</div>
                     <div class="divtablecell">${i[1]}</div>
                     <div class="divtablecell">${i[2]}</div>
-                    <div class="divtablecell">${i[3]} <button class="warehouserequest" type="submit" onclick="requestToWarehouse(this); return false;" value="${i[5]}"></button></div>
-                    <div class="divtablecell"><img loading="lazy" src="${i[6]}" alt="Product picture is not available" class="prodissuepic" /></div>
-                  </div>`;
+                    <div class="divtablecell">${i[3]} <button class="warehouserequest" type="submit" onclick="requestToWarehouse(this); return false;" value="${chatMsg}"></button></div>
+                    <div class="divtablecell"><img loading="lazy" decoding="async" src="${i[4]}" alt="Product picture is not available" class="prodissuepic" /></div>
+                  </div>`;*/
+            // j += `<div class="issuesitem" style="background-image: url(${i[4]});" loading="lazy" decoding="async">
+            j += `<div class="issuesitem"><div>${i[0]} &#13;&#10; ${i[1]}</div><img loading="lazy" decoding="async" src="${i[4]}" class="prodissuepic" alt="Product picture is not available" />
+            <div class="issuesitem-bottomleft">${i[2]}</div>
+            <div class="issuesitem-bottomright" style="${outofstockColor}">${i[3]}</div>
+            </div>`;
           }
-          j += "</div></div>";
+          //j += "</div></div>";
           var el = document.getElementById("issuesresults");
-          el.querySelectorAll("*").forEach(el => el.remove());
+          el.querySelectorAll("*").forEach(el => el.remove()); // this removes or clears something but can't remember what; ERRORLEVEL: LOL
           document.getElementById("issuesresults").innerHTML = j;
           
           document.getElementById("productissues").innerHTML = data.length;
@@ -1016,6 +1381,37 @@ function sysInfo() {
   ;
 }
 
+// Check system's maintenance status
+function checkMaintenanceStatus() {
+  // Create a FormData object
+  var formData = new FormData();
+
+  // Make a request to add the product
+  var xhttp = new XMLHttpRequest();
+  
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        var data = parseInt(this.responseText);
+        maintenanceMode = data;
+        
+        if (maintenanceMode === 1) {
+          maintenanceElem.className = "maintenanceOn";
+        } else if (maintenanceMode === 0) {
+          maintenanceElem.className = "maintenanceOff";
+        }
+      } else {
+        playFailure();
+        alert("Error: returned status code " + this.status + " " + this.statusText);
+      }
+    }
+  };
+    
+  xhttp.open("POST", "index.php", true);
+  formData.append('action', "checkMnStatus");
+  xhttp.send(formData);
+}
+
 // Create ready-to-paste message for our warehouse
 // in HTML use onclick="this.select();" inside the element that has a value="productimagelink" property
 // example element: <input onclick="this.select();" type='text' value='copy me' />
@@ -1025,18 +1421,40 @@ function requestToWarehouse(data) {
   // or
   //clipboardData.setData('text/plain', data.value);
   // or
-  navigator.clipboard.writeText(data.value + "\n" + warehouseChat[lang]); // only in HTTPS?
+  //navigator.clipboard.writeText(data.value + "\n" + warehouseChat[lang]); // only in HTTPS?
+  // or a lot simpler
+  navigator.clipboard.writeText(data.value); // only in HTTPS?
   data.classList.add("warehouserequestchecked");
 }
 
 // Directly switch UI to the local translation
 switchLang();
 
+/*var marked      = document.getElementsByClassName("translationmarker");
+var markedSize  = marked.length;
+for (let i = 0; i < markedSize; i++) {
+  console.log(marked[i]);
+  if      ("innerHTML" in marked[i])    { marked[i].innerHTML   = "B"; console.log("innerHTML -> B"); }
+  else if ("textContent" in marked[i])  { marked[i].textContent = "B"; console.log("textContent -> B"); }
+  else if ("placeholder" in marked[i])  { marked[i].placeholder = "B"; console.log("placeholder -> B"); }
+  else if ("title" in marked[i])        { marked[i].title       = "B"; console.log("title -> B"); }
+}*/
+
+document.addEventListener("error", function() {
+  e = e || window.event;
+  var target = e.target || e.srcElement;
+  if (target.nodeName.toLowerCase() === "img") {
+    target.src = "image-not-available.jpg";
+  }
+}, false);
+
+checkMaintenanceStatus();
+
 // Automatically check issues and messages at given time interval
-setInterval(function () {
+/*setInterval(function () {
   checkIssues();
   checkMessages();
-}, 30 * 60 * 1000); // first 30 is for 30min
+}, 30 * 60 * 1000);*/ // first 30 is for 30min
 
 // Automatically check for file changes at given interval and reload the page if any
 /*setInterval(function () {

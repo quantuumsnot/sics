@@ -1,3 +1,5 @@
+// 'use strict';
+
 var translations = `{
   "EN": [
     {"id":"switchlocalization",         "property":"innerHTML",   "translation":"EN"},
@@ -8,16 +10,21 @@ var translations = `{
     {"id":"sysinfo",                    "property":"title",       "translation":"System Info and Settings"},
     {"id":"licensetext",                "property":"title",       "translation":"This work is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License"},
     {"id":"setmonitoring",              "property":"title",       "translation":"Enable/Disable product monitoring"},
+    {"id":"setoutofstock",              "property":"title",       "translation":"Mark/Unmark if product is out of stock"},
     {"id":"number",                     "property":"placeholder", "translation":"SKU"},
     {"id":"name",                       "property":"placeholder", "translation":"Name"},
     {"id":"quantity",                   "property":"placeholder", "translation":"Quantity"},
+    {"id":"warehouseqty",               "property":"placeholder", "translation":"Warehouse Qty"},
     {"id":"contractor",                 "property":"placeholder", "translation":"Contractor"},
     {"id":"price",                      "property":"placeholder", "translation":"Price"},
+    {"id":"sellnumber",                 "property":"placeholder", "translation":"Name"},
+    {"id":"sellquantity",               "property":"placeholder", "translation":"Quantity"},
     {"id":"customernames",              "property":"placeholder", "translation":"Customer names"},
     {"id":"customerphonenumber",        "property":"placeholder", "translation":"Customer Phone Number"},
     {"id":"customeraddress",            "property":"placeholder", "translation":"Customer Address"},
     {"id":"trackingnumber",             "property":"placeholder", "translation":"Tracking Number"},
     {"id":"prodpicuploadbuttontext",    "property":"textContent", "translation":"Choose product pictures"},
+    {"id":"changeprodpicbuttontext",    "property":"textContent", "translation":"Change product picture"},
     {"id":"labelone",                   "property":"innerHTML",   "translation":"Products"},
     {"id":"labeltwo",                   "property":"innerHTML",   "translation":"Sell"},
     {"id":"labelthree",                 "property":"innerHTML",   "translation":"Restock"},
@@ -28,6 +35,12 @@ var translations = `{
     {"id":"customerbanlist",            "property":"innerHTML",   "translation":"Search"},
     {"id":"bancustomer",                "property":"innerHTML",   "translation":"Ban"},
     {"id":"restockproduct",             "property":"innerHTML",   "translation":"Restock"},
+    {"id":"restocknumber",              "property":"placeholder", "translation":"SKU"},
+    {"id":"restockquantity",            "property":"placeholder", "translation":"Quantity"},
+    {"id":"itemreturnedlabel",          "property":"innerHTML",   "translation":"Returned"},
+    {"id":"restockwarehouseproduct",    "property":"innerHTML",   "translation":"Warehouse Restock"},
+    {"id":"restockwarehousenumber",     "property":"placeholder", "translation":"SKU"},
+    {"id":"restockwarehousequantity",   "property":"placeholder", "translation":"Warehouse Qty"},
     {"id":"soldina",                    "property":"textContent", "translation":"-Choose where it was sold-"},
     {"id":"soldinstore",                "property":"textContent", "translation":"STORE"},
     {"id":"soldinsite",                 "property":"textContent", "translation":"SITE"},
@@ -54,16 +67,21 @@ var translations = `{
     {"id":"sysinfo",                    "property":"title",       "translation":"Системна информация и настройки"},
     {"id":"licensetext",                "property":"title",       "translation":"Този софтуер се разпространява под CC BY-NC-SA 4.0 лицензно споразумение"},
     {"id":"setmonitoring",              "property":"title",       "translation":"Добави/Премахни продукта от списъка с наблюдавани"},
+    {"id":"setoutofstock",              "property":"title",       "translation":"Маркирай продукта като изчерпан/в наличност"},
     {"id":"number",                     "property":"placeholder", "translation":"Артикулен номер"},
     {"id":"name",                       "property":"placeholder", "translation":"Име на продукта"},
     {"id":"quantity",                   "property":"placeholder", "translation":"Брой"},
+    {"id":"warehouseqty",               "property":"placeholder", "translation":"В склада"},
     {"id":"contractor",                 "property":"placeholder", "translation":"Доставчик"},
     {"id":"price",                      "property":"placeholder", "translation":"Цена"},
+    {"id":"sellnumber",                 "property":"placeholder", "translation":"Артикулен номер"},
+    {"id":"sellquantity",               "property":"placeholder", "translation":"Брой"},
     {"id":"customerphonenumber",        "property":"placeholder", "translation":"Телефонен номер на клиента"},
     {"id":"customernames",              "property":"placeholder", "translation":"Имена на клиента"},
     {"id":"customeraddress",            "property":"placeholder", "translation":"Адрес на клиента"},
     {"id":"trackingnumber",             "property":"placeholder", "translation":"Номер на товарителница"},
     {"id":"prodpicuploadbuttontext",    "property":"textContent", "translation":"Добави снимка"},
+    {"id":"changeprodpicbuttontext",    "property":"textContent", "translation":"Смени снимката на продукта"},
     {"id":"labelone",                   "property":"innerHTML",   "translation":"Продукти"},
     {"id":"labeltwo",                   "property":"innerHTML",   "translation":"Продажби"},
     {"id":"labelthree",                 "property":"innerHTML",   "translation":"Зареждане"},
@@ -74,6 +92,12 @@ var translations = `{
     {"id":"customerbanlist",            "property":"innerHTML",   "translation":"ТЪРСИ"},
     {"id":"bancustomer",                "property":"innerHTML",   "translation":"ЗАПИС"},
     {"id":"restockproduct",             "property":"innerHTML",   "translation":"ЗАРЕДИ"},
+    {"id":"restocknumber",              "property":"placeholder", "translation":"Артикулен номер"},
+    {"id":"restockquantity",            "property":"placeholder", "translation":"Брой"},
+    {"id":"itemreturnedlabel",          "property":"innerHTML",   "translation":"Върната"},
+    {"id":"restockwarehouseproduct",    "property":"innerHTML",   "translation":"ЗАРЕДИ"},
+    {"id":"restockwarehousenumber",     "property":"placeholder", "translation":"Артикулен номер"},
+    {"id":"restockwarehousequantity",   "property":"placeholder", "translation":"Бройки в склада"},
     {"id":"soldina",                    "property":"textContent", "translation":"-Избери къде е продаден продукта-"},
     {"id":"soldinstore",                "property":"textContent", "translation":"МАГАЗИН"},
     {"id":"soldinsite",                 "property":"textContent", "translation":"САЙТ"},
@@ -99,11 +123,13 @@ var systemErrors = [];
 systemErrors['EN'] = [];
 systemErrors['BG'] = [];
 systemErrors['EN']['addprod']     = [];
+systemErrors['EN']['changepic']   = [];
 systemErrors['EN']['searchprod']  = [];
 systemErrors['EN']['sellprod']    = [];
 systemErrors['EN']['restock']     = [];
 systemErrors['EN']['issues']      = [];
 systemErrors['BG']['addprod']     = [];
+systemErrors['BG']['changepic']   = [];
 systemErrors['BG']['searchprod']  = [];
 systemErrors['BG']['sellprod']    = [];
 systemErrors['BG']['restock']     = [];
@@ -111,6 +137,8 @@ systemErrors['BG']['issues']      = [];
 /*---*/
 systemErrors['EN']['addprod'][0]    = "This product is already in the database!";
 systemErrors['EN']['addprod'][1]    = "The product was succesfully added!";
+systemErrors['EN']['changepic'][0]  = "Product's picture wasn't changed!";
+systemErrors['EN']['changepic'][1]  = "Product's picture was changed!";
 systemErrors['EN']['searchprod'][0] = "The product wasn't found in the database!";
 systemErrors['EN']['sellprod'][0]   = "The product wasn't found in the database!";
 systemErrors['EN']['sellprod'][1]   = "The product was succesfully marked as sold!";
@@ -119,6 +147,8 @@ systemErrors['EN']['restock'][1]    = "The product's quantity was succesfully up
 systemErrors['EN']['issues'][0]     = "No products with low qty or missing info were found!";
 systemErrors['BG']['addprod'][0]    = "Продукт със същия арт. номер е вече качен!";
 systemErrors['BG']['addprod'][1]    = "Продуктът беше успешно добавен!";
+systemErrors['BG']['changepic'][0]  = "Снимката на продукта не беше обновена!";
+systemErrors['BG']['changepic'][1]  = "Снимката на продукта беше успешно обновена!";
 systemErrors['BG']['searchprod'][0] = "Продуктът не беше открит в базата данни!";
 systemErrors['BG']['sellprod'][0]   = "Продуктът не беше открит в базата данни!";
 systemErrors['BG']['sellprod'][1]   = "Продуктът беше успешно записан като продаден!";
@@ -126,6 +156,9 @@ systemErrors['BG']['restock'][0]    = "Продуктът не беше откр
 systemErrors['BG']['restock'][1]    = "Продуктовата наличност беше успешно обновена!";
 systemErrors['BG']['issues'][0]     = "Не бяха открити продукти с намалено количество или липсваща информация!";
 /*---*/
+var currency = [];
+currency['EN'] = "(in EUR)";
+currency['BG'] = "(в лeвa)";
 var warehouseChat = [];
-warehouseChat['EN'] = "If there are any of these left - N qty";
-warehouseChat['BG'] = "Ако има останали от тези - ";
+warehouseChat['EN'] = "qty";
+warehouseChat['BG'] = "бр";
